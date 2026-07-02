@@ -1,0 +1,238 @@
+// StarbizAcademy — Prisma schema (SQLite local; migrable a Postgres/Supabase)
+// Enum-like fields are Strings with documented allowed values; lists are JSON
+// strings (no native enums/Json so the SQLite→Postgres migration stays clean).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------------------------------------------------------------
+// Users & auth
+// role: VISITOR | MEMBER | PARENT | MENTOR | ADMIN
+// ----------------------------------------------------------------------------
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("MEMBER")
+  avatar       String? // url or null -> initials avatar
+  bio          String?
+  country      String?
+  city         String?
+  locale       String   @default("es")
+  createdAt    DateTime @default(now())
+
+  posts     Post[]
+  comments  Comment[]
+  reactions Reaction[]
+  rsvps     Rsvp[]
+  messages  Message[]
+
+  @@index([role])
+}
+
+// ----------------------------------------------------------------------------
+// Community: Posts feed
+// category: COMMUNITY | VOICE | ANNOUNCEMENT
+// ----------------------------------------------------------------------------
+model Post {
+  id        String   @id @default(cuid())
+  authorId  String
+  title     String
+  body      String
+  category  String   @default("COMMUNITY")
+  image     String?
+  createdAt DateTime @default(now())
+
+  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments  Comment[]
+  reactions Reaction[]
+
+  @@index([createdAt])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  authorId  String
+  body      String
+  createdAt DateTime @default(now())
+
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+}
+
+// type: LIKE | CELEBRATE | INSIGHTFUL
+model Reaction {
+  id     String @id @default(cuid())
+  postId String
+  userId String
+  type   String @default("LIKE")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId, type])
+}
+
+// ----------------------------------------------------------------------------
+// Community: Events
+// category: WEEKLY | CHAPTER | WORKSHOP | SUMMIT
+// status:   UPCOMING | LIVE | PAST
+// ----------------------------------------------------------------------------
+model Event {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  description String
+  startsAt    DateTime
+  endsAt      DateTime?
+  location    String?
+  isOnline    Boolean   @default(false)
+  host        String    @default("StarbizAcademy")
+  category    String    @default("WEEKLY")
+  cover       String?
+  price       String? // null/"Free" or "$50 USD" — kept as string
+  status      String    @default("UPCOMING")
+  featured    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  rsvps Rsvp[]
+
+  @@index([startsAt])
+}
+
+// status: GOING | INTERESTED | CANCELLED
+model Rsvp {
+  id        String   @id @default(cuid())
+  eventId   String
+  userId    String
+  status    String   @default("GOING")
+  createdAt DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+}
+
+// ----------------------------------------------------------------------------
+// Community: StarVoice (daily audios / episodes)
+// ----------------------------------------------------------------------------
+model PodcastEpisode {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  guest       String?
+  description String
+  audioUrl    String? // external embed (spotify/apple/youtube) — optional
+  thumbnail   String?
+  duration    String? // "32 min"
+  series      String?
+  episode     Int?
+  publishedAt DateTime @default(now())
+
+  @@index([publishedAt])
+}
+
+// ----------------------------------------------------------------------------
+// Community: Chat (members only)
+// ----------------------------------------------------------------------------
+model Channel {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  isPrivate   Boolean  @default(true)
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  messages Message[]
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  channelId String
+  userId    String
+  body      String
+  createdAt DateTime @default(now())
+
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([channelId, createdAt])
+}
+
+// ----------------------------------------------------------------------------
+// Community: StarBooks (book micro-summaries in Gen Z language)
+// category: SPIRITUAL | MENTAL | PHYSICAL | EMOTIONAL | SOCIAL | FINANCIAL | TECH | OPPORTUNITY
+// ----------------------------------------------------------------------------
+model ObservatoryPost {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  authors     String // comma-separated names (book author / curator)
+  summary     String
+  body        String
+  category    String   @default("OPPORTUNITY")
+  cover       String?
+  publishedAt DateTime @default(now())
+
+  @@index([publishedAt])
+}
+
+// ----------------------------------------------------------------------------
+// GÉNESIS i7™ cohorts
+// chapter.status: RECRUITING | ACTIVE | GRADUATED
+// ----------------------------------------------------------------------------
+model Country {
+  id       String    @id @default(cuid())
+  name     String
+  code     String    @unique // ISO-2: US, PE, MX, ...
+  flag     String? // emoji or url
+  chapters Chapter[]
+}
+
+model Chapter {
+  id          String    @id @default(cuid())
+  countryId   String
+  city        String
+  name        String // "Cohorte Provo"
+  slug        String    @unique
+  stake       String? // community/congregation the cohort belongs to
+  cohortSize  Int       @default(30)
+  currentWeek Int       @default(0) // 0 = not started, 1..7
+  status      String    @default("RECRUITING")
+  story       String? // success story summary
+  mentorName  String?
+  cover       String?
+  startsAt    DateTime?
+  createdAt   DateTime  @default(now())
+
+  country Country         @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  updates ChapterUpdate[]
+
+  @@index([countryId])
+}
+
+model ChapterUpdate {
+  id        String   @id @default(cuid())
+  chapterId String
+  week      Int?
+  title     String
+  body      String
+  photos    String? // JSON-encoded array of urls
+  createdAt DateTime @default(now())
+
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@index([chapterId, createdAt])
+}
