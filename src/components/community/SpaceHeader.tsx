@@ -1,5 +1,6 @@
 import { Icon, type IconName } from "@/components/icons";
 import { StarGlyph } from "@/components/Star";
+import { NightSky } from "@/components/Constellation";
 
 export function SpaceHeader({
   icon,
@@ -27,7 +28,8 @@ export function SpaceHeader({
 export function SpaceBanner({ label }: { label?: string }) {
   return (
     <div className="relative mb-6 flex h-28 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-navy via-navy-700 to-cyan sm:h-36">
-      <div className="flex flex-col items-center text-white">
+      <NightSky />
+      <div className="relative flex flex-col items-center text-white">
         <StarGlyph size={46} className="text-white/90" />
         <p className="mt-2 font-display text-sm font-bold uppercase tracking-[0.25em]">
           {label ?? "StarbizAcademy"}

@@ -11,7 +11,7 @@ type Size = "sm" | "md" | "lg";
 
 const variants: Record<Variant, string> = {
   primary:
-    "bg-cyan text-white hover:bg-cyan-700 border border-transparent shadow-sm",
+    "bg-cyan text-white hover:bg-cyan-700 hover:shadow-md border border-transparent shadow-sm",
   secondary:
     "bg-navy text-white hover:bg-navy-700 border border-transparent shadow-sm",
   outline:
@@ -27,7 +27,7 @@ const sizes: Record<Size, string> = {
 };
 
 const buttonBase =
-  "inline-flex items-center justify-center gap-2 font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none cursor-pointer";
+  "inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 hover:-translate-y-px active:translate-y-0 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none cursor-pointer";
 
 type ButtonProps = {
   variant?: Variant;

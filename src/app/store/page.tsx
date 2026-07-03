@@ -28,7 +28,7 @@ function ProductCard({ p, S }: { p: Product; S: Dict["store"] }) {
   return (
     <div
       className={cn(
-        "flex h-full flex-col rounded-2xl border border-line bg-paper p-6 transition-shadow hover:shadow-sm",
+        "flex h-full flex-col rounded-2xl border border-line bg-paper p-6 transition-all duration-300 hover:-translate-y-1 hover:border-cyan/30 hover:shadow-lg",
         p.featured && "ring-1 ring-gold/60",
       )}
     >
