@@ -82,7 +82,12 @@ export function Card({
   children: ReactNode;
 }) {
   return (
-    <div className={cn("rounded-2xl border border-surface-line bg-paper", className)}>
+    <div
+      className={cn(
+        "rounded-2xl border border-surface-line bg-paper transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan/25 hover:shadow-[0_10px_30px_rgba(8,145,178,0.08)]",
+        className,
+      )}
+    >
       {children}
     </div>
   );
@@ -113,6 +118,12 @@ export function Badge({
         className,
       )}
     >
+      {tone === "live" && (
+        <span
+          className="animate-led h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_1px_rgba(16,185,129,0.8)]"
+          aria-hidden
+        />
+      )}
       {children}
     </span>
   );

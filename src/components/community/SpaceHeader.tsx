@@ -13,7 +13,7 @@ export function SpaceHeader({
 }) {
   return (
     <div className="mb-5 flex items-center gap-3">
-      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-50 text-cyan">
+      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-50 text-cyan ring-1 ring-cyan/25 shadow-[0_0_16px_rgba(8,145,178,0.2)]">
         <Icon name={icon} size={22} />
       </span>
       <div className="min-w-0">

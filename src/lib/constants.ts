@@ -35,6 +35,7 @@ export const COMMUNITY_SPACES = [
   { key: "feed", href: "/community", icon: "home", gated: false },
   { key: "posts", href: "/community/posts", icon: "posts", gated: false },
   { key: "events", href: "/community/events", icon: "events", gated: false },
+  { key: "store", href: "/community/store", icon: "store", gated: false },
   { key: "podcast", href: "/community/podcast", icon: "podcast", gated: false },
   { key: "chat", href: "/community/chat", icon: "chat", gated: true },
   { key: "members", href: "/community/members", icon: "members", gated: false },

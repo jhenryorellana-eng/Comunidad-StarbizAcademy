@@ -23,7 +23,7 @@ export function MobileMenu() {
   const links: Array<[string, string]> = [
     [dict.nav.community, "/community"],
     [dict.nav.genesis, "/#genesis"],
-    [dict.nav.store, "/store"],
+    [dict.nav.store, "/community/store"],
   ];
 
   return (

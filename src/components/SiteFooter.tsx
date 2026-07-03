@@ -42,7 +42,7 @@ export async function SiteFooter() {
           [dict.community.spaces.chapters, "/community/chapters"],
         ])}
         {col("StarbizAcademy", [
-          [dict.nav.store, "/store"],
+          [dict.nav.store, "/community/store"],
           [dict.community.spaces.observatory, "/community/observatory"],
           [dict.community.spaces.members, "/community/members"],
           [dict.nav.genesis, "/#genesis"],
