@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 /** Small circular star glyph used in the logo — a 4-point "north star". */
 export function StarGlyph({
@@ -41,7 +42,14 @@ export function Logo({
       href="/"
       className={`inline-flex items-center gap-2.5 ${color} ${className ?? ""}`}
     >
-      <StarGlyph className={tone === "light" ? "text-gold" : "text-gold-700"} />
+      <Image
+        src="/logo.png"
+        alt=""
+        width={32}
+        height={32}
+        className="rounded-lg"
+        priority
+      />
       <span className="font-display text-[0.92rem] uppercase tracking-[0.18em] leading-none">
         <span className="font-extrabold">Starbiz</span>{" "}
         <span className="font-light">Academy</span>

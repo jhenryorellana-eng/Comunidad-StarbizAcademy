@@ -2,8 +2,8 @@ import { getDict } from "@/lib/i18n/server";
 import { INTELLIGENCES, BRAND } from "@/lib/constants";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import Image from "next/image";
 import { LinkButton, Kicker, Badge } from "@/components/ui";
-import { StarGlyph } from "@/components/Star";
 import { Icon } from "@/components/icons";
 import { Reveal, RevealSection } from "@/components/motion";
 
@@ -42,15 +42,16 @@ export default async function LandingPage() {
           {/* Brand visual card */}
           <div className="relative">
             <div className="relative aspect-[4/3] overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-navy via-navy-700 to-cyan-700 shadow-xl">
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white">
-                <StarGlyph size={84} className="text-gold" />
-                <p className="mt-5 font-display text-2xl font-extrabold uppercase tracking-[0.2em]">
-                  Starbiz
-                </p>
-                <p className="font-display text-2xl font-light uppercase tracking-[0.3em]">
-                  Academy
-                </p>
-                <p className="mt-4 text-xs uppercase tracking-[0.25em] text-white/55">
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <Image
+                  src="/logo.png"
+                  alt="StarbizAcademy Community"
+                  width={340}
+                  height={340}
+                  priority
+                  className="w-[70%] max-w-[340px] drop-shadow-[0_8px_30px_rgba(0,0,0,0.35)]"
+                />
+                <p className="mt-2 text-xs uppercase tracking-[0.25em] text-white/55">
                   Est. {BRAND.est}
                 </p>
               </div>
