@@ -6,7 +6,12 @@ import { LocaleToggle } from "./LocaleToggle";
 import { AuthControls } from "./AuthControls";
 import { MobileMenu } from "./MobileMenu";
 
-export async function SiteHeader() {
+export async function SiteHeader({
+  mobileMenu = true,
+}: {
+  /** Hide the marketing hamburger where another nav exists (community hub). */
+  mobileMenu?: boolean;
+}) {
   const [user, { dict }] = await Promise.all([getCurrentUser(), getDict()]);
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-cream/85 backdrop-blur">
@@ -24,7 +29,7 @@ export async function SiteHeader() {
           </Link>
         </nav>
         <div className="flex items-center gap-3">
-          <MobileMenu />
+          {mobileMenu && <MobileMenu />}
           <LocaleToggle />
           <AuthControls user={user ? { name: user.name, role: user.role } : null} />
         </div>
