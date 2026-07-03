@@ -39,6 +39,25 @@ export function NightSky() {
           }}
         />
       ))}
+      {/* LED accent stars in the brand colors, with a soft halo */}
+      {([
+        [12, 26, "#22d3ee"], [46, 72, "#fbbf24"], [69, 12, "#22d3ee"],
+        [91, 48, "#fbbf24"], [28, 55, "#f87171"],
+      ] as Array<[number, number, string]>).map(([x, y, c], i) => (
+        <span
+          key={`led-${i}`}
+          className="animate-led absolute rounded-full"
+          style={{
+            left: `${x}%`,
+            top: `${y}%`,
+            width: 3,
+            height: 3,
+            background: c,
+            boxShadow: `0 0 8px 1.5px ${c}`,
+            animationDelay: `${i * 0.7}s`,
+          }}
+        />
+      ))}
       {/* Atmosphere: soft cyan glow low-left, gold glow high-right */}
       <div className="absolute -left-32 bottom-0 h-96 w-96 rounded-full bg-cyan-bright/10 blur-3xl" />
       <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-gold/10 blur-3xl" />

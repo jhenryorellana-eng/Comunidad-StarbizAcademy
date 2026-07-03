@@ -50,16 +50,47 @@ export default async function LandingPage() {
             </Reveal>
           </div>
 
-          {/* Floating brand mark */}
-          <Reveal delay={0.2} className="hidden md:block">
-            <Image
-              src="/logo.png"
-              alt="StarbizAcademy Community"
-              width={360}
-              height={360}
-              priority
-              className="animate-float mx-auto w-[76%] max-w-[360px] rounded-3xl ring-1 ring-white/10 drop-shadow-[0_16px_50px_rgba(0,0,0,0.45)]"
-            />
+          {/* Brand mark in an Apple-style glass showcase with LED edge */}
+          <Reveal delay={0.2}>
+            <div className="relative mx-auto w-full max-w-[340px] md:max-w-[380px]">
+              {/* LED backlight behind the glass */}
+              <div className="absolute -inset-8" aria-hidden>
+                <div className="animate-led absolute -left-4 top-6 h-44 w-44 rounded-full bg-cyan-bright/25 blur-3xl [animation-duration:4.5s]" />
+                <div className="animate-led absolute -right-6 bottom-4 h-48 w-48 rounded-full bg-gold/20 blur-3xl [animation-duration:5.5s] [animation-delay:1.2s]" />
+              </div>
+
+              {/* LED gradient edge */}
+              <div className="relative rounded-[30px] bg-gradient-to-br from-cyan-bright/60 via-white/10 to-gold/60 p-px shadow-[0_24px_70px_rgba(0,0,0,0.5)]">
+                {/* Frosted glass */}
+                <div className="relative overflow-hidden rounded-[29px] bg-white/[0.06] p-5 backdrop-blur-xl sm:p-7">
+                  {/* Specular top highlight */}
+                  <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent" />
+                  {/* Light sweep across the glass */}
+                  <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[29px]" aria-hidden>
+                    <div className="animate-sheen absolute -inset-y-10 w-1/3 bg-gradient-to-r from-transparent via-white/[0.09] to-transparent" />
+                  </div>
+
+                  <Image
+                    src="/logo.png"
+                    alt="StarbizAcademy Community"
+                    width={360}
+                    height={360}
+                    priority
+                    className="animate-float w-full rounded-2xl"
+                  />
+
+                  {/* LED status strip */}
+                  <div className="relative mt-4 flex items-center justify-center gap-2.5">
+                    <span className="animate-led h-1.5 w-1.5 rounded-full bg-cyan-bright shadow-[0_0_8px_2px_rgba(34,211,238,0.7)]" />
+                    <span className="animate-led h-1.5 w-1.5 rounded-full bg-gold shadow-[0_0_8px_2px_rgba(251,191,36,0.7)] [animation-delay:0.8s]" />
+                    <span className="animate-led h-1.5 w-1.5 rounded-full bg-red-400 shadow-[0_0_8px_2px_rgba(248,113,113,0.7)] [animation-delay:1.6s]" />
+                    <p className="ml-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/55">
+                      CEO Junior · Padres 3.0
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </Reveal>
         </div>
 

@@ -17,7 +17,7 @@ const variants: Record<Variant, string> = {
   outline:
     "bg-transparent text-navy border border-navy/25 hover:border-navy/50 hover:bg-navy/[0.03]",
   outlineLight:
-    "bg-transparent text-white border border-white/40 hover:bg-white/10",
+    "bg-white/10 text-white border border-white/25 backdrop-blur-md hover:bg-white/[0.18]",
   ghost: "bg-transparent text-navy hover:bg-navy/[0.05] border border-transparent",
 };
 const sizes: Record<Size, string> = {
