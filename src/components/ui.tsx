@@ -108,7 +108,7 @@ export function Badge({
     cyan: "bg-cyan-50 text-cyan-700 border-cyan/20",
     navy: "bg-navy text-white border-transparent",
     green: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    live: "bg-emerald-50 text-emerald-600 border-emerald-200",
+    live: "bg-rose-50 text-rose-600 border-rose-200",
   };
   return (
     <span
@@ -120,7 +120,7 @@ export function Badge({
     >
       {tone === "live" && (
         <span
-          className="animate-led h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_1px_rgba(16,185,129,0.8)]"
+          className="animate-led h-1.5 w-1.5 rounded-full bg-red-500 shadow-[0_0_6px_1px_rgba(239,68,68,0.8)]"
           aria-hidden
         />
       )}

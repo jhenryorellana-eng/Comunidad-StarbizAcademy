@@ -8,35 +8,35 @@ import { COMMUNITY_SPACES } from "@/lib/constants";
 import { Icon, type IconName } from "@/components/icons";
 import { cn } from "@/components/ui";
 
-/** Desktop-only vertical sidebar (mobile uses CommunityMobileNav). */
+/** Desktop-only vertical sidebar (mobile uses the bottom bar). */
 export function CommunityNav({ isMember }: { isMember: boolean }) {
   const { dict } = useI18n();
   const pathname = usePathname();
 
-  const isActive = (href: string) =>
-    href === "/community" ? pathname === "/community" : pathname.startsWith(href);
-
+  const isActive = (href: string) => pathname.startsWith(href);
   const spaceLabel = (key: string) =>
     dict.community.spaces[key as keyof typeof dict.community.spaces];
 
+  const main = COMMUNITY_SPACES.filter((s) => !s.extra);
+  const extras = COMMUNITY_SPACES.filter((s) => s.extra);
+
   return (
-    <aside className="hidden w-56 shrink-0 lg:block">
+    <aside className="hidden w-[260px] shrink-0 lg:block">
       <nav className="sticky top-20 flex flex-col gap-1 rounded-2xl border border-surface-line bg-paper p-2 shadow-sm">
-        {COMMUNITY_SPACES.slice(0, 1).map((s) => (
+        {main.map((s) => (
           <NavItem
             key={s.key}
             href={s.href}
             icon={s.icon as IconName}
             label={spaceLabel(s.key)}
             active={isActive(s.href)}
+            locked={s.gated && !isMember}
           />
         ))}
 
-        <p className="px-3 pb-1 pt-4 font-display text-[0.7rem] font-semibold uppercase tracking-wider text-muted">
-          {dict.nav.community}
-        </p>
+        <div className="mx-3 my-2 h-px bg-surface-line" />
 
-        {COMMUNITY_SPACES.slice(1).map((s) => (
+        {extras.map((s) => (
           <NavItem
             key={s.key}
             href={s.href}
@@ -72,6 +72,7 @@ function NavItem({
         active
           ? "bg-navy text-white shadow-[0_4px_18px_rgba(26,39,68,0.28)]"
           : "text-ink hover:translate-x-0.5 hover:bg-navy/[0.05] hover:text-navy",
+        locked && !active && "opacity-50",
       )}
     >
       {/* Sliding LED indicator — glides between active items */}

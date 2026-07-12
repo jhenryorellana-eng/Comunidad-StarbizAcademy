@@ -39,7 +39,7 @@ export default async function LandingPage() {
             </Reveal>
             <Reveal delay={0.24}>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-                <LinkButton href="/community" size="lg">
+                <LinkButton href="/comunidad" size="lg">
                   {L.ctaCommunity}
                   <Icon name="arrowRight" size={18} />
                 </LinkButton>
@@ -191,7 +191,7 @@ export default async function LandingPage() {
             <span className="italic text-cyan-bright">{L.promise.split(":")[1]}</span>
           </p>
           <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
-            <LinkButton href="/community" size="lg">
+            <LinkButton href="/comunidad" size="lg">
               {L.ctaCommunity}
             </LinkButton>
             <LinkButton href="/signup" size="lg" variant="outlineLight">

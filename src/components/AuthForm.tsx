@@ -14,18 +14,28 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<"MEMBER" | "PARENT">("MEMBER");
+  const [consent, setConsent] = useState(false);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setLoading(true);
     setError(null);
     const fd = new FormData(e.currentTarget);
+
+    // Consentimiento parental: sin la casilla no se crea la cuenta de un menor.
+    if (mode === "signup" && role === "MEMBER" && !consent) {
+      setError(A.errorConsent);
+      return;
+    }
+
+    setLoading(true);
     const payload =
       mode === "signup"
         ? {
             name: fd.get("name"),
             email: fd.get("email"),
             password: fd.get("password"),
+            building: fd.get("building"),
+            parentalConsent: role === "MEMBER" ? consent : true,
             role,
           }
         : { email: fd.get("email"), password: fd.get("password") };
@@ -41,16 +51,18 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
       setError(
         j.error === "exists"
           ? A.errorExists
-          : j.error === "invalid"
-            ? A.errorInvalid
-            : A.errorGeneric,
+          : j.error === "consent"
+            ? A.errorConsent
+            : j.error === "invalid"
+              ? A.errorInvalid
+              : A.errorGeneric,
       );
       setLoading(false);
       return;
     }
     const { user } = await res.json();
     router.refresh();
-    router.push(user.role === "ADMIN" ? "/admin" : "/community");
+    router.push(user.role === "ADMIN" ? "/admin" : "/comunidad");
   }
 
   return (
@@ -91,26 +103,53 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         </div>
 
         {mode === "signup" && (
-          <div>
-            <Label>{A.iAmA}</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {(["MEMBER", "PARENT"] as const).map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => setRole(r)}
-                  className={cn(
-                    "rounded-xl border px-3 py-2 text-sm font-medium transition-colors",
-                    role === r
-                      ? "border-cyan bg-cyan-50 text-cyan-700"
-                      : "border-surface-line text-muted hover:border-navy/30",
-                  )}
-                >
-                  {r === "MEMBER" ? A.youth : A.parent}
-                </button>
-              ))}
+          <>
+            {/* "Qué estoy construyendo" es obligatorio: ese campo ES el producto. */}
+            <div>
+              <Label htmlFor="building">{A.building}</Label>
+              <Input
+                id="building"
+                name="building"
+                required
+                maxLength={60}
+                placeholder={A.buildingPlaceholder}
+              />
+              <p className="mt-1 text-xs text-muted">{A.buildingHint}</p>
             </div>
-          </div>
+
+            <div>
+              <Label>{A.iAmA}</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {(["MEMBER", "PARENT"] as const).map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setRole(r)}
+                    className={cn(
+                      "rounded-xl border px-3 py-2 text-sm font-medium transition-colors",
+                      role === r
+                        ? "border-cyan bg-cyan-50 text-cyan-700"
+                        : "border-surface-line text-muted hover:border-navy/30",
+                    )}
+                  >
+                    {r === "MEMBER" ? A.youth : A.parent}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {role === "MEMBER" && (
+              <label className="flex items-start gap-2.5 rounded-xl border border-surface-line bg-surface p-3 text-sm text-ink">
+                <input
+                  type="checkbox"
+                  checked={consent}
+                  onChange={(e) => setConsent(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-surface-line accent-[#0891b2]"
+                />
+                {A.consent}
+              </label>
+            )}
+          </>
         )}
 
         {error && (

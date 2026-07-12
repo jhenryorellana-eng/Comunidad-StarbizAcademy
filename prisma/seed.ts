@@ -19,6 +19,7 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "starbiz123";
 async function main() {
   console.log("Resetting database…");
   // delete in dependency order
+  await prisma.report.deleteMany();
   await prisma.chapterUpdate.deleteMany();
   await prisma.message.deleteMany();
   await prisma.channel.deleteMany();
@@ -39,9 +40,10 @@ async function main() {
     data: {
       name: "Equipo StarbizAcademy",
       email: ADMIN_EMAIL,
+      building: "StarbizAcademy",
+      parentalConsent: true,
       passwordHash: pw(ADMIN_PASSWORD),
       role: "ADMIN",
-      city: "Salt Lake City",
       country: "EE.UU.",
       bio: "Equipo fundador de StarbizAcademy.",
     },
@@ -51,9 +53,10 @@ async function main() {
     data: {
       name: "Mateo Salazar",
       email: "mateo@example.com",
+      building: "Plantillas digitales para pymes",
+      parentalConsent: true,
       passwordHash: pw("password123"),
       role: "MEMBER",
-      city: "Provo",
       country: "EE.UU.",
       locale: "es",
       bio: "CEO Junior · Cohorte Provo. Construyendo mi primer producto digital con StarEduca.",
@@ -63,9 +66,10 @@ async function main() {
     data: {
       name: "Valentina Cruz",
       email: "valentina@example.com",
+      building: "Mi primer curso de repostería online",
+      parentalConsent: true,
       passwordHash: pw("password123"),
       role: "MEMBER",
-      city: "Provo",
       country: "EE.UU.",
       locale: "es",
       bio: "Fan de StarBooks. Analizando el caso Tesla en StarEmpresa.",
@@ -75,9 +79,10 @@ async function main() {
     data: {
       name: "Ana Lucía Mendoza",
       email: "ana@example.com",
+      building: "Mentora de la Cohorte Provo",
+      parentalConsent: true,
       passwordHash: pw("password123"),
       role: "MENTOR",
-      city: "Salt Lake City",
       country: "EE.UU.",
       locale: "es",
       bio: "Mentora GÉNESIS i7™. Emprendedora digital.",
@@ -87,9 +92,10 @@ async function main() {
     data: {
       name: "Roberto Salazar",
       email: "roberto@example.com",
+      building: "Aprendiendo inglés con mi hijo",
+      parentalConsent: true,
       passwordHash: pw("password123"),
       role: "PARENT",
-      city: "Provo",
       country: "EE.UU.",
       locale: "es",
       bio: "Papá de Mateo · Padres 3.0. Aprendiendo inglés con English Together.",
@@ -99,9 +105,10 @@ async function main() {
     data: {
       name: "Diego Quispe",
       email: "diego@example.com",
+      building: "Explorando mi primera idea",
+      parentalConsent: true,
       passwordHash: pw("password123"),
       role: "MEMBER",
-      city: "Lima",
       country: "Perú",
       locale: "es",
     },

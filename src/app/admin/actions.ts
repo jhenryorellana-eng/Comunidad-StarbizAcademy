@@ -46,17 +46,18 @@ export async function createEvent(fd: FormData) {
       price: str(fd, "price") || null,
       status: str(fd, "status") || "UPCOMING",
       featured: fd.get("featured") === "on",
+      recordingUrl: str(fd, "recordingUrl") || null,
     },
   });
   revalidatePath("/admin/events");
-  revalidatePath("/community/events");
+  revalidatePath("/comunidad/eventos");
 }
 
 export async function deleteEvent(fd: FormData) {
   await requireAdmin();
   await prisma.event.delete({ where: { id: str(fd, "id") } });
   revalidatePath("/admin/events");
-  revalidatePath("/community/events");
+  revalidatePath("/comunidad/eventos");
 }
 
 /* ---------------- Podcast ---------------- */
@@ -78,14 +79,14 @@ export async function createEpisode(fd: FormData) {
     },
   });
   revalidatePath("/admin/podcast");
-  revalidatePath("/community/podcast");
+  revalidatePath("/comunidad/podcast");
 }
 
 export async function deleteEpisode(fd: FormData) {
   await requireAdmin();
   await prisma.podcastEpisode.delete({ where: { id: str(fd, "id") } });
   revalidatePath("/admin/podcast");
-  revalidatePath("/community/podcast");
+  revalidatePath("/comunidad/podcast");
 }
 
 /* ---------------- Observatory ---------------- */
@@ -101,17 +102,18 @@ export async function createObservatory(fd: FormData) {
       summary: str(fd, "summary"),
       body: str(fd, "body") || str(fd, "summary"),
       category: str(fd, "category") || "OPPORTUNITY",
+      cover: str(fd, "cover") || null,
     },
   });
   revalidatePath("/admin/observatory");
-  revalidatePath("/community/observatory");
+  revalidatePath("/comunidad/blogs");
 }
 
 export async function deleteObservatory(fd: FormData) {
   await requireAdmin();
   await prisma.observatoryPost.delete({ where: { id: str(fd, "id") } });
   revalidatePath("/admin/observatory");
-  revalidatePath("/community/observatory");
+  revalidatePath("/comunidad/blogs");
 }
 
 /* ---------------- Chapters ---------------- */
@@ -136,14 +138,14 @@ export async function createChapter(fd: FormData) {
     },
   });
   revalidatePath("/admin/chapters");
-  revalidatePath("/community/chapters");
+  revalidatePath("/comunidad/cohortes");
 }
 
 export async function deleteChapter(fd: FormData) {
   await requireAdmin();
   await prisma.chapter.delete({ where: { id: str(fd, "id") } });
   revalidatePath("/admin/chapters");
-  revalidatePath("/community/chapters");
+  revalidatePath("/comunidad/cohortes");
 }
 
 export async function createChapterUpdate(fd: FormData) {
@@ -203,12 +205,19 @@ export async function deleteProduct(fd: FormData) {
   revalidatePath("/store");
 }
 
+/* ---------------- Reports (trust & safety) ---------------- */
+export async function resolveReport(fd: FormData) {
+  await requireAdmin();
+  await prisma.report.delete({ where: { id: str(fd, "id") } });
+  revalidatePath("/admin/reports");
+}
+
 /* ---------------- Posts (moderation) ---------------- */
 export async function deletePost(fd: FormData) {
   await requireAdmin();
   await prisma.post.delete({ where: { id: str(fd, "id") } });
   revalidatePath("/admin/posts");
-  revalidatePath("/community/posts");
+  revalidatePath("/comunidad/posts");
 }
 
 export async function createAnnouncement(fd: FormData) {
@@ -224,5 +233,5 @@ export async function createAnnouncement(fd: FormData) {
     },
   });
   revalidatePath("/admin/posts");
-  revalidatePath("/community/posts");
+  revalidatePath("/comunidad/posts");
 }

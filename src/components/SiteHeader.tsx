@@ -18,13 +18,13 @@ export async function SiteHeader({
       <div className="container-ac flex h-16 items-center justify-between gap-4">
         <Logo />
         <nav className="hidden items-center gap-7 text-sm font-medium text-navy md:flex">
-          <Link href="/community" className="transition-colors hover:text-cyan">
+          <Link href="/comunidad" className="transition-colors hover:text-cyan">
             {dict.nav.community}
           </Link>
           <Link href="/#genesis" className="transition-colors hover:text-cyan">
             {dict.nav.genesis}
           </Link>
-          <Link href="/community/store" className="transition-colors hover:text-cyan">
+          <Link href="/comunidad/tienda" className="transition-colors hover:text-cyan">
             {dict.nav.store}
           </Link>
         </nav>

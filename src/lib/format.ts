@@ -68,3 +68,18 @@ export function timeAgo(date: Date, locale: Locale): string {
   if (d < 7) return `${d}d`;
   return formatDate(date, locale);
 }
+
+/**
+ * Public display name: first name + last-name initial ("Mateo S.").
+ * Privacy rule: the full last name never reaches a public view.
+ */
+export function publicName(fullName: string): string {
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length <= 1) return parts[0] ?? "";
+  return `${parts[0]} ${parts[parts.length - 1][0]?.toUpperCase() ?? ""}.`;
+}
+
+/** Estimated reading time in minutes (~200 words/min). */
+export function readMinutes(body: string): number {
+  return Math.max(1, Math.round(body.trim().split(/\s+/).length / 200));
+}

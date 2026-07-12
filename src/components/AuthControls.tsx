@@ -43,7 +43,7 @@ export function AuthControls({
     <div className="flex items-center gap-3">
       <Link
         href={
-          user.role === "ADMIN" ? "/admin" : "/community"
+          user.role === "ADMIN" ? "/admin" : "/comunidad"
         }
         className="flex items-center gap-2"
       >

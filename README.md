@@ -2,8 +2,9 @@
 
 La plataforma del **Ecosistema Familiar**: CEO Junior para adolescentes 14+ y Padres 3.0 para la familia, respaldados por la metodología **GÉNESIS i7™**.
 
-- **Comunidad**: hub con barra lateral y espacios — Inicio (feed), Publicaciones, Eventos (con RSVP), StarVoice (audios), Chat (solo miembros), Miembros, StarBooks (micro-resúmenes de libros) y GÉNESIS i7 (cohortes con progreso semana X/7).
-- **Admin**: panel de administración con CRUD de eventos, StarVoice, StarBooks, cohortes y publicaciones.
+- **Comunidad** (`/comunidad`): Posts (con el tipo estructurado "Mi primera venta"), Miembros (tarjeta de 4 campos con privacidad obligatoria), Eventos (Registrarme + estados En vivo/Pasado con grabación), Blogs (grid editorial con SEO), Podcast (StarVoice con reproductor persistente), Reglas (los 5 no negociables), Tienda y Chat (solo miembros).
+- **Confianza**: botón de reporte en cada post y perfil, consentimiento parental en el registro, apellidos truncados en backend, sin mensajes privados.
+- **Admin**: CRUD de eventos, StarVoice, Blogs, cohortes, publicaciones, tienda y reportes.
 
 Marca: **navy profundo (#1a2744) + cyan + estrella dorada**, sobre blanco cálido. Bilingüe (español por defecto).
 
@@ -51,19 +52,22 @@ Scripts útiles: `npm run typecheck`, `npm run db:reset` (resetea el esquema; re
 
 ```
 /                         Landing — hero + pilares CEO Junior / Padres 3.0 + GÉNESIS i7™
-/login  /signup           Auth (registro como Joven·CEO Junior o Padre/Madre·Padres 3.0)
+/login  /signup           Auth (con "qué estás construyendo" + consentimiento parental)
 
-/community                Inicio (resumen del feed)
-/community/posts          Muro: publicar, comentar, reaccionar
-/community/events         Eventos por mes + destacado + RSVP
-/community/podcast        StarVoice — biblioteca de audios
-/community/chat           Chat en vivo (SOLO miembros)
-/community/members        Directorio
-/community/observatory    StarBooks — micro-resúmenes de libros
-/community/chapters       Cohortes GÉNESIS i7 con progreso (semana X/7)
+/comunidad                → redirige a Posts (actividad primero)
+/comunidad/posts          Feed: composer fijo, filtros, "Mi primera venta" destacada
+/comunidad/miembros       Directorio: 4 campos públicos, filtros país/recién llegados
+/comunidad/eventos        Lista cronológica: Registrarme, En vivo, grabaciones
+/comunidad/blogs          Grid editorial + artículo con SEO (/comunidad/blogs/[slug])
+/comunidad/podcast        StarVoice — reproductor persistente al pie
+/comunidad/reglas         Los 5 no negociables (infraestructura de confianza)
+/comunidad/tienda         Apps y servicios (CTA WhatsApp)
+/comunidad/chat           Canales visibles (SOLO miembros — sin mensajes privados)
 
 /admin/**                 Panel de administración (rol ADMIN)
 ```
+
+Las rutas viejas `/community/*` y `/store` redirigen permanentemente a las nuevas.
 
 ## GÉNESIS i7™ — las 7 inteligencias
 

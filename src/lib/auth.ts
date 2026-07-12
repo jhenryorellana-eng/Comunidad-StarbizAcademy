@@ -87,7 +87,7 @@ export async function getCurrentUser() {
       avatar: true,
       bio: true,
       country: true,
-      city: true,
+      building: true,
       createdAt: true,
     },
   });

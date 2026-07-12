@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
 export default async function AdminDashboard() {
-  const [events, episodes, posts, chapters, observatory, products, members] =
+  const [events, episodes, posts, chapters, blogs, products, reports, members] =
     await Promise.all([
       prisma.event.count(),
       prisma.podcastEpisode.count(),
@@ -10,6 +10,7 @@ export default async function AdminDashboard() {
       prisma.chapter.count(),
       prisma.observatoryPost.count(),
       prisma.product.count(),
+      prisma.report.count(),
       prisma.user.count(),
     ]);
 
@@ -18,8 +19,9 @@ export default async function AdminDashboard() {
     ["Audios StarVoice", episodes, "/admin/podcast"],
     ["Publicaciones", posts, "/admin/posts"],
     ["Cohortes", chapters, "/admin/chapters"],
-    ["StarBooks", observatory, "/admin/observatory"],
+    ["Blogs", blogs, "/admin/observatory"],
     ["Productos en tienda", products, "/admin/store"],
+    ["Reportes", reports, "/admin/reports"],
     ["Usuarios", members, "/admin/posts"],
   ];
 

@@ -36,15 +36,16 @@ export async function SiteFooter() {
           </p>
         </div>
         {col(dict.nav.community, [
-          [dict.community.spaces.feed, "/community"],
-          [dict.community.spaces.events, "/community/events"],
-          [dict.community.spaces.podcast, "/community/podcast"],
-          [dict.community.spaces.chapters, "/community/chapters"],
+          [dict.community.spaces.posts, "/comunidad/posts"],
+          [dict.community.spaces.members, "/comunidad/miembros"],
+          [dict.community.spaces.events, "/comunidad/eventos"],
+          [dict.community.spaces.blogs, "/comunidad/blogs"],
+          [dict.community.spaces.podcast, "/comunidad/podcast"],
         ])}
         {col("StarbizAcademy", [
-          [dict.nav.store, "/community/store"],
-          [dict.community.spaces.observatory, "/community/observatory"],
-          [dict.community.spaces.members, "/community/members"],
+          [dict.nav.store, "/comunidad/tienda"],
+          [dict.community.spaces.rules, "/comunidad/reglas"],
+          [dict.community.spaces.chapters, "/comunidad/cohortes"],
           [dict.nav.genesis, "/#genesis"],
         ])}
         {col("Cuenta", [

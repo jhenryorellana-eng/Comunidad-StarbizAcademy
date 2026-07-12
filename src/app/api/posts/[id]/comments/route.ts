@@ -2,6 +2,7 @@ import { type NextRequest } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getSession, isMember } from "@/lib/auth";
+import { publicName } from "@/lib/format";
 
 const schema = z.object({ body: z.string().trim().min(1).max(2000) });
 
@@ -26,6 +27,6 @@ export async function POST(
     id: comment.id,
     body: comment.body,
     createdAt: comment.createdAt.toISOString(),
-    author: { name: comment.author.name },
+    author: { name: publicName(comment.author.name) },
   });
 }

@@ -21,6 +21,7 @@ export default async function AdminEvents() {
       <AdminForm action={createEvent} title="Nuevo evento" submit="Crear evento">
         <Field label="Título" name="title" required />
         <Field label="Anfitrión" name="host" placeholder="StarbizAcademy" />
+        <Field label="URL de grabación (eventos pasados)" name="recordingUrl" placeholder="https://youtube.com/…" />
         <Field label="Inicio" name="startsAt" type="datetime-local" required />
         <Field label="Fin" name="endsAt" type="datetime-local" />
         <Field label="Ubicación" name="location" placeholder="Zoom · En línea / Ciudad" />

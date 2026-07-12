@@ -17,17 +17,18 @@ datasource db {
 // role: VISITOR | MEMBER | PARENT | MENTOR | ADMIN
 // ----------------------------------------------------------------------------
 model User {
-  id           String   @id @default(cuid())
-  name         String
-  email        String   @unique
-  passwordHash String
-  role         String   @default("MEMBER")
-  avatar       String? // url or null -> initials avatar
-  bio          String?
-  country      String?
-  city         String?
-  locale       String   @default("es")
-  createdAt    DateTime @default(now())
+  id              String   @id @default(cuid())
+  name            String
+  email           String   @unique
+  passwordHash    String
+  role            String   @default("MEMBER")
+  avatar          String? // url or null -> initials avatar
+  bio             String?
+  country         String?
+  building        String? // "Qué estoy construyendo" — max 60 chars, público
+  parentalConsent Boolean  @default(false)
+  locale          String   @default("es")
+  createdAt       DateTime @default(now())
 
   posts     Post[]
   comments  Comment[]
@@ -102,9 +103,10 @@ model Event {
   category    String    @default("WEEKLY")
   cover       String?
   price       String? // null/"Free" or "$50 USD" — kept as string
-  status      String    @default("UPCOMING")
-  featured    Boolean   @default(false)
-  createdAt   DateTime  @default(now())
+  status       String    @default("UPCOMING")
+  featured     Boolean   @default(false)
+  recordingUrl String? // enlace a la grabación (eventos pasados)
+  createdAt    DateTime  @default(now())
 
   rsvps Rsvp[]
 
@@ -222,6 +224,21 @@ model Chapter {
   updates ChapterUpdate[]
 
   @@index([countryId])
+}
+
+// ----------------------------------------------------------------------------
+// Trust & safety: visible report button on every post and profile
+// targetType: POST | MEMBER
+// ----------------------------------------------------------------------------
+model Report {
+  id         String   @id @default(cuid())
+  targetType String
+  targetId   String
+  reason     String?
+  reporterId String?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 // ----------------------------------------------------------------------------

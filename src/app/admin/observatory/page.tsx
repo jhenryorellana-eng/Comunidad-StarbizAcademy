@@ -25,15 +25,15 @@ export default async function AdminObservatory() {
 
   return (
     <div>
-      <PageTitle>Observatorio</PageTitle>
+      <PageTitle>Blogs</PageTitle>
 
-      <AdminForm action={createObservatory} title="Nueva investigación" submit="Publicar">
+      <AdminForm action={createObservatory} title="Nuevo artículo" submit="Publicar">
         <Field label="Título" name="title" required />
-        <Field label="Autores" name="authors" placeholder="Dra. ... , Ing. ..." />
+        <Field label="Autores" name="authors" placeholder="Equipo StarbizAcademy" />
         <SelectField label="Categoría" name="category" options={CAT_OPTS} />
-        <div />
+        <Field label="Portada (URL de imagen)" name="cover" placeholder="https://…" />
         <TextareaField label="Resumen" name="summary" rows={2} />
-        <TextareaField label="Cuerpo" name="body" rows={4} />
+        <TextareaField label="Cuerpo" name="body" rows={6} />
       </AdminForm>
 
       <div className="space-y-2">

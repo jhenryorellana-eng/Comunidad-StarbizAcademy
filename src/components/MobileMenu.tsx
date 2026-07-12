@@ -21,9 +21,9 @@ export function MobileMenu() {
   }, [open]);
 
   const links: Array<[string, string]> = [
-    [dict.nav.community, "/community"],
+    [dict.nav.community, "/comunidad"],
     [dict.nav.genesis, "/#genesis"],
-    [dict.nav.store, "/community/store"],
+    [dict.nav.store, "/comunidad/tienda"],
   ];
 
   return (

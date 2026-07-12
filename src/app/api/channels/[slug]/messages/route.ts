@@ -2,6 +2,7 @@ import { type NextRequest } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getSession, isMember } from "@/lib/auth";
+import { publicName } from "@/lib/format";
 
 function dto(m: {
   id: string;
@@ -15,7 +16,7 @@ function dto(m: {
     body: m.body,
     createdAt: m.createdAt.toISOString(),
     userId: m.userId,
-    author: { name: m.user.name },
+    author: { name: publicName(m.user.name) },
   };
 }
 

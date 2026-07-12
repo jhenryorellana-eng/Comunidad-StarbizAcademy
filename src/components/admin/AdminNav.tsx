@@ -9,9 +9,10 @@ const ITEMS: Array<[string, string]> = [
   ["/admin/events", "Eventos"],
   ["/admin/podcast", "StarVoice"],
   ["/admin/chapters", "Cohortes"],
-  ["/admin/observatory", "StarBooks"],
+  ["/admin/observatory", "Blogs"],
   ["/admin/posts", "Publicaciones"],
   ["/admin/store", "Tienda"],
+  ["/admin/reports", "Reportes"],
 ];
 
 export function AdminNav() {

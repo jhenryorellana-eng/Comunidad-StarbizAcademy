@@ -6,6 +6,8 @@ import { useI18n } from "@/lib/i18n/client";
 import { Avatar, Badge, Input, cn } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { timeAgo } from "@/lib/format";
+import { ReportButton } from "./ReportButton";
+import type { FirstSale } from "@/lib/constants";
 
 export type CommentDTO = {
   id: string;
@@ -35,8 +37,11 @@ export function PostFeed({
   const { dict } = useI18n();
   if (posts.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-surface-line bg-paper p-12 text-center text-muted">
-        {dict.community.posts.empty}
+      <div className="rounded-2xl border border-dashed border-surface-line bg-paper p-12 text-center">
+        <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-cyan-50 text-cyan">
+          <Icon name="posts" size={20} />
+        </span>
+        <p className="mt-3 text-muted">{dict.community.posts.empty}</p>
       </div>
     );
   }
@@ -49,6 +54,16 @@ export function PostFeed({
   );
 }
 
+function parseFirstSale(body: string): FirstSale | null {
+  try {
+    const j = JSON.parse(body);
+    if (j && typeof j.sold === "string" && typeof j.learned === "string") return j;
+  } catch {
+    // legacy free-text body — render as a normal post
+  }
+  return null;
+}
+
 function PostCard({ post, loggedIn }: { post: PostDTO; loggedIn: boolean }) {
   const { locale, dict } = useI18n();
   const P = dict.community.posts;
@@ -58,6 +73,8 @@ function PostCard({ post, loggedIn }: { post: PostDTO; loggedIn: boolean }) {
   const [showComments, setShowComments] = useState(false);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
+
+  const firstSale = post.category === "FIRST_SALE" ? parseFirstSale(post.body) : null;
 
   const memberSince = new Intl.DateTimeFormat(locale === "es" ? "es-ES" : "en-US", {
     month: "long",
@@ -108,10 +125,37 @@ function PostCard({ post, loggedIn }: { post: PostDTO; loggedIn: boolean }) {
         : null;
 
   return (
-    <article className="rounded-2xl border border-surface-line bg-paper p-6">
+    <article
+      className={cn(
+        "relative rounded-2xl border bg-paper p-6",
+        // "Mi primera venta" se destaca: borde cian + estrella
+        post.category === "FIRST_SALE"
+          ? "border-cyan/50 shadow-[0_0_28px_rgba(8,145,178,0.12)]"
+          : "border-surface-line",
+      )}
+    >
+      {post.category === "FIRST_SALE" && (
+        <span
+          className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-cyan-bright/70 to-transparent"
+          aria-hidden
+        />
+      )}
       <div className="flex items-start justify-between gap-4">
-        <h2 className="text-lg font-bold leading-snug text-navy">{post.title}</h2>
-        {catBadge && <Badge tone="cyan">{catBadge}</Badge>}
+        <h2 className="text-lg font-bold leading-snug text-navy">
+          {post.category === "FIRST_SALE" && (
+            <span className="mr-1.5 inline-flex text-gold-700" aria-hidden>
+              <Icon name="star" size={18} className="inline" />
+            </span>
+          )}
+          {post.title}
+        </h2>
+        <div className="flex shrink-0 items-center gap-2">
+          {post.category === "FIRST_SALE" ? (
+            <Badge tone="cyan">{P.firstSaleBadge}</Badge>
+          ) : (
+            catBadge && <Badge tone="cyan">{catBadge}</Badge>
+          )}
+        </div>
       </div>
 
       <div className="mt-3 flex items-center gap-3">
@@ -127,9 +171,40 @@ function PostCard({ post, loggedIn }: { post: PostDTO; loggedIn: boolean }) {
         </div>
       </div>
 
-      <p className="mt-4 whitespace-pre-line text-[0.95rem] leading-relaxed text-ink/90">
-        {post.body}
-      </p>
+      {firstSale ? (
+        <dl className="mt-4 grid gap-3 rounded-xl bg-cyan-50/60 p-4 sm:grid-cols-3">
+          <div>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-cyan-700">
+              {P.soldWhat}
+            </dt>
+            <dd className="mt-0.5 text-sm text-ink/90">{firstSale.sold}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-cyan-700">
+              {P.soldTo}
+            </dt>
+            <dd className="mt-0.5 text-sm text-ink/90">{firstSale.to}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-cyan-700">
+              {P.soldAmount}
+            </dt>
+            <dd className="mt-0.5 text-sm font-bold text-navy">{firstSale.amount}</dd>
+          </div>
+          <div className="sm:col-span-3">
+            <dt className="text-xs font-semibold uppercase tracking-wide text-cyan-700">
+              {P.soldLearned}
+            </dt>
+            <dd className="mt-0.5 text-sm leading-relaxed text-ink/90">
+              {firstSale.learned}
+            </dd>
+          </div>
+        </dl>
+      ) : (
+        <p className="mt-4 whitespace-pre-line text-base leading-relaxed text-ink/90">
+          {post.body}
+        </p>
+      )}
 
       <div className="mt-4 flex items-center gap-4 border-t border-surface-line pt-3 text-sm">
         <button
@@ -156,6 +231,8 @@ function PostCard({ post, loggedIn }: { post: PostDTO; loggedIn: boolean }) {
           {comments.length > 0 && <span>{comments.length}</span>}
           <span>{P.comments}</span>
         </button>
+        {/* Botón de reporte visible en cada post */}
+        <ReportButton targetType="POST" targetId={post.id} className="ml-auto" />
       </div>
 
       {showComments && (

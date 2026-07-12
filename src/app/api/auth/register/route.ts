@@ -8,6 +8,8 @@ const schema = z.object({
   name: z.string().trim().min(2).max(80),
   email: z.string().trim().email().max(160),
   password: z.string().min(6).max(100),
+  building: z.string().trim().min(1).max(60),
+  parentalConsent: z.boolean(),
   role: z.enum(["MEMBER", "PARENT"]).optional(),
 });
 
@@ -17,6 +19,12 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return Response.json({ error: "invalid" }, { status: 400 });
   }
+  // Consentimiento parental: obligatorio para cuentas de menores (CEO Junior).
+  const role = parsed.data.role ?? ROLES.MEMBER;
+  if (role === ROLES.MEMBER && !parsed.data.parentalConsent) {
+    return Response.json({ error: "consent" }, { status: 400 });
+  }
+
   const email = parsed.data.email.toLowerCase();
 
   const existing = await prisma.user.findUnique({ where: { email } });
@@ -29,7 +37,9 @@ export async function POST(req: NextRequest) {
       name: parsed.data.name,
       email,
       passwordHash: await hashPassword(parsed.data.password),
-      role: parsed.data.role ?? ROLES.MEMBER,
+      building: parsed.data.building,
+      parentalConsent: parsed.data.parentalConsent,
+      role,
     },
   });
 

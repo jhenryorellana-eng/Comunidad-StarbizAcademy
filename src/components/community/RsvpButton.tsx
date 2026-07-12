@@ -40,11 +40,11 @@ export function RsvpButton({
       toast(
         j.going
           ? locale === "es"
-            ? "¡Vas a asistir!"
-            : "You're going!"
+            ? "¡Registro confirmado!"
+            : "Registration confirmed!"
           : locale === "es"
-            ? "Asistencia cancelada"
-            : "RSVP cancelled",
+            ? "Registro cancelado"
+            : "Registration cancelled",
       );
     }
     setLoading(false);
@@ -70,7 +70,7 @@ export function RsvpButton({
             <Icon name="check" size={15} />
           </motion.span>
         )}
-        {going ? dict.community.events.youAreGoing : dict.community.events.rsvp}
+        {going ? dict.community.events.registered : dict.community.events.register}
       </Button>
       {count > 0 && (
         <span className="text-xs text-muted">

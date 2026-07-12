@@ -3,6 +3,6 @@ import { getSession } from "@/lib/auth";
 import { AuthForm } from "@/components/AuthForm";
 
 export default async function LoginPage() {
-  if (await getSession()) redirect("/community");
+  if (await getSession()) redirect("/comunidad");
   return <AuthForm mode="login" />;
 }
