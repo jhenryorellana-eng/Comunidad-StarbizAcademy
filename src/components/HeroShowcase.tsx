@@ -59,6 +59,9 @@ export function HeroShowcase() {
       }}
       onPointerMove={onPointerMove}
     >
+      {/* Luz de cometas pasando por detrás del marco */}
+      <div className="animate-backlight pointer-events-none absolute inset-2 rounded-[30px]" aria-hidden />
+
       {/* Retroiluminación LED ambiental */}
       <div className="absolute -inset-8" aria-hidden>
         <div className="animate-led absolute -left-4 top-6 h-44 w-44 rounded-full bg-cyan-bright/25 blur-3xl [animation-duration:4.5s]" />

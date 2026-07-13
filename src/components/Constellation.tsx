@@ -40,11 +40,32 @@ const BRIGHT: Array<[number, number, number]> = [
   [15, 22, 0.5], [46, 16, 2.1], [72, 42, 1.2], [90, 10, 3.0], [28, 62, 2.6],
 ];
 
-// Comets: [x%, y%, angle(deg), delay(s), period(s)]
-const COMETS: Array<[number, number, number, number, number]> = [
-  [2, 8, 22, 0, 11],
-  [48, 2, 30, 4.2, 13],
-  [22, 18, 17, 8.1, 12],
+// Comets: [x%, y%, angle(deg), delay(s), period(s), tail(px), color, glow]
+const COMETS: Array<[number, number, number, number, number, number, string, string]> = [
+  [2, 8, 22, 0, 11, 170, "rgba(255,255,255,0.95)", "rgba(34,211,238,0.85)"],
+  [48, 2, 30, 4.2, 14, 210, "rgba(251,191,36,0.95)", "rgba(251,191,36,0.8)"],
+  [22, 18, 17, 8.1, 12, 140, "rgba(167,139,250,0.95)", "rgba(167,139,250,0.8)"],
+  [65, 6, 26, 2.3, 16, 120, "rgba(248,113,113,0.9)", "rgba(248,113,113,0.75)"],
+  [10, 40, 12, 11.5, 17, 190, "rgba(34,211,238,0.95)", "rgba(255,255,255,0.85)"],
+];
+
+// Four-point sparkles: [x%, y%, size(px), delay(s), period(s), color]
+const SPARKLES: Array<[number, number, number, number, number, string]> = [
+  [22, 14, 10, 0.4, 4.2, "rgba(255,255,255,0.95)"],
+  [61, 26, 8, 1.8, 5.1, "rgba(34,211,238,0.95)"],
+  [83, 64, 11, 3.0, 4.6, "rgba(251,191,36,0.95)"],
+  [38, 74, 8, 2.2, 5.4, "rgba(255,255,255,0.9)"],
+  [8, 55, 9, 0.9, 4.9, "rgba(167,139,250,0.95)"],
+  [93, 30, 8, 3.6, 4.4, "rgba(255,255,255,0.9)"],
+  [52, 48, 7, 1.2, 5.8, "rgba(34,211,238,0.9)"],
+];
+
+// Halo stars whose glow breathes: [x%, y%, size(px), delay(s), color]
+const HALOS: Array<[number, number, number, number, string]> = [
+  [31, 30, 3, 0.6, "rgba(34,211,238,0.9)"],
+  [76, 18, 3.5, 2.4, "rgba(255,255,255,0.9)"],
+  [56, 82, 3, 1.5, "rgba(251,191,36,0.9)"],
+  [12, 78, 2.5, 3.2, "rgba(167,139,250,0.9)"],
 ];
 
 /** Full-bleed twinkling star layer. Place inside a `relative` navy section. */
@@ -81,8 +102,43 @@ export function NightSky() {
           style={{ left: `${x}%`, top: `${y}%`, animationDelay: `${d}s`, animationDuration: "5s" }}
         />
       ))}
-      {/* Cometas cruzando el cielo */}
-      {COMETS.map(([x, y, angle, delay, period], i) => (
+      {/* Destellos de 4 puntas que giran al titilar */}
+      {SPARKLES.map(([x, y, s, d, t, c], i) => (
+        <span
+          key={`sparkle-${i}`}
+          className="star-sparkle"
+          style={
+            {
+              left: `${x}%`,
+              top: `${y}%`,
+              width: s,
+              height: s,
+              "--sp-color": c,
+              "--sp-delay": `${d}s`,
+              "--sp-period": `${t}s`,
+            } as React.CSSProperties
+          }
+        />
+      ))}
+      {/* Estrellas cuyo halo respira */}
+      {HALOS.map(([x, y, s, d, c], i) => (
+        <span
+          key={`halo-${i}`}
+          className="star-halo"
+          style={
+            {
+              left: `${x}%`,
+              top: `${y}%`,
+              width: s,
+              height: s,
+              "--halo-color": c,
+              "--halo-delay": `${d}s`,
+            } as React.CSSProperties
+          }
+        />
+      ))}
+      {/* Cometas multicolor que iluminan el cielo al pasar */}
+      {COMETS.map(([x, y, angle, delay, period, tail, color, glow], i) => (
         <span
           key={`comet-${i}`}
           className="comet"
@@ -93,6 +149,9 @@ export function NightSky() {
               "--comet-angle": `${angle}deg`,
               "--comet-delay": `${delay}s`,
               "--comet-period": `${period}s`,
+              "--comet-len": `${tail}px`,
+              "--comet-color": color,
+              "--comet-glow": glow,
             } as React.CSSProperties
           }
         />

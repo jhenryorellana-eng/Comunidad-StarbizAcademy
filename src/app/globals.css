@@ -125,14 +125,15 @@
   animation: led 2.6s ease-in-out infinite;
 }
 
-/* Comet streaking across the night sky (tail + glowing head). */
+/* Comet streaking across the night sky. Color per comet via CSS vars;
+   ::before is the ambient light it casts on the sky as it passes. */
 .comet {
   position: absolute;
-  width: 150px;
-  height: 2px;
+  width: var(--comet-len, 150px);
+  height: var(--comet-h, 2px);
   border-radius: 999px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9));
-  filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.7));
+  background: linear-gradient(90deg, transparent, var(--comet-color, rgba(255, 255, 255, 0.95)));
+  filter: drop-shadow(0 0 8px var(--comet-glow, rgba(34, 211, 238, 0.75)));
   opacity: 0;
   animation: comet var(--comet-period, 10s) linear infinite;
   animation-delay: var(--comet-delay, 0s);
@@ -142,12 +143,27 @@
   position: absolute;
   right: -2px;
   top: 50%;
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 999px;
   background: #fff;
   transform: translateY(-50%);
-  box-shadow: 0 0 12px 3px rgba(34, 211, 238, 0.9);
+  box-shadow:
+    0 0 14px 4px var(--comet-glow, rgba(34, 211, 238, 0.9)),
+    0 0 40px 12px color-mix(in srgb, var(--comet-glow, rgba(34, 211, 238, 0.9)) 40%, transparent);
+}
+.comet::before {
+  content: "";
+  position: absolute;
+  right: -34px;
+  top: 50%;
+  width: 160px;
+  height: 70px;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  background: radial-gradient(closest-side, var(--comet-glow, rgba(34, 211, 238, 0.8)), transparent 70%);
+  opacity: 0.3;
+  filter: blur(8px);
 }
 @keyframes comet {
   0% { transform: rotate(var(--comet-angle, 24deg)) translateX(0); opacity: 0; }
@@ -155,6 +171,52 @@
   16% { opacity: 1; }
   22% { transform: rotate(var(--comet-angle, 24deg)) translateX(min(85vw, 860px)); opacity: 0; }
   100% { transform: rotate(var(--comet-angle, 24deg)) translateX(min(85vw, 860px)); opacity: 0; }
+}
+
+/* Four-point sparkle star: two crossing light lines, spins as it twinkles. */
+.star-sparkle {
+  position: absolute;
+  background:
+    linear-gradient(90deg, transparent, var(--sp-color, rgba(255, 255, 255, 0.95)), transparent),
+    linear-gradient(0deg, transparent, var(--sp-color, rgba(255, 255, 255, 0.95)), transparent);
+  background-size: 100% 1.5px, 1.5px 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 0 5px var(--sp-color, rgba(255, 255, 255, 0.8)));
+  animation: sparkle var(--sp-period, 4.5s) ease-in-out infinite;
+  animation-delay: var(--sp-delay, 0s);
+}
+@keyframes sparkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.55) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.2) rotate(90deg); }
+}
+
+/* Bright star whose halo breathes. */
+.star-halo {
+  position: absolute;
+  border-radius: 999px;
+  background: #fff;
+  animation: halo-breathe var(--halo-period, 5s) ease-in-out infinite;
+  animation-delay: var(--halo-delay, 0s);
+}
+@keyframes halo-breathe {
+  0%, 100% { box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.5); opacity: 0.7; }
+  50% { box-shadow: 0 0 18px 5px var(--halo-color, rgba(255, 255, 255, 0.85)); opacity: 1; }
+}
+
+/* Colored comet-light flares bleeding around the hero frame, as if comets
+   were passing behind it. */
+@keyframes backlight {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+  10% { box-shadow: -45px -12px 95px 14px rgba(34, 211, 238, 0.38); }
+  20% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+  42% { box-shadow: 34px -34px 95px 14px rgba(167, 139, 250, 0.34); }
+  52% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+  76% { box-shadow: 45px 22px 95px 14px rgba(251, 191, 36, 0.34); }
+  86% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+}
+.animate-backlight {
+  animation: backlight 13s ease-in-out infinite;
 }
 
 /* Gold spark orbiting the hero frame. */
