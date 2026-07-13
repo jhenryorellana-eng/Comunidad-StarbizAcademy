@@ -7,6 +7,7 @@ import { Icon } from "@/components/icons";
 import { Reveal, RevealSection } from "@/components/motion";
 import { NightSky, Constellation } from "@/components/Constellation";
 import { HeroShowcase } from "@/components/HeroShowcase";
+import { Manifesto } from "@/components/Manifesto";
 
 export default async function LandingPage() {
   const { locale, dict } = await getDict();
@@ -64,6 +65,13 @@ export default async function LandingPage() {
           />
         </div>
       </section>
+
+      {/* ---------------- MANIFIESTO — historia y visión con scroll ---------------- */}
+      <Manifesto
+        kicker={L.manifesto.kicker}
+        words={L.manifesto.words}
+        slogan={L.manifesto.slogan}
+      />
 
       {/* ---------------- TWO PILLARS ---------------- */}
       <RevealSection className="container-ac py-16">
