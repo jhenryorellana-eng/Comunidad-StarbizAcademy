@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   LayoutGroup,
   motion,
@@ -39,9 +39,7 @@ const CHAPTERS = [
 const PARA_START = 0.08; // el párrafo empieza a viajar
 const PARA_END = 0.68; // el párrafo terminó de pasar
 const HOLD_END = 0.78; // titular completo, en reposo arriba
-const CENTER_END = 0.9; // titular llega al centro
-const LIGHT_START = 0.88; // comienza el fundido a claro
-const FADE_OUT = [0.95, 0.995] as const; // el titular se despide
+const CENTER_END = 0.92; // titular llega al centro y se queda
 
 export function Manifesto({
   kicker,
@@ -157,12 +155,8 @@ export function Manifesto({
     const e = f < 0.5 ? 2 * f * f : 1 - Math.pow(-2 * f + 2, 2) / 2;
     return centerShift.get() * e;
   });
-  const headlineScale = useTransform(scrollYProgress, [HOLD_END, CENTER_END], [1, 1.06]);
-  const headlineOpacity = useTransform(scrollYProgress, [FADE_OUT[0], FADE_OUT[1]], [1, 0]);
+  const headlineScale = useTransform(scrollYProgress, [HOLD_END, CENTER_END], [1, 1.08]);
   const kickerOpacity = useTransform(scrollYProgress, [0, 0.03, 0.1, 0.16], [0, 1, 1, 0]);
-  // Fundido de oscuro a claro hacia la sección siguiente (crema)
-  const lightOpacity = useTransform(scrollYProgress, [LIGHT_START, 0.985], [0, 1]);
-  const darkOverlay = useTransform(scrollYProgress, [LIGHT_START, 0.97], [0.62, 0.15]);
 
   const allDetached = reduce ? keywords.length : detachedCount;
 
@@ -179,37 +173,36 @@ export function Manifesto({
             progress={scrollYProgress}
           />
         ))}
-        {/* Overlay oscuro para contraste, se abre en la fase clara */}
-        <motion.div
-          style={{ opacity: darkOverlay }}
-          className="absolute inset-0 bg-[#05070f]"
-          aria-hidden
-        />
+        {/* Overlay oscuro para contraste */}
+        <div className="absolute inset-0 bg-[#05070f]/60" aria-hidden />
 
         <LayoutGroup>
-          {/* ---- Titular en construcción (capa superior) ---- */}
-          <motion.div
+          {/* ---- Titular en construcción (capa superior, centrado) ---- */}
+          <div
             ref={headlineRef}
-            style={{ y: headlineY, scale: headlineScale, opacity: headlineOpacity }}
-            className="absolute inset-x-[6.5vw] top-[16vh] z-20 origin-left"
+            className="absolute inset-x-[6vw] top-[16vh] z-20 flex justify-center"
           >
+            <motion.div
+              style={{ y: headlineY, scale: headlineScale }}
+              className="w-full max-w-4xl text-center"
+            >
             <motion.p style={{ opacity: kickerOpacity }} className="kicker mb-4 text-white/80">
               {kicker}
             </motion.p>
             <p
-              className="flex flex-wrap gap-x-[0.28em] font-display text-[2rem] font-bold leading-[1.2] tracking-tight text-white sm:text-[3.4rem]"
+              className="flex flex-wrap justify-center gap-x-[0.28em] font-display text-[2rem] font-bold leading-[1.2] tracking-tight text-white sm:text-[3.4rem]"
               aria-label={slogan}
             >
               {keywords.map((w, j) => {
                 const landed = j < allDetached;
+                // El titular arranca en mayúscula; el crossfade del FLIP
+                // disimula el cambio de letra durante el vuelo.
+                const display = j === 0 ? w.charAt(0).toUpperCase() + w.slice(1) : w;
                 return (
-                  <span
-                    key={`slot-${j}`}
-                    className={"relative inline-block" + (j === 0 ? " capitalize" : "")}
-                  >
+                  <span key={`slot-${j}`} className="relative inline-block">
                     {/* Plantilla invisible: reserva la posición exacta */}
                     <span className={landed ? "invisible" : "opacity-0"} aria-hidden>
-                      {w}
+                      {display}
                     </span>
                     {landed && (
                       <motion.span
@@ -217,14 +210,15 @@ export function Manifesto({
                         transition={{ type: "spring", stiffness: 150, damping: 24 }}
                         className="absolute inset-0 whitespace-nowrap"
                       >
-                        {w}
+                        {display}
                       </motion.span>
                     )}
                   </span>
                 );
               })}
             </p>
-          </motion.div>
+            </motion.div>
+          </div>
 
           {/* ---- Párrafo narrativo que fluye detrás del titular ---- */}
           <motion.div
@@ -239,48 +233,48 @@ export function Manifesto({
             <motion.p
               ref={paraRef}
               style={{ y: paraY }}
-              className="absolute inset-x-[6.5vw] top-0 max-w-5xl text-[2rem] font-medium leading-[1.25] text-white/15 sm:text-[3.6rem] sm:leading-[1.2]"
+              className="absolute inset-x-[6vw] top-0 mx-auto max-w-5xl text-center text-[2rem] font-medium leading-[1.25] text-white/15 sm:text-[3.4rem] sm:leading-[1.2]"
             >
               {words.map(([w, isKey], i) => {
                 if (isKey !== 1) return <span key={i}>{w} </span>;
                 const j = keyIndexOf[i];
                 const detached = j < allDetached;
                 return (
-                  <span
-                    key={i}
-                    ref={(el) => {
-                      kwRefs.current[j] = el;
-                    }}
-                    className="relative inline-block whitespace-nowrap"
-                  >
-                    {/* Gemela invisible: conserva el espacio al despegar */}
-                    <span className={detached ? "opacity-0" : "invisible"} aria-hidden>
-                      {w}
-                    </span>
-                    {!detached && (
-                      <motion.span
-                        layoutId={reduce ? undefined : `kw-${j}`}
-                        transition={{ type: "spring", stiffness: 150, damping: 24 }}
-                        className="absolute inset-0 whitespace-nowrap font-bold text-white"
-                      >
+                  <Fragment key={i}>
+                    <span
+                      ref={(el) => {
+                        kwRefs.current[j] = el;
+                      }}
+                      className="relative inline-block whitespace-nowrap"
+                    >
+                      {/* Gemela invisible: conserva el espacio al despegar */}
+                      <span className={detached ? "opacity-0" : "invisible"} aria-hidden>
                         {w}
-                      </motion.span>
-                    )}
-                    <span aria-hidden> </span>
-                  </span>
+                      </span>
+                      {!detached && (
+                        <motion.span
+                          layoutId={reduce ? undefined : `kw-${j}`}
+                          transition={{ type: "spring", stiffness: 150, damping: 24 }}
+                          className="absolute inset-0 whitespace-nowrap font-bold text-white"
+                        >
+                          {w}
+                        </motion.span>
+                      )}
+                    </span>{" "}
+                  </Fragment>
                 );
               })}
             </motion.p>
           </motion.div>
         </LayoutGroup>
 
-        {/* ---- Fundido final hacia la sección clara ---- */}
-        <motion.div
-          style={{ opacity: lightOpacity }}
-          className="pointer-events-none absolute inset-0 z-30 bg-cream"
-          aria-hidden
-        />
       </div>
+
+      {/* ---- Puente hacia la sección clara: se cruza scrolleando, sin flash ---- */}
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-30 h-[80vh] bg-gradient-to-b from-transparent via-cream/60 to-cream"
+        aria-hidden
+      />
     </section>
   );
 }
