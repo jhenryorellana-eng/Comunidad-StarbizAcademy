@@ -50,7 +50,7 @@ export function Logo({
         className="rounded-lg"
         priority
       />
-      <span className="font-display text-[0.92rem] uppercase tracking-[0.18em] leading-none">
+      <span className="whitespace-nowrap font-display text-[0.78rem] uppercase tracking-[0.12em] leading-none max-[430px]:hidden sm:text-[0.92rem] sm:tracking-[0.18em]">
         <span className="font-extrabold">Starbiz</span>{" "}
         <span className="font-light">Academy</span>
       </span>

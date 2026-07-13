@@ -182,54 +182,73 @@ export function NightSky() {
   );
 }
 
-// The 7 intelligence nodes, ascending toward the gold star (viewBox 1200x180).
-const NODES: Array<[number, number]> = [
-  [70, 132], [240, 104], [410, 116], [580, 80], [750, 92], [920, 52], [1105, 24],
-];
-
 // Journey colors: from spiritual cyan to the technological gold star.
 const NODE_COLORS = [
   "#22d3ee", "#3ed2e2", "#63d0cd", "#93ceac", "#c2c884", "#e8c250", "#fbbf24",
 ];
 
-const VB_W = 1200;
-const VB_H = 180;
-const PATH_D = `M${NODES.map(([x, y]) => `${x} ${y}`).join(" L")}`;
+// Horizontal layout (sm+): ascending left -> right. viewBox 1200x180.
+const H_NODES: Array<[number, number]> = [
+  [70, 132], [240, 104], [410, 116], [580, 80], [750, 92], [920, 52], [1105, 24],
+];
 
-/**
- * La constelacion GENESIS i7: linea de luz con gradiente y glow que se dibuja
- * sola, un pulso de energia que viaja de i1 a i7 cargando la estrella dorada,
- * y nodos interactivos con chips de vidrio. `labels` llega localizado.
- */
-export function Constellation({
+// Vertical layout (mobile): ascending bottom -> top zigzag. viewBox 360x500.
+const V_NODES: Array<[number, number]> = [
+  [110, 462], [250, 396], [104, 330], [256, 264], [110, 198], [250, 132], [180, 52],
+];
+
+function pathFrom(nodes: Array<[number, number]>): string {
+  return `M${nodes.map(([x, y]) => `${x} ${y}`).join(" L")}`;
+}
+
+function ConstellationCanvas({
+  nodes,
+  vbW,
+  vbH,
+  vertical,
+  idSuffix,
   labels,
-  weekWord = "Semana",
+  weekWord,
 }: {
+  nodes: Array<[number, number]>;
+  vbW: number;
+  vbH: number;
+  vertical: boolean;
+  idSuffix: string;
   labels: string[];
-  weekWord?: string;
+  weekWord: string;
 }) {
+  const d = pathFrom(nodes);
+  const lineId = `genesis-line-${idSuffix}`;
+  const glowId = `genesis-glow-${idSuffix}`;
   return (
-    <div className="relative" role="img" aria-label={labels.join(" · ")}>
-      <svg viewBox={`0 0 ${VB_W} ${VB_H}`} fill="none" className="block w-full overflow-visible">
+    <div className="relative">
+      <svg viewBox={`0 0 ${vbW} ${vbH}`} fill="none" className="block w-full overflow-visible">
         <defs>
-          <linearGradient id="genesis-line" x1="0" y1="0" x2="1" y2="0">
+          <linearGradient
+            id={lineId}
+            x1="0"
+            y1={vertical ? "1" : "0"}
+            x2={vertical ? "0" : "1"}
+            y2="0"
+          >
             <stop offset="0%" stopColor="#22d3ee" />
             <stop offset="55%" stopColor="#7dd3fc" />
             <stop offset="100%" stopColor="#fbbf24" />
           </linearGradient>
-          <filter id="genesis-glow" x="-30%" y="-200%" width="160%" height="500%">
+          <filter id={glowId} x="-60%" y="-60%" width="220%" height="220%">
             <feGaussianBlur stdDeviation="5" />
           </filter>
         </defs>
 
         {/* Halo difuso de la linea */}
         <motion.path
-          d={PATH_D}
-          stroke="url(#genesis-line)"
-          strokeWidth="7"
+          d={d}
+          stroke={`url(#${lineId})`}
+          strokeWidth={vertical ? 6 : 7}
           strokeLinecap="round"
           opacity="0.35"
-          filter="url(#genesis-glow)"
+          filter={`url(#${glowId})`}
           initial={{ pathLength: 0 }}
           whileInView={{ pathLength: 1 }}
           viewport={{ once: true }}
@@ -237,8 +256,8 @@ export function Constellation({
         />
         {/* Nucleo nitido de la linea */}
         <motion.path
-          d={PATH_D}
-          stroke="url(#genesis-line)"
+          d={d}
+          stroke={`url(#${lineId})`}
           strokeWidth="2"
           strokeLinecap="round"
           initial={{ pathLength: 0 }}
@@ -249,32 +268,34 @@ export function Constellation({
 
         {/* Pulso de energia que recorre la constelacion (i1 -> i7) */}
         <circle r="5" fill="#ffffff" opacity="0.95">
-          <animateMotion dur="6s" repeatCount="indefinite" path={PATH_D} />
+          <animateMotion dur="6s" repeatCount="indefinite" path={d} />
         </circle>
         <circle r="10" fill="#22d3ee" opacity="0.28">
-          <animateMotion dur="6s" repeatCount="indefinite" path={PATH_D} />
+          <animateMotion dur="6s" repeatCount="indefinite" path={d} />
         </circle>
         <circle r="3" fill="#22d3ee" opacity="0.8">
-          <animateMotion dur="6s" begin="-0.18s" repeatCount="indefinite" path={PATH_D} />
+          <animateMotion dur="6s" begin="-0.18s" repeatCount="indefinite" path={d} />
         </circle>
       </svg>
 
       {/* Nodos interactivos (HTML sobre el SVG) */}
       <div className="pointer-events-none absolute inset-0">
-        {NODES.map(([x, y], i) => {
-          const last = i === NODES.length - 1;
+        {nodes.map(([x, y], i) => {
+          const last = i === nodes.length - 1;
           const color = NODE_COLORS[i];
+          // En vertical el chip va al costado libre del nodo; en horizontal, debajo.
+          const chipSide = vertical ? (x < vbW / 2 ? "right" : "left") : "below";
           return (
             <motion.div
               key={i}
               className="group pointer-events-auto absolute -translate-x-1/2 -translate-y-1/2 cursor-default"
-              style={{ left: `${(x / VB_W) * 100}%`, top: `${(y / VB_H) * 100}%` }}
+              style={{ left: `${(x / vbW) * 100}%`, top: `${(y / vbH) * 100}%` }}
               initial={{ opacity: 0, scale: 0.4 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, ease: EASE, delay: 0.4 + i * 0.16 }}
             >
-              {/* Tooltip superior: Semana N */}
+              {/* Tooltip: Semana N */}
               <span
                 className="pointer-events-none absolute bottom-full left-1/2 mb-2.5 -translate-x-1/2 whitespace-nowrap rounded-full bg-white/10 px-2.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-white opacity-0 backdrop-blur-md transition-all duration-300 group-hover:-translate-y-1 group-hover:opacity-100"
                 aria-hidden
@@ -314,19 +335,63 @@ export function Constellation({
               )}
 
               {/* Chip de vidrio con la inteligencia */}
-              <div className="absolute left-1/2 top-full mt-1 -translate-x-1/2 text-center">
-                <span className="hidden whitespace-nowrap rounded-full border border-white/15 bg-white/[0.07] px-3 py-1 text-xs font-medium text-white/80 backdrop-blur-md transition-all duration-300 group-hover:border-white/40 group-hover:bg-white/[0.14] group-hover:text-white sm:inline-flex sm:items-center sm:gap-1.5">
+              <div
+                className={
+                  chipSide === "below"
+                    ? "absolute left-1/2 top-full mt-1 -translate-x-1/2"
+                    : chipSide === "right"
+                      ? "absolute left-full top-1/2 ml-1.5 -translate-y-1/2"
+                      : "absolute right-full top-1/2 mr-1.5 -translate-y-1/2"
+                }
+              >
+                <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-white/15 bg-white/[0.07] px-3 py-1 text-xs font-medium text-white/80 backdrop-blur-md transition-all duration-300 group-hover:border-white/40 group-hover:bg-white/[0.14] group-hover:text-white">
                   <b style={{ color }}>i{i + 1}</b>
                   {labels[i] ?? ""}
-                </span>
-                {/* En movil: solo el numero */}
-                <span className="text-[0.65rem] font-bold sm:hidden" style={{ color }}>
-                  i{i + 1}
                 </span>
               </div>
             </motion.div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * La constelacion GENESIS i7: linea de luz con gradiente y glow, un pulso de
+ * energia que viaja de i1 a i7 cargando la estrella dorada, y nodos con chips
+ * de vidrio. Horizontal en escritorio; en movil es un ascenso vertical.
+ */
+export function Constellation({
+  labels,
+  weekWord = "Semana",
+}: {
+  labels: string[];
+  weekWord?: string;
+}) {
+  return (
+    <div role="img" aria-label={labels.join(" · ")}>
+      <div className="hidden sm:block">
+        <ConstellationCanvas
+          nodes={H_NODES}
+          vbW={1200}
+          vbH={180}
+          vertical={false}
+          idSuffix="h"
+          labels={labels}
+          weekWord={weekWord}
+        />
+      </div>
+      <div className="mx-auto max-w-[360px] sm:hidden">
+        <ConstellationCanvas
+          nodes={V_NODES}
+          vbW={360}
+          vbH={500}
+          vertical
+          idSuffix="v"
+          labels={labels}
+          weekWord={weekWord}
+        />
       </div>
     </div>
   );

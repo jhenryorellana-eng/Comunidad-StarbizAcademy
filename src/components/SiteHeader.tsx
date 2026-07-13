@@ -15,7 +15,7 @@ export async function SiteHeader({
   const [user, { dict }] = await Promise.all([getCurrentUser(), getDict()]);
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-cream/85 backdrop-blur">
-      <div className="container-ac flex h-16 items-center justify-between gap-4">
+      <div className="container-ac flex h-16 items-center justify-between gap-2 sm:gap-4">
         <Logo />
         <nav className="hidden items-center gap-7 text-sm font-medium text-navy md:flex">
           <Link href="/comunidad" className="transition-colors hover:text-cyan">
@@ -31,7 +31,7 @@ export async function SiteHeader({
             {dict.nav.store}
           </Link>
         </nav>
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           {mobileMenu && <MobileMenu />}
           <LocaleToggle />
           <AuthControls user={user ? { name: user.name, role: user.role } : null} />
