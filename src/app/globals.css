@@ -125,6 +125,54 @@
   animation: led 2.6s ease-in-out infinite;
 }
 
+/* Comet streaking across the night sky (tail + glowing head). */
+.comet {
+  position: absolute;
+  width: 150px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9));
+  filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.7));
+  opacity: 0;
+  animation: comet var(--comet-period, 10s) linear infinite;
+  animation-delay: var(--comet-delay, 0s);
+}
+.comet::after {
+  content: "";
+  position: absolute;
+  right: -2px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #fff;
+  transform: translateY(-50%);
+  box-shadow: 0 0 12px 3px rgba(34, 211, 238, 0.9);
+}
+@keyframes comet {
+  0% { transform: rotate(var(--comet-angle, 24deg)) translateX(0); opacity: 0; }
+  2% { opacity: 1; }
+  16% { opacity: 1; }
+  22% { transform: rotate(var(--comet-angle, 24deg)) translateX(min(85vw, 860px)); opacity: 0; }
+  100% { transform: rotate(var(--comet-angle, 24deg)) translateX(min(85vw, 860px)); opacity: 0; }
+}
+
+/* Gold spark orbiting the hero frame. */
+@keyframes orbit {
+  to { transform: rotate(360deg); }
+}
+.animate-orbit {
+  animation: orbit 12s linear infinite;
+}
+
+/* Slow ambient rotation for the hero frame beam. */
+@keyframes beam-rotate {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+.animate-beam {
+  animation: beam-rotate 14s linear infinite;
+}
+
 /* Gentle float for the hero brand mark. */
 @keyframes float {
   0%, 100% { transform: translateY(0); }
