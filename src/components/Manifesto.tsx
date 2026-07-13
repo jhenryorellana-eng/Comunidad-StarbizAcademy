@@ -146,7 +146,7 @@ export function Manifesto({
     return paraFrom.get() + (paraTo.get() - paraFrom.get()) * f;
   });
   const paraOpacity = useTransform(scrollYProgress, [PARA_END, HOLD_END], [1, 0]);
-  const maskImage = useMotionTemplate`linear-gradient(to bottom, transparent ${headlineBottom}px, black calc(${headlineBottom}px + 30px))`;
+  const maskImage = useMotionTemplate`linear-gradient(to bottom, transparent ${headlineBottom}px, black calc(${headlineBottom}px + 30px), black 62%, rgba(0,0,0,0.28) 100%)`;
 
   const headlineY = useTransform(() => {
     const v = scrollYProgress.get();
@@ -159,6 +159,7 @@ export function Manifesto({
   const kickerOpacity = useTransform(scrollYProgress, [0, 0.03, 0.1, 0.16], [0, 1, 1, 0]);
 
   const allDetached = reduce ? keywords.length : detachedCount;
+  const complete = allDetached === keywords.length;
 
   return (
     <section ref={sectionRef} className="relative h-[340vh] bg-[#05070f] sm:h-[500vh]">
@@ -208,15 +209,35 @@ export function Manifesto({
                       <motion.span
                         layoutId={reduce ? undefined : `kw-${j}`}
                         transition={{ type: "spring", stiffness: 150, damping: 24 }}
-                        className="absolute inset-0 whitespace-nowrap"
+                        className="absolute inset-0 whitespace-nowrap [text-shadow:0_0_26px_rgba(255,255,255,0.35)]"
                       >
                         {display}
+                      </motion.span>
+                    )}
+                    {/* Destello dorado al aterrizar */}
+                    {landed && !reduce && (
+                      <motion.span
+                        key={`burst-${j}`}
+                        initial={{ scale: 0.2, opacity: 1 }}
+                        animate={{ scale: 2.1, opacity: 0 }}
+                        transition={{ duration: 0.7, ease: "easeOut", delay: 0.35 }}
+                        className="pointer-events-none absolute -right-[0.25em] -top-[0.35em] text-[0.5em] text-gold"
+                        aria-hidden
+                      >
+                        ✦
                       </motion.span>
                     )}
                   </span>
                 );
               })}
             </p>
+            {/* Subrayado de luz: se dibuja cuando el titular está completo */}
+            <motion.span
+              aria-hidden
+              animate={{ scaleX: complete ? 1 : 0, opacity: complete ? 1 : 0 }}
+              transition={{ duration: 0.9, ease: [0.32, 0.72, 0, 1], delay: complete ? 0.5 : 0 }}
+              className="mx-auto mt-4 block h-[3px] w-2/3 origin-center rounded-full bg-gradient-to-r from-cyan-bright/0 via-cyan-bright to-gold shadow-[0_0_14px_rgba(251,191,36,0.7)]"
+            />
             </motion.div>
           </div>
 
@@ -233,7 +254,7 @@ export function Manifesto({
             <motion.p
               ref={paraRef}
               style={{ y: paraY }}
-              className="absolute inset-x-[6vw] top-0 mx-auto max-w-5xl text-center text-[1.5rem] font-medium leading-[1.4] text-white/15 sm:text-[3.4rem] sm:leading-[1.2]"
+              className="absolute inset-x-[6vw] top-0 mx-auto max-w-5xl text-center text-[1.5rem] font-medium leading-[1.4] text-[#aebad8]/55 sm:text-[3.4rem] sm:leading-[1.2]"
             >
               {words.map(([w, isKey], i) => {
                 if (isKey !== 1) return <span key={i}>{w} </span>;
@@ -255,7 +276,7 @@ export function Manifesto({
                         <motion.span
                           layoutId={reduce ? undefined : `kw-${j}`}
                           transition={{ type: "spring", stiffness: 150, damping: 24 }}
-                          className="absolute inset-0 whitespace-nowrap font-bold text-white"
+                          className="absolute inset-0 whitespace-nowrap font-bold text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.55)] [text-shadow:0_0_22px_rgba(251,191,36,0.35)]"
                         >
                           {w}
                         </motion.span>
