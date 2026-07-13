@@ -161,7 +161,7 @@ export function Manifesto({
   const allDetached = reduce ? keywords.length : detachedCount;
 
   return (
-    <section ref={sectionRef} className="relative h-[420vh] bg-[#05070f] sm:h-[500vh]">
+    <section ref={sectionRef} className="relative h-[340vh] bg-[#05070f] sm:h-[500vh]">
       <div ref={stickyRef} className="sticky top-0 h-screen overflow-hidden">
         {/* ---- Fondos cinematográficos por capítulo (crossfade + zoom) ---- */}
         {CHAPTERS.map((src, i) => (
@@ -180,7 +180,7 @@ export function Manifesto({
           {/* ---- Titular en construcción (capa superior, centrado) ---- */}
           <div
             ref={headlineRef}
-            className="absolute inset-x-[6vw] top-[16vh] z-20 flex justify-center"
+            className="absolute inset-x-[6vw] top-[13vh] z-20 flex justify-center sm:top-[16vh]"
           >
             <motion.div
               style={{ y: headlineY, scale: headlineScale }}
@@ -190,7 +190,7 @@ export function Manifesto({
               {kicker}
             </motion.p>
             <p
-              className="flex flex-wrap justify-center gap-x-[0.28em] font-display text-[2rem] font-bold leading-[1.2] tracking-tight text-white sm:text-[3.4rem]"
+              className="flex flex-wrap justify-center gap-x-[0.28em] font-display text-[2.1rem] font-extrabold leading-[1.22] tracking-tight text-white sm:text-[3.4rem] sm:font-bold"
               aria-label={slogan}
             >
               {keywords.map((w, j) => {
@@ -233,7 +233,7 @@ export function Manifesto({
             <motion.p
               ref={paraRef}
               style={{ y: paraY }}
-              className="absolute inset-x-[6vw] top-0 mx-auto max-w-5xl text-center text-[2rem] font-medium leading-[1.25] text-white/15 sm:text-[3.4rem] sm:leading-[1.2]"
+              className="absolute inset-x-[6vw] top-0 mx-auto max-w-5xl text-center text-[1.5rem] font-medium leading-[1.4] text-white/15 sm:text-[3.4rem] sm:leading-[1.2]"
             >
               {words.map(([w, isKey], i) => {
                 if (isKey !== 1) return <span key={i}>{w} </span>;
@@ -308,7 +308,7 @@ function Chapter({
         ? [0, 0.45, 0.45]
         : [0, 0.45, 0.45, 0],
   );
-  const scale = useTransform(progress, [bandStart - fade, bandEnd + fade], [1, 1.45]);
+  const scale = useTransform(progress, [bandStart - fade, bandEnd + fade], [1, 1.32]);
 
   return (
     <motion.div style={{ opacity }} className="absolute inset-0" aria-hidden>
