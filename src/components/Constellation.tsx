@@ -182,75 +182,152 @@ export function NightSky() {
   );
 }
 
-// The 7 intelligence nodes, ascending toward the gold star.
+// The 7 intelligence nodes, ascending toward the gold star (viewBox 1200x180).
 const NODES: Array<[number, number]> = [
   [70, 132], [240, 104], [410, 116], [580, 80], [750, 92], [920, 52], [1105, 24],
 ];
 
+// Journey colors: from spiritual cyan to the technological gold star.
+const NODE_COLORS = [
+  "#22d3ee", "#3ed2e2", "#63d0cd", "#93ceac", "#c2c884", "#e8c250", "#fbbf24",
+];
+
+const VB_W = 1200;
+const VB_H = 180;
+const PATH_D = `M${NODES.map(([x, y]) => `${x} ${y}`).join(" L")}`;
+
 /**
- * The GÉNESIS i7 constellation: a line that draws itself through 7 named
- * stars. `labels` come localized from the server (one per intelligence).
+ * La constelacion GENESIS i7: linea de luz con gradiente y glow que se dibuja
+ * sola, un pulso de energia que viaja de i1 a i7 cargando la estrella dorada,
+ * y nodos interactivos con chips de vidrio. `labels` llega localizado.
  */
-export function Constellation({ labels }: { labels: string[] }) {
-  const points = NODES.map(([x, y]) => `${x},${y}`).join(" ");
+export function Constellation({
+  labels,
+  weekWord = "Semana",
+}: {
+  labels: string[];
+  weekWord?: string;
+}) {
   return (
-    <svg
-      viewBox="0 0 1200 180"
-      className="block w-full"
-      role="img"
-      aria-label={labels.join(" · ")}
-    >
-      <motion.polyline
-        points={points}
-        fill="none"
-        stroke="rgba(34,211,238,0.5)"
-        strokeWidth="1.5"
-        initial={{ pathLength: 0 }}
-        whileInView={{ pathLength: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 1.6, ease: EASE, delay: 0.3 }}
-      />
-      {NODES.map(([x, y], i) => {
-        const last = i === NODES.length - 1;
-        return (
-          <motion.g
-            key={i}
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.45, ease: EASE, delay: 0.35 + i * 0.18 }}
-          >
-            {last ? (
-              // The brand's gold star closes the constellation.
-              <g className="animate-pulse [animation-duration:3s]">
-                <path
-                  d={`M${x} ${y - 16} L${x + 4.5} ${y - 4.5} L${x + 16} ${y} L${x + 4.5} ${y + 4.5} L${x} ${y + 16} L${x - 4.5} ${y + 4.5} L${x - 16} ${y} L${x - 4.5} ${y - 4.5} Z`}
-                  fill="#fbbf24"
-                />
-                <circle cx={x} cy={y} r="24" fill="#fbbf24" opacity="0.15" />
-              </g>
-            ) : (
-              <>
-                <circle cx={x} cy={y} r="4" fill="#22d3ee" />
-                <circle cx={x} cy={y} r="9" fill="#22d3ee" opacity="0.2" />
-              </>
-            )}
-            <g className="hidden md:block">
-              <text
-                x={x}
-                y={y + 34}
-                textAnchor="middle"
-                fill={last ? "rgba(251,191,36,0.9)" : "rgba(255,255,255,0.55)"}
-                fontSize="13"
-                fontWeight={last ? 700 : 500}
-                letterSpacing="0.08em"
+    <div className="relative" role="img" aria-label={labels.join(" · ")}>
+      <svg viewBox={`0 0 ${VB_W} ${VB_H}`} fill="none" className="block w-full overflow-visible">
+        <defs>
+          <linearGradient id="genesis-line" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#22d3ee" />
+            <stop offset="55%" stopColor="#7dd3fc" />
+            <stop offset="100%" stopColor="#fbbf24" />
+          </linearGradient>
+          <filter id="genesis-glow" x="-30%" y="-200%" width="160%" height="500%">
+            <feGaussianBlur stdDeviation="5" />
+          </filter>
+        </defs>
+
+        {/* Halo difuso de la linea */}
+        <motion.path
+          d={PATH_D}
+          stroke="url(#genesis-line)"
+          strokeWidth="7"
+          strokeLinecap="round"
+          opacity="0.35"
+          filter="url(#genesis-glow)"
+          initial={{ pathLength: 0 }}
+          whileInView={{ pathLength: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.8, ease: EASE, delay: 0.3 }}
+        />
+        {/* Nucleo nitido de la linea */}
+        <motion.path
+          d={PATH_D}
+          stroke="url(#genesis-line)"
+          strokeWidth="2"
+          strokeLinecap="round"
+          initial={{ pathLength: 0 }}
+          whileInView={{ pathLength: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.8, ease: EASE, delay: 0.3 }}
+        />
+
+        {/* Pulso de energia que recorre la constelacion (i1 -> i7) */}
+        <circle r="5" fill="#ffffff" opacity="0.95">
+          <animateMotion dur="6s" repeatCount="indefinite" path={PATH_D} />
+        </circle>
+        <circle r="10" fill="#22d3ee" opacity="0.28">
+          <animateMotion dur="6s" repeatCount="indefinite" path={PATH_D} />
+        </circle>
+        <circle r="3" fill="#22d3ee" opacity="0.8">
+          <animateMotion dur="6s" begin="-0.18s" repeatCount="indefinite" path={PATH_D} />
+        </circle>
+      </svg>
+
+      {/* Nodos interactivos (HTML sobre el SVG) */}
+      <div className="pointer-events-none absolute inset-0">
+        {NODES.map(([x, y], i) => {
+          const last = i === NODES.length - 1;
+          const color = NODE_COLORS[i];
+          return (
+            <motion.div
+              key={i}
+              className="group pointer-events-auto absolute -translate-x-1/2 -translate-y-1/2 cursor-default"
+              style={{ left: `${(x / VB_W) * 100}%`, top: `${(y / VB_H) * 100}%` }}
+              initial={{ opacity: 0, scale: 0.4 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, ease: EASE, delay: 0.4 + i * 0.16 }}
+            >
+              {/* Tooltip superior: Semana N */}
+              <span
+                className="pointer-events-none absolute bottom-full left-1/2 mb-2.5 -translate-x-1/2 whitespace-nowrap rounded-full bg-white/10 px-2.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-white opacity-0 backdrop-blur-md transition-all duration-300 group-hover:-translate-y-1 group-hover:opacity-100"
+                aria-hidden
               >
-                {`i${i + 1} · ${labels[i] ?? ""}`}
-              </text>
-            </g>
-          </motion.g>
-        );
-      })}
-    </svg>
+                {weekWord} {i + 1}
+              </span>
+
+              {/* Estrella del nodo */}
+              {last ? (
+                <span className="relative flex h-10 w-10 items-center justify-center transition-transform duration-300 group-hover:scale-125">
+                  <span
+                    className="animate-led absolute inset-0 rounded-full [animation-duration:3s]"
+                    style={{ background: "radial-gradient(closest-side, rgba(251,191,36,0.5), transparent)" }}
+                  />
+                  <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden>
+                    <path
+                      d="M16 2 L18.6 13.4 L30 16 L18.6 18.6 L16 30 L13.4 18.6 L2 16 L13.4 13.4 Z"
+                      fill="#fbbf24"
+                      style={{ filter: "drop-shadow(0 0 8px rgba(251,191,36,0.9))" }}
+                    />
+                  </svg>
+                </span>
+              ) : (
+                <span className="relative flex h-8 w-8 items-center justify-center transition-transform duration-300 group-hover:scale-125">
+                  <span
+                    className="animate-led absolute inset-1 rounded-full"
+                    style={{
+                      background: `radial-gradient(closest-side, ${color}55, transparent)`,
+                      animationDelay: `${i * 0.5}s`,
+                    }}
+                  />
+                  <span
+                    className="relative h-2.5 w-2.5 rounded-full"
+                    style={{ background: color, boxShadow: `0 0 10px 2px ${color}` }}
+                  />
+                </span>
+              )}
+
+              {/* Chip de vidrio con la inteligencia */}
+              <div className="absolute left-1/2 top-full mt-1 -translate-x-1/2 text-center">
+                <span className="hidden whitespace-nowrap rounded-full border border-white/15 bg-white/[0.07] px-3 py-1 text-xs font-medium text-white/80 backdrop-blur-md transition-all duration-300 group-hover:border-white/40 group-hover:bg-white/[0.14] group-hover:text-white sm:inline-flex sm:items-center sm:gap-1.5">
+                  <b style={{ color }}>i{i + 1}</b>
+                  {labels[i] ?? ""}
+                </span>
+                {/* En movil: solo el numero */}
+                <span className="text-[0.65rem] font-bold sm:hidden" style={{ color }}>
+                  i{i + 1}
+                </span>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
   );
 }

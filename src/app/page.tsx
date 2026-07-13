@@ -57,8 +57,11 @@ export default async function LandingPage() {
         </div>
 
         {/* The methodology, drawn as a constellation */}
-        <div className="container-ac relative pb-8 pt-4 md:pb-10">
-          <Constellation labels={intelligenceLabels} />
+        <div className="container-ac relative pb-14 pt-6 md:pb-16">
+          <Constellation
+            labels={intelligenceLabels}
+            weekWord={locale === "es" ? "Semana" : "Week"}
+          />
         </div>
       </section>
 
