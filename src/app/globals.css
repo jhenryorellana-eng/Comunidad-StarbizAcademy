@@ -261,6 +261,17 @@
   }
 }
 
+/* Móvil: los efectos más caros de pintar se apagan (la luz ambiental de
+   los cometas y su drop-shadow fuerzan superficies de render por elemento). */
+@media (max-width: 640px) {
+  .comet {
+    filter: none;
+  }
+  .comet::before {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.001ms !important;

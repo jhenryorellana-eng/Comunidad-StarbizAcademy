@@ -77,14 +77,14 @@ export function NightSky() {
       {DUST.map(([x, y], i) => (
         <span
           key={`dust-${i}`}
-          className="absolute h-px w-px rounded-full bg-white/40"
+          className={i % 2 ? "absolute hidden h-px w-px rounded-full bg-white/40 sm:block" : "absolute h-px w-px rounded-full bg-white/40"}
           style={{ left: `${x}%`, top: `${y}%` }}
         />
       ))}
       {AMBIENT.map(([x, y, s, d, t], i) => (
         <span
           key={i}
-          className="star-twinkle absolute rounded-full bg-white"
+          className={i % 2 ? "star-twinkle absolute hidden rounded-full bg-white sm:block" : "star-twinkle absolute rounded-full bg-white"}
           style={{
             left: `${x}%`,
             top: `${y}%`,
@@ -107,7 +107,7 @@ export function NightSky() {
       {SPARKLES.map(([x, y, s, d, t, c], i) => (
         <span
           key={`sparkle-${i}`}
-          className="star-sparkle"
+          className={i % 2 ? "star-sparkle max-sm:hidden" : "star-sparkle"}
           style={
             {
               left: `${x}%`,
@@ -142,7 +142,7 @@ export function NightSky() {
       {COMETS.map(([x, y, angle, delay, period, tail, color, glow], i) => (
         <span
           key={`comet-${i}`}
-          className="comet"
+          className={i >= 2 ? "comet max-sm:hidden" : "comet"}
           style={
             {
               left: `${x}%`,

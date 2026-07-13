@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { AnimatePresence, motion, useMotionValue, useSpring } from "motion/react";
+import { motion, useMotionValue, useSpring } from "motion/react";
 import { cn } from "@/components/ui";
 
 const SLIDES = [
@@ -59,8 +59,8 @@ export function HeroShowcase() {
       }}
       onPointerMove={onPointerMove}
     >
-      {/* Luz de cometas pasando por detrás del marco */}
-      <div className="animate-backlight pointer-events-none absolute inset-2 rounded-[30px]" aria-hidden />
+      {/* Luz de cometas pasando por detrás del marco (solo escritorio) */}
+      <div className="animate-backlight pointer-events-none absolute inset-2 rounded-[30px] max-sm:hidden" aria-hidden />
 
       {/* Retroiluminación LED ambiental */}
       <div className="absolute -inset-8" aria-hidden>
@@ -99,9 +99,9 @@ export function HeroShowcase() {
       <div className="relative overflow-hidden rounded-[30px] p-[2px] shadow-[0_24px_70px_rgba(0,0,0,0.5)]">
         {/* Base tenue del borde */}
         <div className="absolute inset-0 rounded-[30px] bg-gradient-to-br from-cyan-bright/30 via-white/10 to-gold/30" aria-hidden />
-        {/* Haz ambiental: gira lento todo el tiempo */}
+        {/* Haz ambiental: gira lento todo el tiempo (solo escritorio) */}
         <div
-          className="animate-beam absolute left-1/2 top-1/2 aspect-square w-[250%] -translate-x-1/2 -translate-y-1/2"
+          className="animate-beam absolute left-1/2 top-1/2 aspect-square w-[250%] -translate-x-1/2 -translate-y-1/2 max-sm:hidden"
           style={{
             background:
               "conic-gradient(transparent 0deg, transparent 300deg, rgba(34,211,238,0.9) 330deg, rgba(255,255,255,0.9) 342deg, rgba(251,191,36,0.9) 354deg, transparent 360deg)",
@@ -124,25 +124,27 @@ export function HeroShowcase() {
 
         {/* Pantalla interior */}
         <div className="relative aspect-square overflow-hidden rounded-[28px] bg-navy">
-          <AnimatePresence mode="popLayout" initial={false}>
+          {/* Las 4 imágenes montadas y apiladas: crossfade por opacidad sin
+              recargas — transiciones fluidas también en móvil. */}
+          {SLIDES.map((src, i) => (
             <motion.div
-              key={index}
+              key={src}
               className="absolute inset-0"
-              initial={{ opacity: 0, scale: 1.06 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.985 }}
+              initial={false}
+              animate={{ opacity: i === index ? 1 : 0, scale: i === index ? 1 : 1.05 }}
               transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}
             >
               <Image
-                src={SLIDES[index]}
+                src={src}
                 alt="StarbizAcademy"
                 fill
                 sizes="(min-width: 768px) 420px, 90vw"
-                priority={index === 0}
+                priority={i === 0}
+                loading={i === 0 ? undefined : "eager"}
                 className="object-cover"
               />
             </motion.div>
-          </AnimatePresence>
+          ))}
 
           {/* Barrido de luz sobre la imagen nueva */}
           <motion.div

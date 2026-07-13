@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useSyncExternalStore } from "react";
 import { motion, useMotionTemplate, useScroll, useTransform, type MotionValue } from "motion/react";
 import { NightSky } from "@/components/Constellation";
 import { cn } from "@/components/ui";
@@ -16,6 +16,21 @@ import { cn } from "@/components/ui";
 
 type WordDef = readonly [string, number]; // [palabra, 1 = clave]
 
+const LITE_QUERY = "(max-width: 640px)";
+
+/** true en pantallas pequeñas — ahí se omiten los efectos caros de GPU. */
+function useLite(): boolean {
+  return useSyncExternalStore(
+    (onChange) => {
+      const mq = window.matchMedia(LITE_QUERY);
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia(LITE_QUERY).matches,
+    () => false,
+  );
+}
+
 const REVEAL_START = 0.06;
 const REVEAL_END = 0.62;
 const FADE_START = 0.72;
@@ -29,12 +44,15 @@ function Word({
   index,
   total,
   progress,
+  lite,
 }: {
   word: string;
   isKey: boolean;
   index: number;
   total: number;
   progress: MotionValue<number>;
+  /** Móvil: sin blur por palabra (muy caro en GPU de celular). */
+  lite: boolean;
 }) {
   const start = REVEAL_START + (index / total) * (REVEAL_END - REVEAL_START);
   const end = start + 0.035;
@@ -55,7 +73,9 @@ function Word({
 
   return (
     <motion.span
-      style={{ opacity, y, filter }}
+      // filter: "none" explícito en lite — pisa el blur inicial que el SSR
+      // deja inline (el servidor no conoce el tamaño de pantalla).
+      style={lite ? { opacity, y, filter: "none" } : { opacity, y, filter }}
       className={cn(
         "relative inline-block",
         isKey ? "mx-[0.14em] px-[0.18em]" : "mr-[0.3em]",
@@ -100,6 +120,7 @@ export function Manifesto({
   slogan: string;
 }) {
   const ref = useRef<HTMLElement>(null);
+  const lite = useLite();
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end end"],
@@ -114,7 +135,7 @@ export function Manifesto({
   const bigStarOpacity = useTransform(scrollYProgress, [0.05, 0.3], [0, 1]);
 
   return (
-    <section ref={ref} className="relative h-[300vh] bg-[#05070f]">
+    <section ref={ref} className="relative h-[220vh] bg-[#05070f] sm:h-[300vh]">
       {/* Fusión suave con el cielo navy del hero */}
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-navy to-transparent"
@@ -126,7 +147,7 @@ export function Manifesto({
         {/* Estrella gigante de fondo, rotando con el scroll */}
         <motion.div
           style={{ rotate: bigStarRotate, opacity: bigStarOpacity }}
-          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+          className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 sm:block"
           aria-hidden
         >
           <svg width="620" height="620" viewBox="0 0 32 32" className="max-w-[90vw]">
@@ -171,6 +192,7 @@ export function Manifesto({
                 index={i}
                 total={words.length}
                 progress={scrollYProgress}
+                lite={lite}
               />
             ))}
           </p>
