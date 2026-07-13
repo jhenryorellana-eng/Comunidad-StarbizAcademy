@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "motion/react";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { EASE } from "./motion";
 
 /*
@@ -192,99 +193,95 @@ const H_NODES: Array<[number, number]> = [
   [70, 132], [240, 104], [410, 116], [580, 80], [750, 92], [920, 52], [1105, 24],
 ];
 
-// Vertical layout (mobile): ascending bottom -> top zigzag. viewBox 360x500.
-const V_NODES: Array<[number, number]> = [
-  [110, 462], [250, 396], [104, 330], [256, 264], [110, 198], [250, 132], [180, 52],
+// Compact mobile layout: gentle ascent. viewBox 360x120.
+const M_NODES: Array<[number, number]> = [
+  [22, 94], [74, 76], [126, 84], [178, 60], [230, 68], [282, 42], [334, 24],
 ];
 
 function pathFrom(nodes: Array<[number, number]>): string {
   return `M${nodes.map(([x, y]) => `${x} ${y}`).join(" L")}`;
 }
 
-function ConstellationCanvas({
-  nodes,
-  vbW,
-  vbH,
-  vertical,
+function ConstellationLine({
+  d,
   idSuffix,
-  labels,
-  weekWord,
+  strokeGlow,
 }: {
-  nodes: Array<[number, number]>;
-  vbW: number;
-  vbH: number;
-  vertical: boolean;
+  d: string;
   idSuffix: string;
-  labels: string[];
-  weekWord: string;
+  strokeGlow: number;
 }) {
-  const d = pathFrom(nodes);
   const lineId = `genesis-line-${idSuffix}`;
   const glowId = `genesis-glow-${idSuffix}`;
   return (
+    <>
+      <defs>
+        <linearGradient id={lineId} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#22d3ee" />
+          <stop offset="55%" stopColor="#7dd3fc" />
+          <stop offset="100%" stopColor="#fbbf24" />
+        </linearGradient>
+        <filter id={glowId} x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="5" />
+        </filter>
+      </defs>
+      {/* Halo difuso de la linea */}
+      <motion.path
+        d={d}
+        stroke={`url(#${lineId})`}
+        strokeWidth={strokeGlow}
+        strokeLinecap="round"
+        opacity="0.35"
+        filter={`url(#${glowId})`}
+        initial={{ pathLength: 0 }}
+        whileInView={{ pathLength: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 1.8, ease: EASE, delay: 0.3 }}
+      />
+      {/* Nucleo nitido */}
+      <motion.path
+        d={d}
+        stroke={`url(#${lineId})`}
+        strokeWidth="2"
+        strokeLinecap="round"
+        initial={{ pathLength: 0 }}
+        whileInView={{ pathLength: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 1.8, ease: EASE, delay: 0.3 }}
+      />
+      {/* Pulso de energia i1 -> i7 */}
+      <circle r="5" fill="#ffffff" opacity="0.95">
+        <animateMotion dur="6s" repeatCount="indefinite" path={d} />
+      </circle>
+      <circle r="10" fill="#22d3ee" opacity="0.28">
+        <animateMotion dur="6s" repeatCount="indefinite" path={d} />
+      </circle>
+      <circle r="3" fill="#22d3ee" opacity="0.8">
+        <animateMotion dur="6s" begin="-0.18s" repeatCount="indefinite" path={d} />
+      </circle>
+    </>
+  );
+}
+
+/** Version de escritorio: nodos interactivos con chips de vidrio. */
+function DesktopConstellation({
+  labels,
+  weekWord,
+}: {
+  labels: string[];
+  weekWord: string;
+}) {
+  const vbW = 1200;
+  const vbH = 180;
+  return (
     <div className="relative">
       <svg viewBox={`0 0 ${vbW} ${vbH}`} fill="none" className="block w-full overflow-visible">
-        <defs>
-          <linearGradient
-            id={lineId}
-            x1="0"
-            y1={vertical ? "1" : "0"}
-            x2={vertical ? "0" : "1"}
-            y2="0"
-          >
-            <stop offset="0%" stopColor="#22d3ee" />
-            <stop offset="55%" stopColor="#7dd3fc" />
-            <stop offset="100%" stopColor="#fbbf24" />
-          </linearGradient>
-          <filter id={glowId} x="-60%" y="-60%" width="220%" height="220%">
-            <feGaussianBlur stdDeviation="5" />
-          </filter>
-        </defs>
-
-        {/* Halo difuso de la linea */}
-        <motion.path
-          d={d}
-          stroke={`url(#${lineId})`}
-          strokeWidth={vertical ? 6 : 7}
-          strokeLinecap="round"
-          opacity="0.35"
-          filter={`url(#${glowId})`}
-          initial={{ pathLength: 0 }}
-          whileInView={{ pathLength: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.8, ease: EASE, delay: 0.3 }}
-        />
-        {/* Nucleo nitido de la linea */}
-        <motion.path
-          d={d}
-          stroke={`url(#${lineId})`}
-          strokeWidth="2"
-          strokeLinecap="round"
-          initial={{ pathLength: 0 }}
-          whileInView={{ pathLength: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.8, ease: EASE, delay: 0.3 }}
-        />
-
-        {/* Pulso de energia que recorre la constelacion (i1 -> i7) */}
-        <circle r="5" fill="#ffffff" opacity="0.95">
-          <animateMotion dur="6s" repeatCount="indefinite" path={d} />
-        </circle>
-        <circle r="10" fill="#22d3ee" opacity="0.28">
-          <animateMotion dur="6s" repeatCount="indefinite" path={d} />
-        </circle>
-        <circle r="3" fill="#22d3ee" opacity="0.8">
-          <animateMotion dur="6s" begin="-0.18s" repeatCount="indefinite" path={d} />
-        </circle>
+        <ConstellationLine d={pathFrom(H_NODES)} idSuffix="h" strokeGlow={7} />
       </svg>
-
-      {/* Nodos interactivos (HTML sobre el SVG) */}
       <div className="pointer-events-none absolute inset-0">
-        {nodes.map(([x, y], i) => {
-          const last = i === nodes.length - 1;
+        {H_NODES.map(([x, y], i) => {
+          const last = i === H_NODES.length - 1;
           const color = NODE_COLORS[i];
-          // En vertical el chip va al costado libre del nodo; en horizontal, debajo.
-          const chipSide = vertical ? (x < vbW / 2 ? "right" : "left") : "below";
           return (
             <motion.div
               key={i}
@@ -303,7 +300,6 @@ function ConstellationCanvas({
                 {weekWord} {i + 1}
               </span>
 
-              {/* Estrella del nodo */}
               {last ? (
                 <span className="relative flex h-10 w-10 items-center justify-center transition-transform duration-300 group-hover:scale-125">
                   <span
@@ -334,16 +330,7 @@ function ConstellationCanvas({
                 </span>
               )}
 
-              {/* Chip de vidrio con la inteligencia */}
-              <div
-                className={
-                  chipSide === "below"
-                    ? "absolute left-1/2 top-full mt-1 -translate-x-1/2"
-                    : chipSide === "right"
-                      ? "absolute left-full top-1/2 ml-1.5 -translate-y-1/2"
-                      : "absolute right-full top-1/2 mr-1.5 -translate-y-1/2"
-                }
-              >
+              <div className="absolute left-1/2 top-full mt-1 -translate-x-1/2">
                 <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-white/15 bg-white/[0.07] px-3 py-1 text-xs font-medium text-white/80 backdrop-blur-md transition-all duration-300 group-hover:border-white/40 group-hover:bg-white/[0.14] group-hover:text-white">
                   <b style={{ color }}>i{i + 1}</b>
                   {labels[i] ?? ""}
@@ -357,10 +344,115 @@ function ConstellationCanvas({
   );
 }
 
+const MOBILE_CYCLE_MS = 2400;
+
 /**
- * La constelacion GENESIS i7: linea de luz con gradiente y glow, un pulso de
- * energia que viaja de i1 a i7 cargando la estrella dorada, y nodos con chips
- * de vidrio. Horizontal en escritorio; en movil es un ascenso vertical.
+ * Version movil, elegante y compacta: solo la linea de luz con sus nodos
+ * (~120px) y un unico chip centrado que rota por las 7 inteligencias
+ * mientras su nodo se enciende.
+ */
+function MobileConstellation({
+  labels,
+  weekWord,
+}: {
+  labels: string[];
+  weekWord: string;
+}) {
+  const [active, setActive] = useState(0);
+  useEffect(() => {
+    const id = setInterval(
+      () => setActive((a) => (a + 1) % M_NODES.length),
+      MOBILE_CYCLE_MS,
+    );
+    return () => clearInterval(id);
+  }, []);
+
+  const vbW = 360;
+  const vbH = 120;
+  const color = NODE_COLORS[active];
+
+  return (
+    <div>
+      <div className="relative">
+        <svg viewBox={`0 0 ${vbW} ${vbH}`} fill="none" className="block w-full overflow-visible">
+          <ConstellationLine d={pathFrom(M_NODES)} idSuffix="m" strokeGlow={6} />
+        </svg>
+        <div className="pointer-events-none absolute inset-0">
+          {M_NODES.map(([x, y], i) => {
+            const last = i === M_NODES.length - 1;
+            const c = NODE_COLORS[i];
+            const isActive = i === active;
+            return (
+              <motion.span
+                key={i}
+                className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
+                style={{ left: `${(x / vbW) * 100}%`, top: `${(y / vbH) * 100}%` }}
+                initial={{ opacity: 0, scale: 0.4 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, ease: EASE, delay: 0.4 + i * 0.14 }}
+              >
+                {last ? (
+                  <motion.svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 32 32"
+                    aria-hidden
+                    animate={{ scale: isActive ? 1.35 : 1 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 18 }}
+                  >
+                    <path
+                      d="M16 2 L18.6 13.4 L30 16 L18.6 18.6 L16 30 L13.4 18.6 L2 16 L13.4 13.4 Z"
+                      fill="#fbbf24"
+                      style={{ filter: "drop-shadow(0 0 7px rgba(251,191,36,0.9))" }}
+                    />
+                  </motion.svg>
+                ) : (
+                  <motion.span
+                    className="h-2 w-2 rounded-full"
+                    style={{ background: c }}
+                    animate={{
+                      scale: isActive ? 1.7 : 1,
+                      boxShadow: isActive
+                        ? `0 0 14px 4px ${c}`
+                        : `0 0 6px 1px ${c}80`,
+                    }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  />
+                )}
+              </motion.span>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Chip unico que rota por las inteligencias */}
+      <div className="mt-3 flex h-8 items-center justify-center">
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={active}
+            className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-white/15 bg-white/[0.07] px-3.5 py-1 text-xs font-medium text-white/85 backdrop-blur-md"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.28, ease: EASE }}
+          >
+            <b style={{ color }}>i{active + 1}</b>
+            {labels[active] ?? ""}
+            <span className="text-[0.65rem] uppercase tracking-wider text-white/45">
+              · {weekWord} {active + 1}
+            </span>
+          </motion.span>
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * La constelacion GENESIS i7: linea de luz con gradiente, pulso de energia
+ * que viaja de i1 a i7 y nodos con chips de vidrio. En movil, version
+ * compacta con un chip rotatorio.
  */
 export function Constellation({
   labels,
@@ -372,26 +464,10 @@ export function Constellation({
   return (
     <div role="img" aria-label={labels.join(" · ")}>
       <div className="hidden sm:block">
-        <ConstellationCanvas
-          nodes={H_NODES}
-          vbW={1200}
-          vbH={180}
-          vertical={false}
-          idSuffix="h"
-          labels={labels}
-          weekWord={weekWord}
-        />
+        <DesktopConstellation labels={labels} weekWord={weekWord} />
       </div>
-      <div className="mx-auto max-w-[360px] sm:hidden">
-        <ConstellationCanvas
-          nodes={V_NODES}
-          vbW={360}
-          vbH={500}
-          vertical
-          idSuffix="v"
-          labels={labels}
-          weekWord={weekWord}
-        />
+      <div className="sm:hidden">
+        <MobileConstellation labels={labels} weekWord={weekWord} />
       </div>
     </div>
   );
