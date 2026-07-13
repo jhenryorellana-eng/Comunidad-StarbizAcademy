@@ -1,143 +1,47 @@
 "use client";
 
-import { useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   LayoutGroup,
   motion,
   useMotionTemplate,
+  useMotionValue,
   useMotionValueEvent,
+  useReducedMotion,
   useScroll,
   useTransform,
-  type MotionValue,
 } from "motion/react";
-import { NightSky } from "@/components/Constellation";
-import { cn } from "@/components/ui";
 
 /*
- * El manifiesto Starbiz — sección scroll-driven, centrada y editorial:
- * cielo negro estrellado, relato en serif itálica y palabras clave en Sora
- * con gradiente aurora (rosa→violeta→cyan) que se van "seleccionando" con un
- * barrido luminoso. Al final, las palabras clave VUELAN desde el párrafo y se
- * juntan en el centro formando el eslogan completo (layoutId + resorte);
- * al scrollear hacia atrás regresan a su sitio.
+ * El manifiesto Starbiz — "reconstrucción tipográfica cinética" (estilo
+ * Boulder County · A Guide to Climate Action):
+ *
+ * Un párrafo grande y tenue fluye verticalmente detrás de un titular que se
+ * va construyendo arriba. Cuando cada palabra clave (blanca) cruza la línea
+ * del titular, se desprende de su posición real en el párrafo y viaja hasta
+ * su hueco exacto dentro del titular (FLIP vía layoutId — continuidad
+ * espacial real, reversible al scrollear hacia atrás). Detrás, fotografías
+ * a pantalla completa con crossfade y zoom cinematográfico marcan los
+ * capítulos. Al completarse el titular, baja al centro y la escena funde de
+ * oscuro a claro hacia la siguiente sección.
  */
 
 type WordDef = readonly [string, number]; // [palabra, 1 = clave]
 
-const REVEAL_START = 0.06;
-const REVEAL_END = 0.6;
-const FADE_START = 0.68;
-const FADE_END = 0.8;
-const GATHER_AT = 0.8; // aquí las claves vuelan a formar el eslogan
+const CHAPTERS = [
+  "/hero/hero-1.jpg",
+  "/hero/hero-2.jpg",
+  "/hero/hero-3.jpg",
+  "/hero/hero-4.jpg",
+];
 
-const LITE_QUERY = "(max-width: 640px)";
-
-/** true en pantallas pequeñas — ahí se omiten los efectos caros de GPU. */
-function useLite(): boolean {
-  return useSyncExternalStore(
-    (onChange) => {
-      const mq = window.matchMedia(LITE_QUERY);
-      mq.addEventListener("change", onChange);
-      return () => mq.removeEventListener("change", onChange);
-    },
-    () => window.matchMedia(LITE_QUERY).matches,
-    () => false,
-  );
-}
-
-/** Gradiente aurora pastel compartido por claves y eslogan. */
-const AURORA_TEXT =
-  "bg-gradient-to-r from-[#67e8f9] via-[#c4b5fd] to-[#f9a8d4] bg-clip-text text-transparent";
-
-function Word({
-  word,
-  isKey,
-  keyIndex,
-  index,
-  total,
-  progress,
-  lite,
-  gathered,
-}: {
-  word: string;
-  isKey: boolean;
-  keyIndex: number;
-  index: number;
-  total: number;
-  progress: MotionValue<number>;
-  lite: boolean;
-  gathered: boolean;
-}) {
-  const start = REVEAL_START + (index / total) * (REVEAL_END - REVEAL_START);
-  const end = start + 0.035;
-
-  // Las palabras normales se desvanecen al final; las clave permanecen.
-  const opacity = useTransform(
-    progress,
-    isKey ? [start, end] : [start, end, FADE_START, FADE_END],
-    isKey ? [0.04, 1] : [0.04, 1, 1, 0.07],
-  );
-  const y = useTransform(progress, [start, end], [16, 0]);
-  // Revelado cinematográfico numérico (template para que no lo congele el
-  // optimizador de scroll)
-  const blurPx = useTransform(progress, [start, end], [9, 0]);
-  const filter = useMotionTemplate`blur(${blurPx}px)`;
-  // El "selector" que barre la palabra clave + su chispa
-  const highlight = useTransform(progress, [end, end + 0.03], [0, 1]);
-
-  return (
-    <motion.span
-      // filter: "none" explícito en lite — pisa el blur inicial que el SSR
-      // deja inline (el servidor no conoce el tamaño de pantalla).
-      style={lite ? { opacity, y, filter: "none" } : { opacity, y, filter }}
-      className={cn(
-        "relative inline-block",
-        isKey ? "mx-[0.14em] px-[0.18em]" : "mr-[0.3em]",
-      )}
-    >
-      {isKey ? (
-        <>
-          {/* Gemela invisible: conserva el espacio cuando la clave vuela */}
-          <span className="invisible font-display font-extrabold not-italic tracking-tight">
-            {word}
-          </span>
-          {!gathered && (
-            <motion.span
-              layoutId={`kw-${keyIndex}`}
-              transition={{ type: "spring", stiffness: 210, damping: 26 }}
-              className="absolute inset-0 mx-[-0.18em] px-[0.18em]"
-            >
-              {/* Subrayado de luz que se dibuja bajo la palabra */}
-              <motion.span
-                aria-hidden
-                style={{ scaleX: highlight }}
-                className="absolute inset-x-[0.05em] bottom-[-0.12em] h-[0.09em] origin-left rounded-full bg-gradient-to-r from-[#67e8f9] via-[#c4b5fd] to-[#f9a8d4] shadow-[0_0_10px_rgba(196,181,253,0.9)]"
-              />
-              {/* Chispa que salta al seleccionarse */}
-              <motion.span
-                aria-hidden
-                style={{ scale: highlight, opacity: highlight }}
-                className="absolute -top-[0.5em] right-[-0.1em] text-[0.4em] text-[#fcd34d] drop-shadow-[0_0_7px_rgba(252,211,77,0.95)]"
-              >
-                ✦
-              </motion.span>
-              <span
-                className={cn(
-                  "relative font-display font-extrabold not-italic tracking-tight drop-shadow-[0_0_18px_rgba(196,181,253,0.5)]",
-                  AURORA_TEXT,
-                )}
-              >
-                {word}
-              </span>
-            </motion.span>
-          )}
-        </>
-      ) : (
-        word
-      )}
-    </motion.span>
-  );
-}
+// Fases del scroll (progreso 0..1 de la sección)
+const PARA_START = 0.08; // el párrafo empieza a viajar
+const PARA_END = 0.68; // el párrafo terminó de pasar
+const HOLD_END = 0.78; // titular completo, en reposo arriba
+const CENTER_END = 0.9; // titular llega al centro
+const LIGHT_START = 0.88; // comienza el fundido a claro
+const FADE_OUT = [0.95, 0.995] as const; // el titular se despide
 
 export function Manifesto({
   kicker,
@@ -148,29 +52,23 @@ export function Manifesto({
   words: ReadonlyArray<WordDef>;
   slogan: string;
 }) {
-  const ref = useRef<HTMLElement>(null);
-  const lite = useLite();
-  const [gathered, setGathered] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const stickyRef = useRef<HTMLDivElement>(null);
+  const paraRef = useRef<HTMLParagraphElement>(null);
+  const headlineRef = useRef<HTMLDivElement>(null);
+  const kwRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const thresholds = useRef<number[]>([]);
+  const reduce = useReducedMotion();
+
   const { scrollYProgress } = useScroll({
-    target: ref,
+    target: sectionRef,
     offset: ["start start", "end end"],
   });
-
-  // Con histéresis para que no parpadee en el umbral
-  useMotionValueEvent(scrollYProgress, "change", (v) => {
-    setGathered((g) => (g ? v > GATHER_AT - 0.03 : v > GATHER_AT));
-  });
-
-  const kickerOpacity = useTransform(scrollYProgress, [0.02, 0.08], [0, 1]);
-  const readProgress = useTransform(scrollYProgress, [REVEAL_START, REVEAL_END], [0, 1]);
-  const bigStarRotate = useTransform(scrollYProgress, [0, 1], [0, 60]);
-  const bigStarOpacity = useTransform(scrollYProgress, [0.05, 0.3], [0, 1]);
 
   const keywords = useMemo(
     () => words.filter(([, k]) => k === 1).map(([w]) => w),
     [words],
   );
-  // Índice de clave por posición (−1 si no es clave)
   const keyIndexOf = useMemo(() => {
     const arr: number[] = [];
     let k = -1;
@@ -181,127 +79,252 @@ export function Manifesto({
     return arr;
   }, [words]);
 
+  // ---- Geometría medida (sin coordenadas hardcodeadas) ----
+  const paraFrom = useMotionValue(600); // px: inicio del viaje del párrafo
+  const paraTo = useMotionValue(-1200); // px: fin del viaje
+  const headlineBottom = useMotionValue(220); // px: línea de ensamblaje
+  const centerShift = useMotionValue(200); // px: bajada del titular al centro
+
+  const measure = useCallback(() => {
+    const sticky = stickyRef.current;
+    const para = paraRef.current;
+    const headline = headlineRef.current;
+    if (!sticky || !para || !headline) return;
+
+    const stickyH = sticky.clientHeight;
+    const hBottom = headline.offsetTop + headline.offsetHeight + 24;
+    const from = stickyH * 0.62; // el párrafo asoma desde abajo del centro
+    const to = hBottom - para.scrollHeight - 60; // hasta pasar la línea
+    paraFrom.set(from);
+    paraTo.set(Math.min(to, from - 200));
+    headlineBottom.set(hBottom);
+    centerShift.set(
+      Math.max(0, stickyH / 2 - headline.offsetTop - headline.offsetHeight / 2),
+    );
+
+    // Umbral de desprendimiento por palabra clave: cuando su posición real
+    // dentro del párrafo cruza la línea del titular (+25px según spec).
+    const travel = from - Math.min(to, from - 200);
+    const next: number[] = [];
+    for (let j = 0; j < kwRefs.current.length; j++) {
+      const el = kwRefs.current[j];
+      if (!el) {
+        next[j] =
+          PARA_START + ((j + 1) / (keywords.length + 1)) * (PARA_END - PARA_START);
+        continue;
+      }
+      const kwTop = el.offsetTop; // relativo al párrafo
+      const dist = from + kwTop - (hBottom + 25);
+      const frac = Math.min(1, Math.max(0, dist / travel));
+      next[j] = PARA_START + frac * (PARA_END - PARA_START);
+    }
+    // Garantiza orden ascendente (lectura izquierda→derecha del titular)
+    for (let j = 1; j < next.length; j++) next[j] = Math.max(next[j], next[j - 1] + 0.004);
+    thresholds.current = next;
+  }, [paraFrom, paraTo, headlineBottom, centerShift, keywords.length]);
+
+  useEffect(() => {
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (stickyRef.current) ro.observe(stickyRef.current);
+    if (paraRef.current) ro.observe(paraRef.current);
+    document.fonts?.ready.then(measure).catch(() => {});
+    return () => ro.disconnect();
+  }, [measure]);
+
+  // ---- Desprendimiento por palabra (reversible) ----
+  const [detachedCount, setDetachedCount] = useState(0);
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
+    const t = thresholds.current;
+    let n = 0;
+    while (n < t.length && v > t[n]) n++;
+    setDetachedCount((prev) => (prev === n ? prev : n));
+  });
+
+  // ---- Transforms de escena ----
+  const paraY = useTransform(() => {
+    const v = scrollYProgress.get();
+    const f = Math.min(1, Math.max(0, (v - PARA_START) / (PARA_END - PARA_START)));
+    return paraFrom.get() + (paraTo.get() - paraFrom.get()) * f;
+  });
+  const paraOpacity = useTransform(scrollYProgress, [PARA_END, HOLD_END], [1, 0]);
+  const maskImage = useMotionTemplate`linear-gradient(to bottom, transparent ${headlineBottom}px, black calc(${headlineBottom}px + 30px))`;
+
+  const headlineY = useTransform(() => {
+    const v = scrollYProgress.get();
+    const f = Math.min(1, Math.max(0, (v - HOLD_END) / (CENTER_END - HOLD_END)));
+    // easeInOut suave
+    const e = f < 0.5 ? 2 * f * f : 1 - Math.pow(-2 * f + 2, 2) / 2;
+    return centerShift.get() * e;
+  });
+  const headlineScale = useTransform(scrollYProgress, [HOLD_END, CENTER_END], [1, 1.06]);
+  const headlineOpacity = useTransform(scrollYProgress, [FADE_OUT[0], FADE_OUT[1]], [1, 0]);
+  const kickerOpacity = useTransform(scrollYProgress, [0, 0.03, 0.1, 0.16], [0, 1, 1, 0]);
+  // Fundido de oscuro a claro hacia la sección siguiente (crema)
+  const lightOpacity = useTransform(scrollYProgress, [LIGHT_START, 0.985], [0, 1]);
+  const darkOverlay = useTransform(scrollYProgress, [LIGHT_START, 0.97], [0.62, 0.15]);
+
+  const allDetached = reduce ? keywords.length : detachedCount;
+
   return (
-    <section ref={ref} className="relative h-[220vh] bg-[#05070f] sm:h-[300vh]">
-      <div className="sticky top-0 flex h-screen items-center overflow-hidden pt-16">
-        <NightSky />
-        {/* Máscara superior: apaga los brillos del cielo en el borde para que
-            la entrada desde el hero sea un fundido perfecto */}
-        <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-[#05070f] to-transparent"
+    <section ref={sectionRef} className="relative h-[420vh] bg-[#05070f] sm:h-[500vh]">
+      <div ref={stickyRef} className="sticky top-0 h-screen overflow-hidden">
+        {/* ---- Fondos cinematográficos por capítulo (crossfade + zoom) ---- */}
+        {CHAPTERS.map((src, i) => (
+          <Chapter
+            key={src}
+            src={src}
+            index={i}
+            total={CHAPTERS.length}
+            progress={scrollYProgress}
+          />
+        ))}
+        {/* Overlay oscuro para contraste, se abre en la fase clara */}
+        <motion.div
+          style={{ opacity: darkOverlay }}
+          className="absolute inset-0 bg-[#05070f]"
           aria-hidden
         />
 
-        {/* Estrella gigante de fondo, rotando con el scroll (solo desktop) */}
-        <motion.div
-          style={{ rotate: bigStarRotate, opacity: bigStarOpacity }}
-          className="pointer-events-none absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 sm:block"
-          aria-hidden
-        >
-          <svg width="620" height="620" viewBox="0 0 32 32" className="max-w-[90vw]">
-            <path
-              d="M16 1 L19 12.5 L31 16 L19 19.5 L16 31 L13 19.5 L1 16 L13 12.5 Z"
-              fill="none"
-              stroke="rgba(167,139,250,0.08)"
-              strokeWidth="0.35"
-            />
-            <path
-              d="M16 6 L18 13.8 L26 16 L18 18.2 L16 26 L14 18.2 L6 16 L14 13.8 Z"
-              fill="none"
-              stroke="rgba(244,114,182,0.06)"
-              strokeWidth="0.3"
-            />
-          </svg>
-        </motion.div>
-
         <LayoutGroup>
-          <div className="container-ac relative py-16 text-center">
-            {/* Kicker centrado con líneas y barra de lectura */}
-            <motion.div style={{ opacity: kickerOpacity }} className="mx-auto max-w-md">
-              <div className="flex items-center justify-center gap-4">
-                <span className="h-px flex-1 bg-gradient-to-r from-transparent to-[#a78bfa]/60" aria-hidden />
-                <p className="kicker text-[#c4b5fd]">{kicker}</p>
-                <span className="h-px flex-1 bg-gradient-to-l from-transparent to-[#a78bfa]/60" aria-hidden />
-              </div>
-              <div className="mx-auto mt-3 h-[3px] w-36 overflow-hidden rounded-full bg-white/10">
-                <motion.span
-                  style={{ scaleX: readProgress }}
-                  className="block h-full origin-left rounded-full bg-gradient-to-r from-[#67e8f9] via-[#c4b5fd] to-[#f9a8d4] shadow-[0_0_8px_rgba(196,181,253,0.8)]"
-                />
-              </div>
-            </motion.div>
-
-            {/* El relato: serif itálica editorial, centrado */}
-            <p className="mx-auto mt-8 max-w-4xl text-center font-serif text-[1.45rem] italic leading-[1.6] text-white/90 sm:mt-10 sm:text-[2.2rem] sm:leading-[1.5]">
-              {words.map(([w, isKey], i) => (
-                <Word
-                  key={`${i}-${w}`}
-                  word={w}
-                  isKey={isKey === 1}
-                  keyIndex={keyIndexOf[i]}
-                  index={i}
-                  total={words.length}
-                  progress={scrollYProgress}
-                  lite={lite}
-                  gathered={gathered}
-                />
-              ))}
-            </p>
-
-            {/* Las palabras clave vuelan aquí y forman el eslogan completo */}
-            <div className="relative mx-auto mt-10 min-h-[6rem] max-w-3xl sm:mt-12">
-              <motion.span
-                aria-hidden
-                animate={{ opacity: gathered ? 1 : 0 }}
-                transition={{ duration: 0.6 }}
-                className="pointer-events-none absolute left-1/2 top-1/2 h-28 w-[115%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#c4b5fd]/10 blur-3xl"
-              />
-              <motion.div
-                aria-hidden
-                animate={{ opacity: gathered ? 1 : 0 }}
-                transition={{ duration: 0.5, delay: gathered ? 0.35 : 0 }}
-                className="relative flex items-center gap-4"
-              >
-                <span className="h-px flex-1 bg-gradient-to-r from-transparent via-[#c4b5fd]/60 to-[#f9a8d4]/70" />
-                <svg width="20" height="20" viewBox="0 0 32 32" className="shrink-0">
-                  <path
-                    d="M16 2 L18.6 13.4 L30 16 L18.6 18.6 L16 30 L13.4 18.6 L2 16 L13.4 13.4 Z"
-                    fill="#fcd34d"
-                    style={{ filter: "drop-shadow(0 0 8px rgba(252,211,77,0.95))" }}
-                  />
-                </svg>
-                <span className="h-px flex-1 bg-gradient-to-l from-transparent via-[#c4b5fd]/60 to-[#67e8f9]/70" />
-              </motion.div>
-
-              <p
-                className="mt-5 flex flex-wrap items-baseline justify-center gap-x-[0.3em] font-display text-3xl font-extrabold tracking-tight sm:text-5xl"
-                aria-label={gathered ? slogan : undefined}
-              >
-                {gathered &&
-                  keywords.map((w, j) => (
-                    <motion.span
-                      key={`slogan-${j}`}
-                      layoutId={`kw-${j}`}
-                      transition={{
-                        type: "spring",
-                        stiffness: 190,
-                        damping: 24,
-                        delay: j * 0.06,
-                      }}
-                      className={cn(
-                        "animate-aurora inline-block drop-shadow-[0_0_26px_rgba(196,181,253,0.6)]",
-                        AURORA_TEXT,
-                        j === 0 && "capitalize",
-                      )}
-                    >
+          {/* ---- Titular en construcción (capa superior) ---- */}
+          <motion.div
+            ref={headlineRef}
+            style={{ y: headlineY, scale: headlineScale, opacity: headlineOpacity }}
+            className="absolute inset-x-[6.5vw] top-[16vh] z-20 origin-left"
+          >
+            <motion.p style={{ opacity: kickerOpacity }} className="kicker mb-4 text-white/80">
+              {kicker}
+            </motion.p>
+            <p
+              className="flex flex-wrap gap-x-[0.28em] font-display text-[2rem] font-bold leading-[1.2] tracking-tight text-white sm:text-[3.4rem]"
+              aria-label={slogan}
+            >
+              {keywords.map((w, j) => {
+                const landed = j < allDetached;
+                return (
+                  <span
+                    key={`slot-${j}`}
+                    className={"relative inline-block" + (j === 0 ? " capitalize" : "")}
+                  >
+                    {/* Plantilla invisible: reserva la posición exacta */}
+                    <span className={landed ? "invisible" : "opacity-0"} aria-hidden>
                       {w}
-                    </motion.span>
-                  ))}
-              </p>
-            </div>
-          </div>
+                    </span>
+                    {landed && (
+                      <motion.span
+                        layoutId={reduce ? undefined : `kw-${j}`}
+                        transition={{ type: "spring", stiffness: 150, damping: 24 }}
+                        className="absolute inset-0 whitespace-nowrap"
+                      >
+                        {w}
+                      </motion.span>
+                    )}
+                  </span>
+                );
+              })}
+            </p>
+          </motion.div>
+
+          {/* ---- Párrafo narrativo que fluye detrás del titular ---- */}
+          <motion.div
+            style={{
+              opacity: paraOpacity,
+              WebkitMaskImage: maskImage,
+              maskImage,
+            }}
+            className="absolute inset-0 z-10"
+            aria-hidden={allDetached === keywords.length}
+          >
+            <motion.p
+              ref={paraRef}
+              style={{ y: paraY }}
+              className="absolute inset-x-[6.5vw] top-0 max-w-5xl text-[2rem] font-medium leading-[1.25] text-white/15 sm:text-[3.6rem] sm:leading-[1.2]"
+            >
+              {words.map(([w, isKey], i) => {
+                if (isKey !== 1) return <span key={i}>{w} </span>;
+                const j = keyIndexOf[i];
+                const detached = j < allDetached;
+                return (
+                  <span
+                    key={i}
+                    ref={(el) => {
+                      kwRefs.current[j] = el;
+                    }}
+                    className="relative inline-block whitespace-nowrap"
+                  >
+                    {/* Gemela invisible: conserva el espacio al despegar */}
+                    <span className={detached ? "opacity-0" : "invisible"} aria-hidden>
+                      {w}
+                    </span>
+                    {!detached && (
+                      <motion.span
+                        layoutId={reduce ? undefined : `kw-${j}`}
+                        transition={{ type: "spring", stiffness: 150, damping: 24 }}
+                        className="absolute inset-0 whitespace-nowrap font-bold text-white"
+                      >
+                        {w}
+                      </motion.span>
+                    )}
+                    <span aria-hidden> </span>
+                  </span>
+                );
+              })}
+            </motion.p>
+          </motion.div>
         </LayoutGroup>
+
+        {/* ---- Fundido final hacia la sección clara ---- */}
+        <motion.div
+          style={{ opacity: lightOpacity }}
+          className="pointer-events-none absolute inset-0 z-30 bg-cream"
+          aria-hidden
+        />
       </div>
     </section>
+  );
+}
+
+/** Fotografía de capítulo: crossfade en su banda de scroll + zoom continuo. */
+function Chapter({
+  src,
+  index,
+  total,
+  progress,
+}: {
+  src: string;
+  index: number;
+  total: number;
+  progress: ReturnType<typeof useScroll>["scrollYProgress"];
+}) {
+  const bandStart = (index / total) * PARA_END;
+  const bandEnd = ((index + 1) / total) * PARA_END;
+  const fade = 0.045;
+
+  const opacity = useTransform(
+    progress,
+    index === 0
+      ? [0, bandEnd - fade, bandEnd + fade]
+      : index === total - 1
+        ? [bandStart - fade, bandStart + fade, 1]
+        : [bandStart - fade, bandStart + fade, bandEnd - fade, bandEnd + fade],
+    index === 0
+      ? [0.42, 0.42, 0]
+      : index === total - 1
+        ? [0, 0.45, 0.45]
+        : [0, 0.45, 0.45, 0],
+  );
+  const scale = useTransform(progress, [bandStart - fade, bandEnd + fade], [1, 1.45]);
+
+  return (
+    <motion.div style={{ opacity }} className="absolute inset-0" aria-hidden>
+      <motion.img
+        src={src}
+        alt=""
+        style={{ scale }}
+        className="h-full w-full object-cover"
+        loading={index === 0 ? "eager" : "lazy"}
+      />
+    </motion.div>
   );
 }
