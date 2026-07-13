@@ -182,13 +182,14 @@ export function Manifesto({
 
   return (
     <section ref={ref} className="relative h-[220vh] bg-[#05070f] sm:h-[300vh]">
-      {/* Fusión suave con el cielo navy del hero */}
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-navy to-transparent"
-        aria-hidden
-      />
       <div className="sticky top-0 flex h-screen items-center overflow-hidden pt-16">
         <NightSky />
+        {/* Máscara superior: apaga los brillos del cielo en el borde para que
+            la entrada desde el hero sea un fundido perfecto */}
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-[#05070f] to-transparent"
+          aria-hidden
+        />
 
         {/* Estrella gigante de fondo, rotando con el scroll (solo desktop) */}
         <motion.div

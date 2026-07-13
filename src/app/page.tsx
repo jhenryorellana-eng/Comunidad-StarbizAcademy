@@ -21,6 +21,11 @@ export default async function LandingPage() {
       {/* ---------------- HERO — the GÉNESIS i7 night sky ---------------- */}
       <section className="relative overflow-hidden bg-navy">
         <NightSky />
+        {/* Fundido hacia el negro del manifiesto — sin salto entre secciones */}
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-80 bg-gradient-to-b from-transparent via-[#0c1322] to-[#05070f]"
+          aria-hidden
+        />
         <div className="container-ac relative grid items-center gap-10 pb-4 pt-16 md:grid-cols-[1.15fr_0.85fr] md:pb-6 md:pt-24">
           <div>
             <Reveal>
