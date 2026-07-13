@@ -45,9 +45,9 @@ function useLite(): boolean {
   );
 }
 
-/** Gradiente aurora compartido por claves y eslogan. */
+/** Gradiente aurora pastel compartido por claves y eslogan. */
 const AURORA_TEXT =
-  "bg-gradient-to-r from-[#f472b6] via-[#a78bfa] to-[#22d3ee] bg-clip-text text-transparent";
+  "bg-gradient-to-r from-[#67e8f9] via-[#c4b5fd] to-[#f9a8d4] bg-clip-text text-transparent";
 
 function Word({
   word,
@@ -107,22 +107,23 @@ function Word({
               transition={{ type: "spring", stiffness: 210, damping: 26 }}
               className="absolute inset-0 mx-[-0.18em] px-[0.18em]"
             >
+              {/* Subrayado de luz que se dibuja bajo la palabra */}
               <motion.span
                 aria-hidden
                 style={{ scaleX: highlight }}
-                className="absolute inset-x-0 inset-y-[-0.04em] origin-left rounded-lg bg-gradient-to-r from-[#f472b6]/20 via-[#a78bfa]/20 to-[#22d3ee]/20 ring-1 ring-[#a78bfa]/40"
+                className="absolute inset-x-[0.05em] bottom-[-0.12em] h-[0.09em] origin-left rounded-full bg-gradient-to-r from-[#67e8f9] via-[#c4b5fd] to-[#f9a8d4] shadow-[0_0_10px_rgba(196,181,253,0.9)]"
               />
               {/* Chispa que salta al seleccionarse */}
               <motion.span
                 aria-hidden
                 style={{ scale: highlight, opacity: highlight }}
-                className="absolute -top-[0.55em] left-1/2 -translate-x-1/2 text-[0.45em] text-[#f472b6] drop-shadow-[0_0_7px_rgba(244,114,182,0.95)]"
+                className="absolute -top-[0.5em] right-[-0.1em] text-[0.4em] text-[#fcd34d] drop-shadow-[0_0_7px_rgba(252,211,77,0.95)]"
               >
                 ✦
               </motion.span>
               <span
                 className={cn(
-                  "relative font-display font-extrabold not-italic tracking-tight drop-shadow-[0_0_16px_rgba(167,139,250,0.45)]",
+                  "relative font-display font-extrabold not-italic tracking-tight drop-shadow-[0_0_18px_rgba(196,181,253,0.5)]",
                   AURORA_TEXT,
                 )}
               >
@@ -219,13 +220,13 @@ export function Manifesto({
             <motion.div style={{ opacity: kickerOpacity }} className="mx-auto max-w-md">
               <div className="flex items-center justify-center gap-4">
                 <span className="h-px flex-1 bg-gradient-to-r from-transparent to-[#a78bfa]/60" aria-hidden />
-                <p className="kicker text-[#f472b6]">{kicker}</p>
+                <p className="kicker text-[#c4b5fd]">{kicker}</p>
                 <span className="h-px flex-1 bg-gradient-to-l from-transparent to-[#a78bfa]/60" aria-hidden />
               </div>
               <div className="mx-auto mt-3 h-[3px] w-36 overflow-hidden rounded-full bg-white/10">
                 <motion.span
                   style={{ scaleX: readProgress }}
-                  className="block h-full origin-left rounded-full bg-gradient-to-r from-[#f472b6] via-[#a78bfa] to-[#22d3ee] shadow-[0_0_8px_rgba(167,139,250,0.8)]"
+                  className="block h-full origin-left rounded-full bg-gradient-to-r from-[#67e8f9] via-[#c4b5fd] to-[#f9a8d4] shadow-[0_0_8px_rgba(196,181,253,0.8)]"
                 />
               </div>
             </motion.div>
@@ -253,7 +254,7 @@ export function Manifesto({
                 aria-hidden
                 animate={{ opacity: gathered ? 1 : 0 }}
                 transition={{ duration: 0.6 }}
-                className="pointer-events-none absolute left-1/2 top-1/2 h-28 w-[115%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#a78bfa]/10 blur-3xl"
+                className="pointer-events-none absolute left-1/2 top-1/2 h-28 w-[115%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#c4b5fd]/10 blur-3xl"
               />
               <motion.div
                 aria-hidden
@@ -261,15 +262,15 @@ export function Manifesto({
                 transition={{ duration: 0.5, delay: gathered ? 0.35 : 0 }}
                 className="relative flex items-center gap-4"
               >
-                <span className="h-px flex-1 bg-gradient-to-r from-transparent via-[#a78bfa]/60 to-[#f472b6]/70" />
+                <span className="h-px flex-1 bg-gradient-to-r from-transparent via-[#c4b5fd]/60 to-[#f9a8d4]/70" />
                 <svg width="20" height="20" viewBox="0 0 32 32" className="shrink-0">
                   <path
                     d="M16 2 L18.6 13.4 L30 16 L18.6 18.6 L16 30 L13.4 18.6 L2 16 L13.4 13.4 Z"
-                    fill="#f472b6"
-                    style={{ filter: "drop-shadow(0 0 8px rgba(244,114,182,0.95))" }}
+                    fill="#fcd34d"
+                    style={{ filter: "drop-shadow(0 0 8px rgba(252,211,77,0.95))" }}
                   />
                 </svg>
-                <span className="h-px flex-1 bg-gradient-to-l from-transparent via-[#a78bfa]/60 to-[#22d3ee]/70" />
+                <span className="h-px flex-1 bg-gradient-to-l from-transparent via-[#c4b5fd]/60 to-[#67e8f9]/70" />
               </motion.div>
 
               <p
@@ -288,7 +289,7 @@ export function Manifesto({
                         delay: j * 0.06,
                       }}
                       className={cn(
-                        "animate-aurora inline-block drop-shadow-[0_0_26px_rgba(167,139,250,0.55)]",
+                        "animate-aurora inline-block drop-shadow-[0_0_26px_rgba(196,181,253,0.6)]",
                         AURORA_TEXT,
                         j === 0 && "capitalize",
                       )}
