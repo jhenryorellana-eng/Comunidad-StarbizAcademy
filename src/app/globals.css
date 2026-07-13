@@ -219,6 +219,16 @@
   animation: backlight 13s ease-in-out infinite;
 }
 
+/* Iridescent aurora shimmer for the gathered slogan. */
+@keyframes aurora {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.animate-aurora {
+  background-size: 220% 220%;
+  animation: aurora 5s ease-in-out infinite;
+}
+
 /* Gold spark orbiting the hero frame. */
 @keyframes orbit {
   to { transform: rotate(360deg); }
