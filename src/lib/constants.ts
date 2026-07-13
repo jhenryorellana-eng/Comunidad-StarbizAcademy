@@ -30,6 +30,13 @@ export const INTELLIGENCES = [
   { week: 7, key: "tech", en: "Technological", es: "Tecnológica" },
 ] as const;
 
+// Top-level platform sections. Each grows its own spaces like Comunidad.
+export const PLATFORM_SECTIONS = [
+  { key: "comunidad", href: "/comunidad/posts", base: "/comunidad" },
+  { key: "padres", href: "/padres", base: "/padres" },
+  { key: "academy", href: "/academia", base: "/academia" },
+] as const;
+
 // Community spaces (left sidebar), in the PDF-spec order: activity first.
 // `gated` = members only. `extra` = shown after a divider (and inside "Más" on mobile).
 export const COMMUNITY_SPACES = [

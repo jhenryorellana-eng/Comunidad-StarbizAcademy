@@ -36,9 +36,19 @@ export const es = {
   },
   nav: {
     community: "Comunidad",
-    genesis: "GÉNESIS i7™",
+    padres: "Padres",
+    academy: "StarbizAcademy",
     store: "Tienda",
     enterCommunity: "Entrar a la Comunidad",
+  },
+  sections: {
+    comunidad: "Comunidad",
+    padres: "Padres",
+    academy: "StarbizAcademy",
+    soonBadge: "Próximamente",
+    soonTitle: "Estamos construyendo este espacio",
+    soonBody: "Esta sección tendrá sus propios espacios, igual que la Comunidad. Te avisaremos en el feed cuando abra.",
+    backToCommunity: "Ir a la Comunidad",
   },
   landing: {
     kicker: "El Ecosistema Familiar · Est. 2026",
@@ -293,9 +303,19 @@ export const en: typeof es = {
   },
   nav: {
     community: "Community",
-    genesis: "GÉNESIS i7™",
+    padres: "Padres",
+    academy: "StarbizAcademy",
     store: "Store",
     enterCommunity: "Enter the Community",
+  },
+  sections: {
+    comunidad: "Community",
+    padres: "Padres",
+    academy: "StarbizAcademy",
+    soonBadge: "Coming soon",
+    soonTitle: "We're building this space",
+    soonBody: "This section will have its own spaces, just like the Community. We'll announce it in the feed when it opens.",
+    backToCommunity: "Go to the Community",
   },
   landing: {
     kicker: "The Family Ecosystem · Est. 2026",

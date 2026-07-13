@@ -43,10 +43,10 @@ export async function SiteFooter() {
           [dict.community.spaces.podcast, "/comunidad/podcast"],
         ])}
         {col("StarbizAcademy", [
+          [dict.nav.padres, "/padres"],
+          [dict.nav.academy, "/academia"],
           [dict.nav.store, "/comunidad/tienda"],
           [dict.community.spaces.rules, "/comunidad/reglas"],
-          [dict.community.spaces.chapters, "/comunidad/cohortes"],
-          [dict.nav.genesis, "/#genesis"],
         ])}
         {col("Cuenta", [
           [dict.common.login, "/login"],

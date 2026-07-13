@@ -21,8 +21,11 @@ export async function SiteHeader({
           <Link href="/comunidad" className="transition-colors hover:text-cyan">
             {dict.nav.community}
           </Link>
-          <Link href="/#genesis" className="transition-colors hover:text-cyan">
-            {dict.nav.genesis}
+          <Link href="/padres" className="transition-colors hover:text-cyan">
+            {dict.nav.padres}
+          </Link>
+          <Link href="/academia" className="transition-colors hover:text-cyan">
+            {dict.nav.academy}
           </Link>
           <Link href="/comunidad/tienda" className="transition-colors hover:text-cyan">
             {dict.nav.store}

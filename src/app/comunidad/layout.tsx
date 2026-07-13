@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { CommunityNav } from "@/components/community/CommunityNav";
 import { CommunityMobileNav } from "@/components/community/CommunityMobileNav";
 import { PodcastPlayerProvider } from "@/components/community/PodcastPlayer";
+import { SectionTabs } from "@/components/SectionTabs";
 
 export default async function CommunityLayout({
   children,
@@ -15,6 +16,7 @@ export default async function CommunityLayout({
   return (
     <div className="flex min-h-screen flex-col bg-surface">
       <SiteHeader mobileMenu={false} />
+      <SectionTabs />
       <PodcastPlayerProvider>
         <CommunityMobileNav isMember={member} />
         {/* pb-24 clears the fixed mobile bottom bar */}
