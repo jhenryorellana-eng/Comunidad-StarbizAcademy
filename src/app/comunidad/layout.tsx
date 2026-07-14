@@ -19,8 +19,7 @@ export default async function CommunityLayout({
       <SectionTabs />
       <PodcastPlayerProvider>
         <CommunityMobileNav isMember={member} />
-        {/* pb-24 clears the fixed mobile bottom bar */}
-        <div className="container-ac flex w-full flex-1 gap-6 pb-24 pt-4 lg:py-6">
+        <div className="container-ac flex w-full flex-1 gap-6 pb-10 pt-4 lg:py-6">
           <CommunityNav isMember={member} />
           <main className="min-w-0 flex-1">{children}</main>
         </div>

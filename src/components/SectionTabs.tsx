@@ -18,7 +18,8 @@ export function SectionTabs() {
   return (
     <div className="sticky top-16 z-30 border-b border-black/[0.05] bg-surface/80 backdrop-blur-xl">
       <div className="container-ac">
-        <nav className="flex gap-1 overflow-x-auto py-2" aria-label="Secciones">
+        {/* pr móvil: deja libre la esquina del botón de espacios de la comunidad */}
+        <nav className="flex gap-1 overflow-x-auto py-2 pr-24 lg:pr-0" aria-label="Secciones">
           {PLATFORM_SECTIONS.map((s) => {
             const active = pathname.startsWith(s.base);
             const soon = s.key !== "comunidad";

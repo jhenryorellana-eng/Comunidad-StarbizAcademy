@@ -61,6 +61,8 @@
   html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+    /* La página nunca se corre en horizontal (clip no rompe position:sticky). */
+    overflow-x: clip;
   }
   body {
     background-color: var(--color-cream);

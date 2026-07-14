@@ -71,7 +71,7 @@ function PlayerBar({
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 90, opacity: 0 }}
           transition={{ type: "spring", stiffness: 380, damping: 34 }}
-          className="fixed inset-x-0 bottom-16 z-40 lg:bottom-0"
+          className="fixed inset-x-0 bottom-0 z-40"
         >
           <div className="container-ac pb-2 lg:pb-3">
             <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-navy/95 px-4 py-3 text-white shadow-[0_-8px_40px_rgba(26,39,68,0.35)] backdrop-blur-xl">

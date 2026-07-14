@@ -222,7 +222,7 @@ function PostCard({
 
       {post.videoUrl && <VideoEmbed videoUrl={post.videoUrl} title={post.title} />}
 
-      <div className="mt-4 flex items-center gap-4 border-t border-surface-line pt-3 text-sm">
+      <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-surface-line pt-3 text-sm sm:gap-x-4">
         <button
           onClick={toggleReaction}
           className={cn(
