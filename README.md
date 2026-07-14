@@ -2,8 +2,8 @@
 
 La plataforma del **Ecosistema Familiar**: CEO Junior para adolescentes 14+ y Padres 3.0 para la familia, respaldados por la metodología **GÉNESIS i7™**.
 
-- **Comunidad** (`/comunidad`): Posts (con el tipo estructurado "Mi primera venta"), Miembros (tarjeta de 4 campos con privacidad obligatoria), Eventos (Registrarme + estados En vivo/Pasado con grabación), Blogs (grid editorial con SEO), Podcast (StarVoice con reproductor persistente), Reglas (los 5 no negociables), Tienda y Chat (solo miembros).
-- **Confianza**: botón de reporte en cada post y perfil, consentimiento parental en el registro, apellidos truncados en backend, sin mensajes privados.
+- **Comunidad** (`/comunidad`): Posts (con el tipo estructurado "Mi primera venta", videos de YouTube/Vimeo embebidos y botón Compartir), Miembros (tarjeta de 4 campos con privacidad obligatoria), Eventos (Registrarme + estados En vivo/Pasado con grabación), Blogs (grid editorial con SEO), Podcast (StarVoice con reproductor persistente), Reglas (los 5 no negociables), Tienda y Chat (solo miembros).
+- **Confianza**: botón de reporte en cada post y perfil, **registro parental** (el padre/tutor se registra y crea las cuentas de sus CEO Junior en `/familia`, con fecha de nacimiento validada <18 en el servidor), apellidos truncados en backend, sin mensajes privados.
 - **Admin**: CRUD de eventos, StarVoice, Blogs, cohortes, publicaciones, tienda y reportes.
 
 Marca: **navy profundo (#1a2744) + cyan + estrella dorada**, sobre blanco cálido. Bilingüe (español por defecto).
@@ -52,10 +52,12 @@ Scripts útiles: `npm run typecheck`, `npm run db:reset` (resetea el esquema; re
 
 ```
 /                         Landing — hero + pilares CEO Junior / Padres 3.0 + GÉNESIS i7™
-/login  /signup           Auth (con "qué estás construyendo" + consentimiento parental)
+/login  /signup           Auth — el signup crea SOLO cuentas de padre/tutor
+/familia                  Mi familia — el padre da de alta a sus CEO Junior (menores de 18)
 
 /comunidad                → redirige a Posts (actividad primero)
-/comunidad/posts          Feed: composer fijo, filtros, "Mi primera venta" destacada
+/comunidad/posts          Feed: composer fijo (texto + video), filtros, compartir
+/comunidad/posts/[id]     Detalle de un post — destino de los enlaces compartidos
 /comunidad/miembros       Directorio: 4 campos públicos, filtros país/recién llegados
 /comunidad/eventos        Lista cronológica: Registrarme, En vivo, grabaciones
 /comunidad/blogs          Grid editorial + artículo con SEO (/comunidad/blogs/[slug])

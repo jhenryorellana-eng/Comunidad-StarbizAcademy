@@ -15,6 +15,12 @@ export default async function AdminPosts() {
       <AdminForm action={createAnnouncement} title="Nuevo anuncio" submit="Publicar anuncio">
         <Field label="Título" name="title" required span />
         <TextareaField label="Mensaje" name="body" />
+        <Field
+          label="URL de video (YouTube o Vimeo)"
+          name="videoUrl"
+          placeholder="https://youtube.com/watch?v=…"
+          span
+        />
       </AdminForm>
 
       <div className="space-y-2">

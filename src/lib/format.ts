@@ -83,3 +83,14 @@ export function publicName(fullName: string): string {
 export function readMinutes(body: string): number {
   return Math.max(1, Math.round(body.trim().split(/\s+/).length / 200));
 }
+
+/** Edad en años cumplidos (UTC) — usada para validar cuentas de menores. */
+export function ageInYears(birthdate: Date, now = new Date()): number {
+  let age = now.getUTCFullYear() - birthdate.getUTCFullYear();
+  const beforeBirthday =
+    now.getUTCMonth() < birthdate.getUTCMonth() ||
+    (now.getUTCMonth() === birthdate.getUTCMonth() &&
+      now.getUTCDate() < birthdate.getUTCDate());
+  if (beforeBirthday) age -= 1;
+  return age;
+}

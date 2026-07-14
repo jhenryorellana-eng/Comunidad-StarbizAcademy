@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, isMember } from "@/lib/auth";
 import { getDict } from "@/lib/i18n/server";
-import { publicName } from "@/lib/format";
+import { postInclude, toPostDTO, reactedPostIds } from "@/lib/posts";
 import { SpaceHeader, SpaceBanner } from "@/components/community/SpaceHeader";
 import { PostComposer } from "@/components/community/PostComposer";
 import { PostFeed, type PostDTO } from "@/components/community/PostFeed";
@@ -27,48 +27,13 @@ export default async function PostsPage({
       filtro === "populares"
         ? { reactions: { _count: "desc" } }
         : { createdAt: "desc" },
-    include: {
-      author: { select: { name: true, role: true, createdAt: true } },
-      comments: {
-        orderBy: { createdAt: "asc" },
-        include: { author: { select: { name: true } } },
-      },
-      _count: { select: { reactions: true } },
-    },
+    include: postInclude,
   });
 
-  const myReacted = user
-    ? new Set(
-        (
-          await prisma.reaction.findMany({
-            where: { userId: user.id, postId: { in: posts.map((p) => p.id) } },
-            select: { postId: true },
-          })
-        ).map((r) => r.postId),
-      )
-    : new Set<string>();
+  const myReacted = await reactedPostIds(user?.id, posts.map((p) => p.id));
 
-  // Privacy: full last names never leave the server — truncate here.
-  const dto: PostDTO[] = posts.map((p) => ({
-    id: p.id,
-    title: p.title,
-    body: p.body,
-    category: p.category,
-    createdAt: p.createdAt.toISOString(),
-    author: {
-      name: publicName(p.author.name),
-      role: p.author.role,
-      createdAt: p.author.createdAt.toISOString(),
-    },
-    reactionCount: p._count.reactions,
-    reactedByMe: myReacted.has(p.id),
-    comments: p.comments.map((c) => ({
-      id: c.id,
-      body: c.body,
-      createdAt: c.createdAt.toISOString(),
-      author: { name: publicName(c.author.name) },
-    })),
-  }));
+  // Privacy: full last names never leave the server — truncated in toPostDTO.
+  const dto: PostDTO[] = posts.map((p) => toPostDTO(p, myReacted));
 
   const tabs: Array<[(typeof FILTERS)[number], string]> = [
     ["recientes", P.filterRecent],

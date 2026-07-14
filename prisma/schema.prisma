@@ -17,18 +17,23 @@ datasource db {
 // role: VISITOR | MEMBER | PARENT | MENTOR | ADMIN
 // ----------------------------------------------------------------------------
 model User {
-  id              String   @id @default(cuid())
+  id              String    @id @default(cuid())
   name            String
-  email           String   @unique
+  email           String    @unique
   passwordHash    String
-  role            String   @default("MEMBER")
+  role            String    @default("MEMBER")
   avatar          String? // url or null -> initials avatar
   bio             String?
   country         String?
   building        String? // "Qué estoy construyendo" — max 60 chars, público
-  parentalConsent Boolean  @default(false)
-  locale          String   @default("es")
-  createdAt       DateTime @default(now())
+  parentalConsent Boolean   @default(false)
+  birthdate       DateTime? // solo menores (MEMBER creado por su padre) — NUNCA público
+  parentId        String? // cuenta PARENT que creó y responde por este menor
+  locale          String    @default("es")
+  createdAt       DateTime  @default(now())
+
+  parent   User?  @relation("Family", fields: [parentId], references: [id], onDelete: SetNull)
+  children User[] @relation("Family")
 
   posts     Post[]
   comments  Comment[]
@@ -37,6 +42,7 @@ model User {
   messages  Message[]
 
   @@index([role])
+  @@index([parentId])
 }
 
 // ----------------------------------------------------------------------------
@@ -50,6 +56,7 @@ model Post {
   body      String
   category  String   @default("COMMUNITY")
   image     String?
+  videoUrl  String? // YouTube/Vimeo — validado server-side, embebido en el feed
   createdAt DateTime @default(now())
 
   author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)

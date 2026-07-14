@@ -41,9 +41,18 @@ export function AuthControls({
 
   return (
     <div className="flex items-center gap-3">
+      {user.role === "PARENT" && (
+        <Link
+          href="/familia"
+          className={`hidden text-sm font-medium hover:text-cyan sm:block ${textColor}`}
+        >
+          {dict.nav.family}
+        </Link>
+      )}
       <Link
         href={
-          user.role === "ADMIN" ? "/admin" : "/comunidad"
+          // El avatar del padre lleva a Mi familia (en móvil es su único acceso).
+          user.role === "ADMIN" ? "/admin" : user.role === "PARENT" ? "/familia" : "/comunidad"
         }
         className="flex items-center gap-2"
       >

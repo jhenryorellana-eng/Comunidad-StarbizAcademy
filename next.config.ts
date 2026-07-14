@@ -6,6 +6,10 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
   },
+  // Miniaturas de video en el feed (fachada click-to-play).
+  images: {
+    remotePatterns: [{ protocol: "https", hostname: "i.ytimg.com" }],
+  },
   // Old English routes → the Spanish community routes (spec: /comunidad/*).
   async redirects() {
     return [

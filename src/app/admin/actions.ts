@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { parseVideoUrl } from "@/lib/video";
 
 async function requireAdmin() {
   const s = await getSession();
@@ -224,12 +225,15 @@ export async function createAnnouncement(fd: FormData) {
   const admin = await requireAdmin();
   const title = str(fd, "title");
   if (!title) return;
+  // Solo se guarda el video si el parser lo reconoce (YouTube/Vimeo).
+  const rawVideo = str(fd, "videoUrl");
   await prisma.post.create({
     data: {
       authorId: admin.sub,
       title,
       body: str(fd, "body"),
       category: "ANNOUNCEMENT",
+      videoUrl: rawVideo && parseVideoUrl(rawVideo) ? rawVideo : null,
     },
   });
   revalidatePath("/admin/posts");

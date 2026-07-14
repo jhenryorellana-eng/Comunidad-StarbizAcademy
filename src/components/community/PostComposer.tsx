@@ -7,6 +7,7 @@ import { useI18n } from "@/lib/i18n/client";
 import { useToast } from "@/components/Toast";
 import { Avatar, Button, Input, Textarea, cn } from "@/components/ui";
 import { Icon } from "@/components/icons";
+import { parseVideoUrl } from "@/lib/video";
 
 type Mode = "normal" | "firstSale";
 
@@ -19,11 +20,17 @@ export function PostComposer({ userName }: { userName: string }) {
   const [mode, setMode] = useState<Mode>("normal");
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [video, setVideo] = useState("");
   const [sale, setSale] = useState({ sold: "", to: "", amount: "", learned: "" });
   const [loading, setLoading] = useState(false);
 
+  const videoInfo = video.trim() ? parseVideoUrl(video) : null;
+  const videoOk = !video.trim() || !!videoInfo;
   const saleReady = sale.sold.trim() && sale.to.trim() && sale.amount.trim() && sale.learned.trim();
-  const ready = mode === "firstSale" ? !!(title.trim() && saleReady) : !!(title.trim() && body.trim());
+  const ready =
+    mode === "firstSale"
+      ? !!(title.trim() && saleReady)
+      : !!(title.trim() && body.trim() && videoOk);
 
   async function submit() {
     if (!ready) return;
@@ -31,7 +38,7 @@ export function PostComposer({ userName }: { userName: string }) {
     const payload =
       mode === "firstSale"
         ? { title, body: JSON.stringify(sale), category: "FIRST_SALE" }
-        : { title, body };
+        : { title, body, videoUrl: video.trim() || undefined };
     const res = await fetch("/api/posts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -41,6 +48,7 @@ export function PostComposer({ userName }: { userName: string }) {
     if (res.ok) {
       setTitle("");
       setBody("");
+      setVideo("");
       setSale({ sold: "", to: "", amount: "", learned: "" });
       setOpen(false);
       setMode("normal");
@@ -118,12 +126,45 @@ export function PostComposer({ userName }: { userName: string }) {
               </div>
 
               {mode === "normal" ? (
-                <Textarea
-                  rows={4}
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  placeholder={P.composerPlaceholder}
-                />
+                <>
+                  <Textarea
+                    rows={4}
+                    value={body}
+                    onChange={(e) => setBody(e.target.value)}
+                    placeholder={P.composerPlaceholder}
+                  />
+                  {/* Video opcional: solo enlaces de YouTube/Vimeo */}
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={cn(
+                          "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-colors",
+                          videoInfo
+                            ? "border-cyan/50 bg-cyan-50 text-cyan"
+                            : "border-surface-line text-muted",
+                        )}
+                        aria-hidden
+                      >
+                        <Icon name="play" size={15} />
+                      </span>
+                      <Input
+                        value={video}
+                        onChange={(e) => setVideo(e.target.value)}
+                        placeholder={P.videoLabel}
+                        className="flex-1"
+                      />
+                    </div>
+                    {video.trim() && !videoInfo && (
+                      <p className="mt-1.5 text-xs text-rose-600">{P.videoInvalid}</p>
+                    )}
+                    {videoInfo && (
+                      <p className="mt-1.5 flex items-center gap-1.5 text-xs text-cyan-700">
+                        <Icon name="check" size={13} />
+                        {P.videoReady} · {videoInfo.provider === "youtube" ? "YouTube" : "Vimeo"}
+                      </p>
+                    )}
+                  </div>
+                </>
               ) : (
                 // "Mi primera venta" — estructurado, no texto libre
                 <div className="grid gap-3 sm:grid-cols-2">

@@ -114,6 +114,12 @@ async function main() {
     },
   });
 
+  // Registro parental: Roberto (Padres 3.0) dio de alta a su hijo Mateo.
+  await prisma.user.update({
+    where: { id: mateo.id },
+    data: { parentId: roberto.id, birthdate: new Date("2011-04-12T00:00:00Z") },
+  });
+
   console.log("Seeding countries & cohorts…");
   const usa = await prisma.country.create({
     data: { name: "Estados Unidos", code: "US", flag: "🇺🇸" },
@@ -367,6 +373,8 @@ async function main() {
       title: "Recordatorio: taller StarEmpresa este viernes",
       body: "Nos vemos el viernes para analizar el caso Tesla. Traigan preguntas — pensamiento empresarial de élite, sin excusas.",
       category: "ANNOUNCEMENT",
+      // Demo del video embebido en el feed (charla TED de ejemplo)
+      videoUrl: "https://www.youtube.com/watch?v=iG9CE55wbtY",
       createdAt: at(-3, 8),
     },
   });

@@ -7,6 +7,8 @@ import { Avatar, Badge, Input, cn } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { timeAgo } from "@/lib/format";
 import { ReportButton } from "./ReportButton";
+import { ShareButton } from "./ShareButton";
+import { VideoEmbed } from "./VideoEmbed";
 import type { FirstSale } from "@/lib/constants";
 
 export type CommentDTO = {
@@ -20,6 +22,7 @@ export type PostDTO = {
   title: string;
   body: string;
   category: string;
+  videoUrl: string | null;
   createdAt: string;
   author: { name: string; role: string; createdAt: string };
   reactionCount: number;
@@ -30,9 +33,12 @@ export type PostDTO = {
 export function PostFeed({
   posts,
   loggedIn,
+  openComments = false,
 }: {
   posts: PostDTO[];
   loggedIn: boolean;
+  /** true en la página de detalle: los comentarios llegan desplegados. */
+  openComments?: boolean;
 }) {
   const { dict } = useI18n();
   if (posts.length === 0) {
@@ -48,7 +54,7 @@ export function PostFeed({
   return (
     <div className="space-y-5">
       {posts.map((p) => (
-        <PostCard key={p.id} post={p} loggedIn={loggedIn} />
+        <PostCard key={p.id} post={p} loggedIn={loggedIn} openComments={openComments} />
       ))}
     </div>
   );
@@ -64,13 +70,21 @@ function parseFirstSale(body: string): FirstSale | null {
   return null;
 }
 
-function PostCard({ post, loggedIn }: { post: PostDTO; loggedIn: boolean }) {
+function PostCard({
+  post,
+  loggedIn,
+  openComments = false,
+}: {
+  post: PostDTO;
+  loggedIn: boolean;
+  openComments?: boolean;
+}) {
   const { locale, dict } = useI18n();
   const P = dict.community.posts;
   const [reacted, setReacted] = useState(post.reactedByMe);
   const [count, setCount] = useState(post.reactionCount);
   const [comments, setComments] = useState<CommentDTO[]>(post.comments);
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(openComments);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -206,6 +220,8 @@ function PostCard({ post, loggedIn }: { post: PostDTO; loggedIn: boolean }) {
         </p>
       )}
 
+      {post.videoUrl && <VideoEmbed videoUrl={post.videoUrl} title={post.title} />}
+
       <div className="mt-4 flex items-center gap-4 border-t border-surface-line pt-3 text-sm">
         <button
           onClick={toggleReaction}
@@ -231,6 +247,7 @@ function PostCard({ post, loggedIn }: { post: PostDTO; loggedIn: boolean }) {
           {comments.length > 0 && <span>{comments.length}</span>}
           <span>{P.comments}</span>
         </button>
+        <ShareButton postId={post.id} title={post.title} />
         {/* Botón de reporte visible en cada post */}
         <ReportButton targetType="POST" targetId={post.id} className="ml-auto" />
       </div>

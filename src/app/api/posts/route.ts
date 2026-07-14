@@ -2,6 +2,7 @@ import { type NextRequest } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getSession, isMember } from "@/lib/auth";
+import { parseVideoUrl } from "@/lib/video";
 
 const firstSaleSchema = z.object({
   sold: z.string().trim().min(1).max(200),
@@ -14,6 +15,7 @@ const schema = z.object({
   title: z.string().trim().min(3).max(160),
   body: z.string().trim().min(1).max(5000),
   category: z.enum(["COMMUNITY", "VOICE", "ANNOUNCEMENT", "FIRST_SALE"]).optional(),
+  videoUrl: z.string().trim().max(300).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -38,12 +40,19 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Solo se guardan videos de YouTube/Vimeo verificados por el parser.
+  const videoUrl = parsed.data.videoUrl || null;
+  if (videoUrl && !parseVideoUrl(videoUrl)) {
+    return Response.json({ error: "video" }, { status: 400 });
+  }
+
   const post = await prisma.post.create({
     data: {
       authorId: session!.sub,
       title: parsed.data.title,
       body: parsed.data.body,
       category: parsed.data.category ?? "COMMUNITY",
+      videoUrl,
     },
   });
   return Response.json({ id: post.id }, { status: 201 });
