@@ -62,19 +62,6 @@ async function main() {
       bio: "CEO Junior · Cohorte Provo. Construyendo mi primer producto digital con StarEduca.",
     },
   });
-  const valentina = await prisma.user.create({
-    data: {
-      name: "Valentina Cruz",
-      email: "valentina@example.com",
-      building: "Mi primer curso de repostería online",
-      parentalConsent: true,
-      passwordHash: pw("password123"),
-      role: "MEMBER",
-      country: "EE.UU.",
-      locale: "es",
-      bio: "Fan de StarBooks. Analizando el caso Tesla en StarEmpresa.",
-    },
-  });
   const ana = await prisma.user.create({
     data: {
       name: "Ana Lucía Mendoza",
@@ -101,20 +88,8 @@ async function main() {
       bio: "Papá de Mateo · Padres 3.0. Aprendiendo inglés con English Together.",
     },
   });
-  const diego = await prisma.user.create({
-    data: {
-      name: "Diego Quispe",
-      email: "diego@example.com",
-      building: "Explorando mi primera idea",
-      parentalConsent: true,
-      passwordHash: pw("password123"),
-      role: "MEMBER",
-      country: "Perú",
-      locale: "es",
-    },
-  });
-
   // Registro parental: Roberto (Padres 3.0) dio de alta a su hijo Mateo.
+  // Todos los MEMBER (jóvenes) del seed tienen padre — es la regla del producto.
   await prisma.user.update({
     where: { id: mateo.id },
     data: { parentId: roberto.id, birthdate: new Date("2011-04-12T00:00:00Z") },
@@ -350,13 +325,12 @@ async function main() {
     data: [
       { postId: p1.id, userId: ana.id, type: "CELEBRATE" },
       { postId: p1.id, userId: roberto.id, type: "CELEBRATE" },
-      { postId: p1.id, userId: valentina.id, type: "LIKE" },
     ],
   });
 
   const p2 = await prisma.post.create({
     data: {
-      authorId: valentina.id,
+      authorId: mateo.id,
       title: "¿Qué herramientas de IA usan para sus productos?",
       body: "Estoy armando mi primer producto digital y quiero saber qué están usando ustedes. ¿Recomendaciones para empezar?",
       category: "COMMUNITY",
@@ -532,7 +506,7 @@ async function main() {
     data: [
       { channelId: general.id, userId: ana.id, body: "¡Bienvenidos al chat de la comunidad! ⭐", createdAt: at(-2, 9) },
       { channelId: general.id, userId: mateo.id, body: "Holaaa, feliz de estar acá.", createdAt: at(-2, 9, 5) },
-      { channelId: general.id, userId: diego.id, body: "¿Alguien para repasar el caso Amazon antes del taller?", createdAt: at(-1, 16) },
+      { channelId: general.id, userId: mateo.id, body: "¿Alguien para repasar el caso Amazon antes del taller?", createdAt: at(-1, 16) },
     ],
   });
 
