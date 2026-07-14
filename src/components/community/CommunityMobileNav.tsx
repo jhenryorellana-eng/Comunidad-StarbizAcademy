@@ -10,16 +10,16 @@ import { Icon, type IconName } from "@/components/icons";
 import { cn } from "@/components/ui";
 
 /**
- * Navegación móvil de la comunidad: un botón de menú en la esquina superior
- * derecha. Al presionarlo, el botón se ESTIRA en horizontal y las secciones
- * aparecen en línea; se toca una y navega. Sin paneles ni hojas.
+ * Navegación móvil de la comunidad: botón de menú en la esquina superior
+ * IZQUIERDA (antes de "Comunidad"). Al presionarlo se abre desde esa esquina
+ * una pestaña vertical con todas las secciones.
  */
 export function CommunityMobileNav({ isMember }: { isMember: boolean }) {
   const { dict } = useI18n();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  // Al navegar, el menú vuelve a ser botón.
+  // Al navegar, la pestaña se cierra sola.
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
@@ -30,7 +30,11 @@ export function CommunityMobileNav({ isMember }: { isMember: boolean }) {
       if (e.key === "Escape") setOpen(false);
     };
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
   }, [open]);
 
   const isActive = (href: string) => pathname.startsWith(href);
@@ -39,105 +43,107 @@ export function CommunityMobileNav({ isMember }: { isMember: boolean }) {
 
   return (
     <div className="lg:hidden">
-      {/* Cierra al tocar fuera (sin oscurecer la página) */}
-      {open && (
-        <button
-          type="button"
-          aria-label={dict.common.close}
-          onClick={() => setOpen(false)}
-          className="fixed inset-0 z-30 cursor-default"
-          tabIndex={-1}
-        />
-      )}
-
-      {/* El botón que se estira en horizontal */}
-      <motion.div
-        className="fixed right-3 top-[4.5rem] z-40 flex items-center overflow-hidden rounded-full border border-navy/15 bg-paper/95 shadow-[0_6px_24px_rgba(26,39,68,0.25)] backdrop-blur-xl"
-        animate={{
-          width: open ? "calc(100vw - 1.5rem)" : 44,
-          height: open ? 62 : 44,
-        }}
-        transition={{ type: "spring", stiffness: 320, damping: 30 }}
+      {/* Botón de menú: esquina superior izquierda, antes de Comunidad */}
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label={dict.community.spacesLabel}
+        aria-expanded={open}
+        className="fixed left-3 top-[4.45rem] z-40 flex h-10 w-10 items-center justify-center rounded-xl bg-navy text-white shadow-[0_5px_20px_rgba(26,39,68,0.35)] transition-transform active:scale-95"
       >
-        {/* Las secciones, en línea horizontal */}
-        <AnimatePresence>
-          {open && (
-            <motion.nav
-              className="flex flex-1 items-center gap-1 overflow-x-auto py-1.5 pl-2 pr-1 [scrollbar-width:none]"
-              initial="hidden"
-              animate="show"
-              exit="hidden"
-              variants={{ show: { transition: { staggerChildren: 0.03 } } }}
-              aria-label={dict.community.spacesLabel}
-            >
-              {COMMUNITY_SPACES.map((s) => {
-                const active = isActive(s.href);
-                const locked = s.gated && !isMember;
-                return (
-                  <motion.div
-                    key={s.key}
-                    variants={{
-                      hidden: { opacity: 0, x: 18 },
-                      show: { opacity: 1, x: 0, transition: { duration: 0.25 } },
-                    }}
-                    className="shrink-0"
-                  >
-                    <Link
-                      href={s.href}
-                      className={cn(
-                        "relative flex w-[3.4rem] flex-col items-center gap-1 rounded-xl px-1 py-1.5 transition-colors active:scale-95",
-                        active ? "bg-navy text-white" : "text-navy/75",
-                        locked && !active && "opacity-55",
-                      )}
-                    >
-                      <Icon
-                        name={s.icon as IconName}
-                        size={19}
-                        className={active ? "text-cyan-bright" : ""}
-                      />
-                      <span className="text-[0.58rem] font-semibold leading-none">
-                        {label(s.key)}
-                      </span>
-                      {active && (
-                        <span
-                          className="absolute inset-x-3 bottom-0.5 h-[2px] rounded-full bg-cyan-bright shadow-[0_0_6px_1.5px_rgba(34,211,238,0.7)]"
-                          aria-hidden
-                        />
-                      )}
-                    </Link>
-                  </motion.div>
-                );
-              })}
-            </motion.nav>
-          )}
-        </AnimatePresence>
+        <Icon name="menu" size={19} />
+        <span
+          className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-cyan-bright shadow-[0_0_6px_2px_rgba(34,211,238,0.7)]"
+          aria-hidden
+        />
+      </button>
 
-        {/* El disparador vive en el extremo derecho del pill */}
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          aria-label={dict.community.spacesLabel}
-          aria-expanded={open}
-          className={cn(
-            "flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors",
-            open ? "text-navy" : "bg-navy text-white",
-          )}
-        >
-          <motion.span
-            animate={{ rotate: open ? 90 : 0 }}
-            transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
-            className="flex"
-          >
-            <Icon name={open ? "close" : "menu"} size={19} />
-          </motion.span>
-          {!open && (
-            <span
-              className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-cyan-bright shadow-[0_0_6px_2px_rgba(34,211,238,0.7)]"
-              aria-hidden
+      {/* La pestaña vertical que se abre desde la esquina izquierda */}
+      <AnimatePresence>
+        {open && (
+          <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
+            <motion.div
+              className="absolute inset-0 bg-navy/35 backdrop-blur-[2px]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setOpen(false)}
             />
-          )}
-        </button>
-      </motion.div>
+            <motion.div
+              className="absolute left-3 top-[4.45rem] w-[min(76vw,290px)] overflow-hidden rounded-2xl border border-white/50 bg-paper/95 shadow-2xl backdrop-blur-xl"
+              initial={{ clipPath: "inset(0 100% 100% 0 round 16px)", opacity: 0.5 }}
+              animate={{ clipPath: "inset(0 0% 0% 0 round 16px)", opacity: 1 }}
+              exit={{ clipPath: "inset(0 100% 100% 0 round 16px)", opacity: 0 }}
+              transition={{ duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
+            >
+              <div className="flex items-center justify-between px-4 pb-1 pt-3.5">
+                <span className="font-display text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+                  {dict.community.spacesLabel}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  aria-label={dict.common.close}
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-muted active:bg-navy/[0.06]"
+                >
+                  <Icon name="close" size={16} />
+                </button>
+              </div>
+
+              {/* Todas las secciones, en vertical */}
+              <motion.nav
+                className="flex flex-col gap-1 px-3 pb-3.5 pt-1"
+                initial="hidden"
+                animate="show"
+                variants={{ show: { transition: { staggerChildren: 0.035, delayChildren: 0.08 } } }}
+              >
+                {COMMUNITY_SPACES.map((s) => {
+                  const active = isActive(s.href);
+                  const locked = s.gated && !isMember;
+                  return (
+                    <motion.div
+                      key={s.key}
+                      variants={{
+                        hidden: { opacity: 0, x: -16 },
+                        show: { opacity: 1, x: 0, transition: { duration: 0.25 } },
+                      }}
+                    >
+                      <Link
+                        href={s.href}
+                        className={cn(
+                          "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[0.95rem] font-medium transition-colors active:scale-[0.98]",
+                          active ? "bg-navy text-white" : "text-ink hover:bg-navy/[0.05]",
+                          locked && !active && "opacity-60",
+                        )}
+                      >
+                        {active && (
+                          <span
+                            className="absolute inset-y-2 left-0 w-[3px] rounded-full bg-cyan-bright shadow-[0_0_8px_2px_rgba(34,211,238,0.7)]"
+                            aria-hidden
+                          />
+                        )}
+                        <span
+                          className={cn(
+                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                            active ? "bg-white/10 text-cyan-bright" : "bg-cyan-50 text-cyan",
+                          )}
+                        >
+                          <Icon name={s.icon as IconName} size={17} />
+                        </span>
+                        <span>{label(s.key)}</span>
+                        {locked && (
+                          <Icon name="lock" size={13} className="ml-auto opacity-60" />
+                        )}
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </motion.nav>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
