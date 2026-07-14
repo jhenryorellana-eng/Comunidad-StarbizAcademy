@@ -11,12 +11,19 @@ import { parseVideoUrl } from "@/lib/video";
 
 type Mode = "normal" | "firstSale";
 
-export function PostComposer({ userName }: { userName: string }) {
+export function PostComposer({
+  userName,
+  initialOpen = false,
+}: {
+  userName: string;
+  /** true cuando se llega desde la Órbita con la intención de publicar. */
+  initialOpen?: boolean;
+}) {
   const { locale, dict } = useI18n();
   const P = dict.community.posts;
   const toast = useToast();
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(initialOpen);
   const [mode, setMode] = useState<Mode>("normal");
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");

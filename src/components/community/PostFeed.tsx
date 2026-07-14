@@ -60,7 +60,7 @@ export function PostFeed({
   );
 }
 
-function parseFirstSale(body: string): FirstSale | null {
+export function parseFirstSale(body: string): FirstSale | null {
   try {
     const j = JSON.parse(body);
     if (j && typeof j.sold === "string" && typeof j.learned === "string") return j;

@@ -6,10 +6,29 @@ import { useI18n } from "@/lib/i18n/client";
 import { useToast } from "@/components/Toast";
 import { Icon } from "@/components/icons";
 
+/** Enlace público de un post (destino de todo lo compartido). */
+export function postShareUrl(postId: string): string {
+  return `${window.location.origin}/comunidad/posts/${postId}`;
+}
+
 /**
- * Compartir un post: usa la hoja nativa del sistema cuando existe
- * (navigator.share — en móvil incluye WhatsApp) y si no, abre un mini menú
- * con WhatsApp y "Copiar enlace". El enlace apunta al detalle del post.
+ * Intenta la hoja de compartir nativa (en móvil incluye WhatsApp).
+ * Devuelve true si el sistema se hizo cargo — compartió o el usuario la cerró.
+ */
+export async function tryNativeShare(title: string, url: string): Promise<boolean> {
+  if (typeof navigator === "undefined" || !("share" in navigator)) return false;
+  try {
+    await navigator.share({ title, url });
+    return true;
+  } catch (err) {
+    return (err as DOMException)?.name === "AbortError";
+  }
+}
+
+/**
+ * Compartir un post: usa la hoja nativa del sistema cuando existe y si no,
+ * abre un mini menú con WhatsApp y "Copiar enlace". El enlace apunta al
+ * detalle del post.
  */
 export function ShareButton({ postId, title }: { postId: string; title: string }) {
   const { dict } = useI18n();
@@ -17,18 +36,10 @@ export function ShareButton({ postId, title }: { postId: string; title: string }
   const toast = useToast();
   const [open, setOpen] = useState(false);
 
-  const postUrl = () => `${window.location.origin}/comunidad/posts/${postId}`;
+  const postUrl = () => postShareUrl(postId);
 
   async function onShare() {
-    if (typeof navigator !== "undefined" && "share" in navigator) {
-      try {
-        await navigator.share({ title, url: postUrl() });
-        return;
-      } catch (err) {
-        // El usuario cerró la hoja nativa — no hace falta el menú de respaldo.
-        if ((err as DOMException)?.name === "AbortError") return;
-      }
-    }
+    if (await tryNativeShare(title, postUrl())) return;
     setOpen((o) => !o);
   }
 

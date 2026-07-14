@@ -202,6 +202,17 @@ export const es = {
       copyFailed: "No se pudo copiar el enlace",
       backToFeed: "Volver a Posts",
     },
+    orbit: {
+      title: "Órbita",
+      open: "Modo Órbita",
+      exit: "Salir de Órbita",
+      swipe: "Desliza",
+      endTitle: "Fin del recorrido de hoy",
+      endBody:
+        "Ya viste todo lo que la comunidad encendió. El cielo tiene espacio para una estrella más — la tuya.",
+      endCta: "Publica lo que estás construyendo",
+      endHint: "Sin scroll infinito: cuando termina, termina. Así lo diseñamos.",
+    },
     events: {
       title: "Eventos",
       featured: "Evento destacado",
@@ -573,6 +584,17 @@ export const en: typeof es = {
       linkCopied: "Link copied",
       copyFailed: "Couldn't copy the link",
       backToFeed: "Back to Posts",
+    },
+    orbit: {
+      title: "Orbit",
+      open: "Orbit mode",
+      exit: "Exit Orbit",
+      swipe: "Swipe",
+      endTitle: "That's today's full orbit",
+      endBody:
+        "You've seen everything the community lit up. The sky has room for one more star — yours.",
+      endCta: "Post what you're building",
+      endHint: "No infinite scroll: when it ends, it ends. By design.",
     },
     events: {
       title: "Events",

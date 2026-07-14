@@ -6,6 +6,7 @@ import { postInclude, toPostDTO, reactedPostIds } from "@/lib/posts";
 import { SpaceHeader, SpaceBanner } from "@/components/community/SpaceHeader";
 import { PostComposer } from "@/components/community/PostComposer";
 import { PostFeed, type PostDTO } from "@/components/community/PostFeed";
+import { Icon } from "@/components/icons";
 import { cn } from "@/components/ui";
 
 const FILTERS = ["recientes", "populares", "primera-venta"] as const;
@@ -13,9 +14,9 @@ const FILTERS = ["recientes", "populares", "primera-venta"] as const;
 export default async function PostsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filtro?: string }>;
+  searchParams: Promise<{ filtro?: string; publicar?: string }>;
 }) {
-  const { filtro = "recientes" } = await searchParams;
+  const { filtro = "recientes", publicar } = await searchParams;
   const { dict } = await getDict();
   const P = dict.community.posts;
   const user = await getCurrentUser();
@@ -47,7 +48,7 @@ export default async function PostsPage({
       <SpaceBanner />
 
       {member ? (
-        <PostComposer userName={user!.name} />
+        <PostComposer userName={user!.name} initialOpen={publicar === "1"} />
       ) : (
         <div className="mb-6 rounded-2xl border border-surface-line bg-paper p-4 text-center text-sm text-muted">
           {P.loginToPost}{" "}
@@ -57,7 +58,7 @@ export default async function PostsPage({
         </div>
       )}
 
-      <div className="mb-6 flex flex-wrap gap-2">
+      <div className="mb-6 flex flex-wrap items-center gap-2">
         {tabs.map(([key, label]) => (
           <Link
             key={key}
@@ -74,6 +75,14 @@ export default async function PostsPage({
             {label}
           </Link>
         ))}
+        {/* Modo Órbita: el feed a pantalla completa, un post a la vez */}
+        <Link
+          href="/comunidad/orbita"
+          className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-cyan/40 bg-navy px-4 py-1.5 text-sm font-semibold text-white shadow-[0_0_16px_rgba(34,211,238,0.25)] transition-all hover:border-cyan-bright/70 hover:shadow-[0_0_24px_rgba(34,211,238,0.45)]"
+        >
+          <Icon name="sparkles" size={14} className="text-gold" />
+          {dict.community.orbit.open}
+        </Link>
       </div>
 
       <PostFeed posts={dto} loggedIn={!!user} />
