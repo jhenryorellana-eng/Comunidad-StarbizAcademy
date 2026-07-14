@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 
 /** Small circular star glyph used in the logo — a 4-point "north star". */
 export function StarGlyph({
@@ -29,6 +28,10 @@ export function StarGlyph({
   );
 }
 
+/**
+ * Firma del header: SOLO el wordmark. El arte del logo (que ya incluye el
+ * nombre) vive en el banner de la comunidad — una sola vez por pantalla.
+ */
 export function Logo({
   tone = "dark",
   className,
@@ -38,19 +41,8 @@ export function Logo({
 }) {
   const color = tone === "light" ? "text-white" : "text-navy";
   return (
-    <Link
-      href="/"
-      className={`inline-flex items-center gap-2.5 ${color} ${className ?? ""}`}
-    >
-      <Image
-        src="/logo.png"
-        alt=""
-        width={32}
-        height={32}
-        className="rounded-lg"
-        priority
-      />
-      <span className="whitespace-nowrap font-display text-[0.78rem] uppercase tracking-[0.12em] leading-none max-[430px]:hidden sm:text-[0.92rem] sm:tracking-[0.18em]">
+    <Link href="/" className={`inline-flex items-center ${color} ${className ?? ""}`}>
+      <span className="whitespace-nowrap font-display text-[0.82rem] uppercase leading-none tracking-[0.13em] sm:text-[0.95rem] sm:tracking-[0.18em]">
         <span className="font-extrabold">Starbiz</span>{" "}
         <span className="font-light">Academy</span>
       </span>

@@ -159,7 +159,8 @@ export const es = {
   },
   community: {
     title: "Comunidad",
-    tagline: "El Ecosistema Familiar · CEO Junior + Padres 3.0",
+    taglineMain: "El Ecosistema Familiar",
+    taglineSub: "CEO Junior + Padres 3.0 · Metodología GÉNESIS i7™",
     spaces: {
       posts: "Posts",
       members: "Miembros",
@@ -543,7 +544,8 @@ export const en: typeof es = {
   },
   community: {
     title: "Community",
-    tagline: "The Family Ecosystem · CEO Junior + Padres 3.0",
+    taglineMain: "The Family Ecosystem",
+    taglineSub: "CEO Junior + Padres 3.0 · GÉNESIS i7™ methodology",
     spaces: {
       posts: "Posts",
       members: "Members",

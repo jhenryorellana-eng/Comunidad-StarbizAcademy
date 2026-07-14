@@ -53,34 +53,30 @@ export async function SpaceBanner({ label }: { label?: string }) {
       />
       <NightSky />
 
-      <div className="relative flex aspect-[16/9] flex-col items-center justify-center gap-4 px-6 text-center text-white sm:aspect-[3/1] sm:flex-row sm:gap-7 sm:text-left">
-        {/* El arte original del logo, como pieza central */}
+      {/* El nombre de la marca vive UNA sola vez aquí: dentro del arte del
+          logo. El texto grande es el mensaje, no otra repetición. */}
+      <div className="relative flex aspect-[16/9] flex-col items-center justify-center gap-4 px-6 text-center text-white sm:aspect-[3/1] sm:flex-row sm:gap-8 sm:text-left">
         <Image
           src="/brand/starbiz-logo.png"
           alt="Starbiz Academy"
-          width={128}
-          height={128}
-          className="h-24 w-24 shrink-0 rounded-2xl shadow-[0_0_44px_rgba(82,63,255,0.45)] ring-1 ring-white/20 sm:h-32 sm:w-32"
+          width={144}
+          height={144}
+          className="h-28 w-28 shrink-0 rounded-2xl shadow-[0_0_44px_rgba(82,63,255,0.45)] ring-1 ring-white/20 sm:h-36 sm:w-36"
         />
         <div className="flex flex-col items-center sm:items-start">
-          {label ? (
-            <p className="font-display text-xl font-bold uppercase tracking-[0.14em] sm:text-3xl">
-              {label}
-            </p>
-          ) : (
-            <p className="whitespace-nowrap font-display text-2xl uppercase tracking-[0.14em] sm:text-4xl">
-              <span className="font-extrabold">Starbiz</span>{" "}
-              <span className="font-light">Academy</span>
-            </p>
-          )}
+          <p className="font-display text-2xl font-extrabold leading-tight [text-wrap:balance] sm:text-4xl">
+            {label ?? dict.community.taglineMain}
+          </p>
           {/* Subrayado "orbit": cyan → violeta → naranja → ámbar */}
           <span
-            className="mt-2 h-[3px] w-24 rounded-full bg-[linear-gradient(100deg,#14C6FF_0%,#523FFF_48%,#F87000_78%,#FFBF00_100%)] sm:w-36"
+            className="mt-2.5 h-[3px] w-24 rounded-full bg-[linear-gradient(100deg,#14C6FF_0%,#523FFF_48%,#F87000_78%,#FFBF00_100%)] sm:w-36"
             aria-hidden
           />
-          <p className="mt-2.5 text-xs font-medium tracking-wide text-[#BEB7FF] [text-wrap:balance] sm:text-sm">
-            {dict.community.tagline}
-          </p>
+          {!label && (
+            <p className="mt-2.5 text-sm font-medium tracking-wide text-[#BEB7FF]">
+              {dict.community.taglineSub}
+            </p>
+          )}
         </div>
       </div>
 
