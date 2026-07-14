@@ -159,6 +159,7 @@ export const es = {
   },
   community: {
     title: "Comunidad",
+    tagline: "El Ecosistema Familiar · CEO Junior + Padres 3.0",
     spaces: {
       posts: "Posts",
       members: "Miembros",
@@ -542,6 +543,7 @@ export const en: typeof es = {
   },
   community: {
     title: "Community",
+    tagline: "The Family Ecosystem · CEO Junior + Padres 3.0",
     spaces: {
       posts: "Posts",
       members: "Members",
