@@ -13,18 +13,19 @@ import { useCommunityNav } from "./navContext";
 /* ===========================================================================
    MENÚ DE LA COMUNIDAD (móvil)
 
-   Vidrio esmerilado a media pantalla de ancho y completa de alto. La página
-   sigue viéndose detrás, difuminada.
+   Lámina a media pantalla de ancho y completa de alto, que brota del botón.
 
-   Por qué se mueve así:
+   REGLA DE ORO: durante el gesto sólo se animan `transform` y `opacity`.
+   Son las dos únicas propiedades que el navegador resuelve moviendo una
+   textura ya pintada. Todo lo demás —clip-path, filter, backdrop-filter,
+   box-shadow, width/height— obliga a repintar en cada fotograma, y en un móvil
+   eso se ve como tirones. La primera versión animaba `clip-path` sobre un
+   elemento con `backdrop-filter`, que es la peor combinación de las dos listas.
 
-   · UN SOLO GESTO. La lámina entra como un único objeto con muelle, con el
-     punto de origen puesto en el botón: nace de ahí y vuelve ahí. Sin barridos
-     ni recortes — un borde de recorte cruzando la tipografía es justo lo que
-     hace que una transición se vea barata.
-   · NADA DE `filter: blur` ANIMADO. Desenfocar por fotograma es de lo más caro
-     que hay en móvil y se pinta a saltos. El contenido sólo funde opacidad y
-     un desplazamiento de 6 px, que el compositor resuelve en la GPU.
+   Lo demás sigue igual que antes:
+
+   · UN SOLO GESTO. La lámina entra como un único objeto, con el origen puesto
+     en el botón: nace de ahí y vuelve ahí.
    · CONTENIDO Y LÁMINA NO VIAJAN JUNTOS. Al abrir llega antes la lámina; al
      cerrar el contenido se va primero. Ese desfase es lo que da materia.
    · CERRAR SIEMPRE MÁS RÁPIDO QUE ABRIR. Esperar a que algo desaparezca irrita.
@@ -36,40 +37,13 @@ const PANEL_W = "w-[50vw] min-w-[210px] max-w-[340px]";
 
 /** Curva de salida larga: arranca rápido y se posa. */
 const SOFT = [0.22, 1, 0.36, 1] as const;
-/** Despliegue de la lámina. Con curva, no con muelle: un muelle sobre una
-    geometría de recorte puede pasarse de largo y generar valores inválidos.
-    La curva arranca despacio a propósito: con una salida muy adelantada el
-    panel ya estaba medio abierto en 60 ms y no daba tiempo a leer que la forma
-    de partida ES el botón. */
-const UNFOLD = { duration: 0.56, ease: [0.42, 0, 0.14, 1] } as const;
-/** Cierre: corto y decidido. */
-const EXIT = { duration: 0.3, ease: [0.55, 0, 1, 0.45] } as const;
-
-/** Medio lado del botón de menú (h-9 w-9 → 36px). */
-const BTN_HALF = 18;
-/** Radio del botón (rounded-xl) y del panel abierto. */
-const BTN_RADIUS = 12;
-const PANEL_RADIUS = 28;
-
-/**
- * Recorte con forma de la CAJA DEL BOTÓN dentro del panel.
- *
- * El panel está anclado en (0,0), así que las coordenadas de viewport valen
- * tal cual. Se anima `inset()` —un rectángulo redondeado— en vez de `circle()`:
- * un círculo creciendo deja ver el arco barriendo la tipografía, que es la
- * marca de una transición barata. Un rectángulo que crece se lee como el
- * propio botón expandiéndose.
- */
-function buttonClip(ox: number, oy: number, panelW: number, panelH: number): string {
-  const top = Math.max(0, oy - BTN_HALF);
-  const left = Math.max(0, ox - BTN_HALF);
-  const right = Math.max(0, panelW - (ox + BTN_HALF));
-  const bottom = Math.max(0, panelH - (oy + BTN_HALF));
-  return `inset(${top}px ${right}px ${bottom}px ${left}px round ${BTN_RADIUS}px ${BTN_RADIUS}px ${BTN_RADIUS}px ${BTN_RADIUS}px)`;
-}
-
-/** Recorte del panel entero: sólo redondeado por la derecha. */
-const FULL_CLIP = `inset(0px 0px 0px 0px round 0px ${PANEL_RADIUS}px ${PANEL_RADIUS}px 0px)`;
+/** Despliegue. Se acortó de 0.56s a 0.42s: cuanto menos dura el gesto, menos
+    margen tiene un tirón para hacerse visible — y con transform puro ya no hay
+    razón para estirarlo. Sale rápido y se posa. */
+const UNFOLD = { duration: 0.42, ease: [0.16, 1, 0.3, 1] } as const;
+/** Cierre: siempre más rápido que la apertura. Esperar a que algo desaparezca
+    irrita más que esperar a que aparezca. */
+const EXIT = { duration: 0.22, ease: [0.4, 0, 1, 0.6] } as const;
 
 type Item = {
   key: string;
@@ -110,73 +84,55 @@ export function CommunityNavDrawer() {
   // El origen del gesto es el botón: la lámina crece desde ahí y se recoge ahí.
   const at = `${origin.x}px ${origin.y}px`;
 
-  // Medidas del panel para construir el recorte. Se leen del navegador porque
-  // el ancho depende de `50vw` con topes; el subárbol sólo se monta en cliente
-  // (open arranca en false), así que el valor de reserva nunca llega a verse.
-  const vw = typeof window === "undefined" ? 390 : window.innerWidth;
-  const vh = typeof window === "undefined" ? 800 : window.innerHeight;
-  const panelW = Math.min(340, Math.max(210, vw * 0.5));
-  const seedClip = buttonClip(origin.x, origin.y, panelW, vh);
-
   return (
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true">
           {/* Velo muy leve: el vidrio pierde la gracia si tapa la página. */}
           <motion.div
-            className="absolute inset-0 bg-navy/20"
+            className="absolute inset-0 bg-navy/45"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1, transition: { duration: 0.35, ease: SOFT } }}
+            animate={{ opacity: 1, transition: { duration: 0.26, ease: SOFT } }}
             exit={{ opacity: 0, transition: EXIT }}
             onClick={closeMenu}
           />
 
-          {/* LA LÁMINA — un solo objeto, un solo muelle. */}
+          {/* LA LÁMINA — un solo objeto, un solo gesto.
+
+              Antes esto animaba `clip-path` sobre un elemento con
+              `backdrop-filter`. Esa pareja NO se puede componer en GPU: cada
+              fotograma obliga a muestrear el fondo, desenfocarlo y recortarlo
+              con la geometría nueva. Bajar el radio del desenfoque abarataba el
+              trabajo, pero el trabajo seguía ahí — y se notaba.
+
+              Ahora sólo se animan `transform` y `opacity`, las dos únicas
+              propiedades que nunca repintan, con el origen puesto en el botón.
+              Es exactamente la técnica de los menús contextuales de iOS: la
+              lámina brota del botón y se recoge en él, pero el navegador sólo
+              tiene que mover una textura ya pintada. */}
           <motion.div
             className={cn(
               "absolute left-0 top-0 flex h-full flex-col overflow-hidden rounded-r-[28px]",
-              // El vidrio pasó de blur-2xl (40px) a blur-lg (16px) y el fondo
-              // de 50% a 75% de opacidad. El coste de `backdrop-filter` crece
-              // con el radio, y con el fondo más opaco el resultado se lee casi
-              // igual: sigue viéndose la página detrás, difuminada.
-              "border-r border-white/[0.18] bg-navy/75 backdrop-blur-lg",
-              "shadow-[18px_0_60px_-12px_rgba(6,10,24,0.55)]",
+              // Degradado sólido en vez de vidrio. En un panel navy oscuro se
+              // lee prácticamente igual que el 75% + desenfoque que había, y
+              // deja de costar por fotograma. El velo de detrás se oscureció un
+              // punto para compensar la separación que daba el difuminado.
+              "border-r border-white/[0.18]",
+              // Los dos resplandores (cyan abajo-izquierda, dorado arriba-derecha)
+              // van como degradados radiales del propio fondo. Antes eran dos
+              // <span> con `blur-3xl`: un filtro de 64px dentro de una capa que
+              // escala puede forzar a re-rasterizar durante el gesto. Un
+              // degradado es parte de la textura y no cuesta nada.
+              "bg-[radial-gradient(120%_60%_at_0%_100%,rgba(34,211,238,0.16),transparent_60%),radial-gradient(90%_45%_at_100%_0%,rgba(251,191,36,0.12),transparent_62%),linear-gradient(158deg,#12203c_0%,#0d1830_46%,#0a1020_100%)]",
+              "shadow-[18px_0_60px_-12px_rgba(6,10,24,0.6)]",
               PANEL_W,
             )}
-            // Sin `willChange` a mano: motion promueve la capa durante la
-            // animación y la libera al acabar. Fijarlo aquí dejaba la capa
-            // promovida todo el rato, y sumado al backdrop-filter era caro.
-            // Arranca siendo EXACTAMENTE la caja del botón y crece hasta el
-            // panel; al cerrar hace el camino inverso y se recoge en el botón.
-            initial={{ clipPath: seedClip, opacity: 0 }}
-            animate={{
-              clipPath: FULL_CLIP,
-              opacity: 1,
-              transition: { ...UNFOLD, opacity: { duration: 0.12, ease: "linear" } },
-            }}
-            exit={{
-              clipPath: seedClip,
-              opacity: 0,
-              transition: { ...EXIT, opacity: { duration: 0.12, delay: 0.18, ease: "linear" } },
-            }}
+            style={{ transformOrigin: at }}
+            initial={{ opacity: 0, scale: 0.16 }}
+            animate={{ opacity: 1, scale: 1, transition: UNFOLD }}
+            exit={{ opacity: 0, scale: 0.16, transition: EXIT }}
           >
-            {/* Aquí vivía un <NightSky /> entero: unas cuarenta animaciones
-                infinitas DENTRO de un contenedor con `backdrop-filter`. Esa
-                combinación es la peor posible — el navegador tiene que rehacer
-                el desenfoque en cada fotograma mientras algo se mueva detrás, y
-                no para mientras el menú esté abierto. Detrás de un cristal de
-                50vw las estrellas apenas se distinguían. Se sustituyen por dos
-                resplandores fijos, que es lo que de verdad se veía. */}
-            <span
-              className="pointer-events-none absolute -left-16 bottom-0 h-72 w-72 rounded-full bg-cyan-bright/15 blur-3xl"
-              aria-hidden
-            />
-            <span
-              className="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full bg-gold/10 blur-3xl"
-              aria-hidden
-            />
-
-            {/* Reflejo especular del cristal: una banda de luz muy tenue en el
+            {/* Reflejo especular: una banda de luz muy tenue en el
                 borde superior. Es lo que separa un panel translúcido de uno que
                 parece vidrio de verdad. */}
             <span
@@ -194,14 +150,12 @@ export function CommunityNavDrawer() {
               // Se despliega CON la lámina, tirando desde el botón, y no
               // aparece hasta que la forma ya creció (si no, se leería texto
               // dentro de un cuadradito del tamaño del botón).
-              style={{ transformOrigin: at }}
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{
-                opacity: 1,
-                scale: 1,
-                transition: { duration: 0.34, ease: SOFT, delay: 0.2 },
-              }}
-              exit={{ opacity: 0, scale: 0.97, transition: { duration: 0.12, ease: "linear" } }}
+              // Sólo opacidad: la escala ya se la da el padre. Aparece cuando
+              // la lámina está al ~85% y termina de asentarse con ella, que es
+              // lo que hace que se lea como un objeto y no como dos capas.
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1, transition: { duration: 0.2, ease: "linear", delay: 0.22 } }}
+              exit={{ opacity: 0, transition: { duration: 0.1, ease: "linear" } }}
             >
               <div className="flex items-center justify-between px-4 pt-4">
                 <span className="font-display text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45">
@@ -223,17 +177,13 @@ export function CommunityNavDrawer() {
                   aria-hidden
                 />
                 <nav className="flex flex-col gap-0.5">
-                  {items.map((it, i) => (
-                    <motion.div
-                      key={it.key}
-                      // Sólo opacidad y 6 px: todo compuesto en GPU, sin repintar.
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{
-                        opacity: 1,
-                        y: 0,
-                        transition: { duration: 0.34, ease: SOFT, delay: 0.26 + i * 0.03 },
-                      }}
-                    >
+                  {/* Sin escalonado por item. Antes cada uno llevaba su propia
+                      animación: seis cálculos más por fotograma en el hilo
+                      principal, justo mientras la lámina crece. A 200 ms el
+                      desfase no se percibía — sólo estorbaba. El contenido
+                      entra como un bloque, con el fundido del padre. */}
+                  {items.map((it) => (
+                    <div key={it.key}>
                       <Link
                         href={it.href}
                         onClick={closeMenu}
@@ -272,7 +222,7 @@ export function CommunityNavDrawer() {
                           <Icon name="lock" size={12} className="ml-auto shrink-0 text-white/40" />
                         )}
                       </Link>
-                    </motion.div>
+                    </div>
                   ))}
                 </nav>
               </div>
