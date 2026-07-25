@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
@@ -74,7 +75,17 @@ export async function getSession(): Promise<SessionPayload | null> {
   return verifySession(token);
 }
 
-export async function getCurrentUser() {
+/**
+ * Usuario de la petición actual.
+ *
+ * Envuelto en `cache()` de React: sin esto se consultaba la base UNA VEZ POR
+ * CADA componente que lo pedía —cabecera, layout de comunidad y la propia
+ * página—, tres viajes idénticos a Supabase por navegación. Con una ida y
+ * vuelta medida en 518 ms, eran ~1,5 s regalados en cada carga.
+ * `cache()` deduplica dentro de la misma petición; entre peticiones no guarda
+ * nada, así que la sesión nunca se comparte entre usuarios.
+ */
+export const getCurrentUser = cache(async () => {
   const session = await getSession();
   if (!session) return null;
   return prisma.user.findUnique({
@@ -91,7 +102,7 @@ export async function getCurrentUser() {
       createdAt: true,
     },
   });
-}
+});
 
 export function isMember(role?: string | null): boolean {
   return !!role && MEMBER_ROLES.includes(role as Role);

@@ -8,8 +8,20 @@ import { COMMUNITY_SPACES } from "@/lib/constants";
 import { Icon, type IconName } from "@/components/icons";
 import { cn } from "@/components/ui";
 
-/** Desktop-only vertical sidebar (mobile uses the bottom bar). */
-export function CommunityNav({ isMember }: { isMember: boolean }) {
+/**
+ * Barra lateral de escritorio (en móvil manda el panel de espacios).
+ *
+ * Lleva contadores por espacio: ocho enlaces mudos no cuentan nada de una
+ * comunidad viva, y el número es la señal más barata de que hay actividad
+ * detrás de cada puerta.
+ */
+export function CommunityNav({
+  isMember,
+  counts = {},
+}: {
+  isMember: boolean;
+  counts?: Record<string, number>;
+}) {
   const { dict } = useI18n();
   const pathname = usePathname();
 
@@ -31,6 +43,7 @@ export function CommunityNav({ isMember }: { isMember: boolean }) {
             label={spaceLabel(s.key)}
             active={isActive(s.href)}
             locked={s.gated && !isMember}
+            count={counts[s.key]}
           />
         ))}
 
@@ -44,6 +57,7 @@ export function CommunityNav({ isMember }: { isMember: boolean }) {
             label={spaceLabel(s.key)}
             active={isActive(s.href)}
             locked={s.gated && !isMember}
+            count={counts[s.key]}
           />
         ))}
       </nav>
@@ -57,12 +71,14 @@ function NavItem({
   label,
   active,
   locked,
+  count,
 }: {
   href: string;
   icon: IconName;
   label: string;
   active: boolean;
   locked?: boolean;
+  count?: number;
 }) {
   return (
     <Link
@@ -93,7 +109,21 @@ function NavItem({
         )}
       />
       <span>{label}</span>
-      {locked && <Icon name="lock" size={13} className="ml-auto opacity-60" />}
+      {locked ? (
+        <Icon name="lock" size={13} className="ml-auto opacity-60" />
+      ) : (
+        count !== undefined &&
+        count > 0 && (
+          <span
+            className={cn(
+              "ml-auto rounded-full px-1.5 py-0.5 text-[0.65rem] font-bold tabular-nums transition-colors",
+              active ? "bg-white/12 text-cyan-bright" : "bg-navy/[0.06] text-muted",
+            )}
+          >
+            {count}
+          </span>
+        )
+      )}
     </Link>
   );
 }

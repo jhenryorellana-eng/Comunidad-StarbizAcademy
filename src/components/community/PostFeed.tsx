@@ -10,6 +10,7 @@ import { ReportButton } from "./ReportButton";
 import { ShareButton } from "./ShareButton";
 import { VideoEmbed } from "./VideoEmbed";
 import type { FirstSale } from "@/lib/constants";
+import { BootcampAccessBox } from "@/components/bootcamp/BootcampAccessBox";
 
 export type CommentDTO = {
   id: string;
@@ -23,6 +24,8 @@ export type PostDTO = {
   body: string;
   category: string;
   videoUrl: string | null;
+  /** Fijado al principio del feed por el equipo. */
+  pinned: boolean;
   createdAt: string;
   author: { name: string; role: string; createdAt: string };
   reactionCount: number;
@@ -53,8 +56,22 @@ export function PostFeed({
   }
   return (
     <div className="space-y-5">
-      {posts.map((p) => (
-        <PostCard key={p.id} post={p} loggedIn={loggedIn} openComments={openComments} />
+      {posts.map((p, i) => (
+        // Entrada escalonada: los posts no aparecen de golpe, se van posando.
+        // Sólo los primeros llevan retardo — más allá del pliegue nadie lo ve
+        // y encadenar 20 retardos sólo retrasaría el contenido.
+        <motion.div
+          key={p.id}
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: 0.45,
+            ease: [0.22, 1, 0.36, 1],
+            delay: Math.min(i, 4) * 0.07,
+          }}
+        >
+          <PostCard post={p} loggedIn={loggedIn} openComments={openComments} />
+        </motion.div>
       ))}
     </div>
   );
@@ -142,10 +159,15 @@ function PostCard({
     <article
       className={cn(
         "relative rounded-2xl border bg-paper p-6",
+        // En escritorio hay cursor: la tarjeta responde a él. Se eleva, el
+        // borde se templa y aparece una sombra de color de marca.
+        "transition-all duration-300 lg:hover:-translate-y-0.5",
         // "Mi primera venta" se destaca: borde cian + estrella
         post.category === "FIRST_SALE"
-          ? "border-cyan/50 shadow-[0_0_28px_rgba(8,145,178,0.12)]"
-          : "border-surface-line",
+          ? "border-cyan/50 shadow-[0_0_28px_rgba(8,145,178,0.12)] lg:hover:border-cyan/80 lg:hover:shadow-[0_16px_38px_-14px_rgba(8,145,178,0.4)]"
+          : post.pinned
+            ? "border-gold/45 shadow-[0_0_28px_rgba(251,191,36,0.10)] lg:hover:border-gold/70 lg:hover:shadow-[0_16px_38px_-14px_rgba(251,191,36,0.45)]"
+            : "border-surface-line lg:hover:border-cyan/30 lg:hover:shadow-[0_16px_38px_-16px_rgba(8,145,178,0.30)]",
       )}
     >
       {post.category === "FIRST_SALE" && (
@@ -164,6 +186,15 @@ function PostCard({
           {post.title}
         </h2>
         <div className="flex shrink-0 items-center gap-2">
+          {post.pinned && (
+            <span
+              className="inline-flex items-center gap-1 rounded-full bg-gold/15 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wide text-gold-700"
+              title={P.pinned}
+            >
+              <Icon name="pin" size={10} />
+              {P.pinned}
+            </span>
+          )}
           {post.category === "FIRST_SALE" ? (
             <Badge tone="cyan">{P.firstSaleBadge}</Badge>
           ) : (
@@ -173,7 +204,19 @@ function PostCard({
       </div>
 
       <div className="mt-3 flex items-center gap-3">
-        <Avatar name={post.author.name} size={38} />
+        {/* Anillo de rol: quién habla se ve antes de leer el nombre. */}
+        <Avatar
+          name={post.author.name}
+          size={38}
+          className={cn(
+            "ring-2 ring-offset-2 ring-offset-paper",
+            post.author.role === "ADMIN"
+              ? "ring-gold/70"
+              : post.author.role === "MENTOR"
+                ? "ring-cyan/60"
+                : "ring-transparent",
+          )}
+        />
         <div className="text-sm">
           <p className="font-semibold text-navy">
             {post.author.name}{" "}
@@ -215,12 +258,24 @@ function PostCard({
           </div>
         </dl>
       ) : (
-        <p className="mt-4 whitespace-pre-line text-base leading-relaxed text-ink/90">
+        // Medida de lectura acotada: a ancho completo daba 104 caracteres por
+        // línea y el rango cómodo es 60–75. Pasado ese punto el ojo pierde el
+        // renglón al volver a la izquierda y cansa sin que el lector sepa por
+        // qué. Medida explícita y no `ch`, porque `ch` mide el ancho del cero
+        // —más ancho que la media de la prosa— y se queda corto. En escritorio
+        // sube además a 17px: ancho justo y cuerpo mayor es más cómodo que
+        // ancho justo a secas.
+        <p className="mt-4 max-w-[37rem] whitespace-pre-line text-base leading-relaxed text-ink/90 sm:text-[1.0625rem]">
           {post.body}
         </p>
       )}
 
       {post.videoUrl && <VideoEmbed videoUrl={post.videoUrl} title={post.title} />}
+
+      {/* El anuncio fijado del bootcamp lleva su cuadro de acceso dentro: el
+          CTA hereda así la prueba social del propio post (autor, reacciones y
+          la conversación de los comentarios). */}
+      {post.pinned && post.category === "BOOTCAMP" && <BootcampAccessBox />}
 
       <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-surface-line pt-3 text-sm sm:gap-x-4">
         <button

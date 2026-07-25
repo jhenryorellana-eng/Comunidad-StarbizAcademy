@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { useI18n } from "@/lib/i18n/client";
@@ -11,18 +12,23 @@ import { cn } from "@/components/ui";
  * Top-level section switcher — Comunidad · Padres · StarbizAcademy.
  * Sticky under the header on every section, desktop and mobile.
  */
-export function SectionTabs() {
+export function SectionTabs({ leading }: { leading?: ReactNode }) {
   const { dict } = useI18n();
   const pathname = usePathname();
 
   return (
-    <div className="sticky top-16 z-30 border-b border-black/[0.05] bg-surface/80 backdrop-blur-xl">
+    <div className="scroll-lift sticky top-16 z-30 border-b border-black/[0.05] bg-surface/80 backdrop-blur-xl">
       <div className="container-ac">
-        {/* pl móvil: el botón de espacios de la comunidad va primero, a la izquierda */}
-        <nav className="flex gap-1 overflow-x-auto py-2 pl-12 lg:pl-0" aria-label="Secciones">
+        <nav className="flex items-center gap-1 overflow-x-auto py-2" aria-label="Secciones">
+          {/* El botón de espacios de la comunidad va primero, en el flujo: así
+              sigue a esta barra aunque cambie la altura de la cabecera. */}
+          {leading}
           {PLATFORM_SECTIONS.map((s) => {
             const active = pathname.startsWith(s.base);
-            const soon = s.key !== "comunidad";
+            const soon = !s.live;
+            // El bootcamp es la única sección viva además de Comunidad, y es
+            // temporal: se marca en dorado para que no pase desapercibida.
+            const isNew = s.key === "bootcamp";
             return (
               <Link
                 key={s.key}
@@ -42,10 +48,21 @@ export function SectionTabs() {
                     aria-hidden
                   />
                 )}
+                {isNew && !active && (
+                  <span
+                    className="animate-led h-1.5 w-1.5 rounded-full bg-gold shadow-[0_0_6px_2px_rgba(251,191,36,0.75)]"
+                    aria-hidden
+                  />
+                )}
                 {dict.sections[s.key]}
                 {soon && !active && (
                   <span className="rounded-full bg-gold/15 px-1.5 py-px text-[0.6rem] font-bold uppercase tracking-wide text-gold-700">
                     {dict.sections.soonBadge}
+                  </span>
+                )}
+                {isNew && !active && (
+                  <span className="rounded-full bg-gold px-1.5 py-px text-[0.6rem] font-bold uppercase tracking-wide text-navy">
+                    {dict.sections.newBadge}
                   </span>
                 )}
               </Link>

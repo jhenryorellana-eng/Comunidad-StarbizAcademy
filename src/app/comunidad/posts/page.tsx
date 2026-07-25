@@ -9,25 +9,40 @@ import { PostFeed, type PostDTO } from "@/components/community/PostFeed";
 import { Icon } from "@/components/icons";
 import { cn } from "@/components/ui";
 
-const FILTERS = ["recientes", "populares", "primera-venta"] as const;
+const FILTERS = ["recientes", "populares", "primera-venta", "bootcamp"] as const;
+type Filter = (typeof FILTERS)[number];
+
+/** Cada filtro que acota por categoría; el resto muestra el feed completo. */
+const FILTER_CATEGORY: Partial<Record<Filter, string>> = {
+  "primera-venta": "FIRST_SALE",
+  bootcamp: "BOOTCAMP",
+};
 
 export default async function PostsPage({
   searchParams,
 }: {
   searchParams: Promise<{ filtro?: string; publicar?: string }>;
 }) {
-  const { filtro = "recientes", publicar } = await searchParams;
+  const { filtro: raw, publicar } = await searchParams;
+  // Un ?filtro= desconocido cae en "recientes" en vez de vaciar el feed.
+  const filtro: Filter = FILTERS.includes(raw as Filter) ? (raw as Filter) : "recientes";
   const { dict } = await getDict();
   const P = dict.community.posts;
   const user = await getCurrentUser();
   const member = isMember(user?.role);
 
+  const category = FILTER_CATEGORY[filtro];
   const posts = await prisma.post.findMany({
-    where: filtro === "primera-venta" ? { category: "FIRST_SALE" } : {},
+    where: category ? { category } : {},
+    // El post fijado abre el feed. Sólo en "recientes": en "populares" manda
+    // el número de reacciones, y en los filtros por categoría un anuncio
+    // fijado arriba sería ruido.
     orderBy:
       filtro === "populares"
         ? { reactions: { _count: "desc" } }
-        : { createdAt: "desc" },
+        : filtro === "recientes"
+          ? [{ pinned: "desc" as const }, { createdAt: "desc" as const }]
+          : { createdAt: "desc" },
     include: postInclude,
   });
 
@@ -36,10 +51,11 @@ export default async function PostsPage({
   // Privacy: full last names never leave the server — truncated in toPostDTO.
   const dto: PostDTO[] = posts.map((p) => toPostDTO(p, myReacted));
 
-  const tabs: Array<[(typeof FILTERS)[number], string]> = [
+  const tabs: Array<[Filter, string]> = [
     ["recientes", P.filterRecent],
     ["populares", P.filterPopular],
     ["primera-venta", P.filterFirstSale],
+    ["bootcamp", P.filterBootcamp],
   ];
 
   return (
@@ -69,9 +85,13 @@ export default async function PostsPage({
                 ? "border-navy bg-navy text-white"
                 : "border-surface-line bg-paper text-ink hover:border-navy/30",
               key === "primera-venta" && filtro !== key && "text-cyan-700",
+              key === "bootcamp" &&
+                filtro !== key &&
+                "border-gold/45 bg-gold/10 font-semibold text-gold-700 hover:border-gold",
             )}
           >
             {key === "primera-venta" ? "⭐ " : ""}
+            {key === "bootcamp" ? "🚀 " : ""}
             {label}
           </Link>
         ))}

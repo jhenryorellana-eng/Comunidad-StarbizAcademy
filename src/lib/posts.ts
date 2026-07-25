@@ -27,6 +27,7 @@ export function toPostDTO(p: PostWithRelations, myReacted: Set<string>): PostDTO
     body: p.body,
     category: p.category,
     videoUrl: p.videoUrl,
+    pinned: p.pinned,
     createdAt: p.createdAt.toISOString(),
     author: {
       name: publicName(p.author.name),

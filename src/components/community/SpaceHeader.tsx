@@ -1,8 +1,7 @@
-import Image from "next/image";
 import { Icon, type IconName } from "@/components/icons";
+import { BannerLogo } from "./BannerLogo";
 import { NightSky } from "@/components/Constellation";
 import { getDict } from "@/lib/i18n/server";
-import { cn } from "@/components/ui";
 
 export function SpaceHeader({
   icon,
@@ -26,48 +25,28 @@ export function SpaceHeader({
   );
 }
 
-// Esquinas HUD del visor del logo (mismo lenguaje que el hero de la landing).
-const HUD_CORNERS = [
-  "left-0 top-0 rounded-tl-lg border-l-2 border-t-2",
-  "right-0 top-0 rounded-tr-lg border-r-2 border-t-2",
-  "left-0 bottom-0 rounded-bl-lg border-b-2 border-l-2",
-  "right-0 bottom-0 rounded-br-lg border-b-2 border-r-2",
-] as const;
+/* Paleta real del arte del logo (nebulosa magenta/violeta sobre índigo) y del
+   brand system oficial: bruma magenta #CF116D y violeta #523FFF. */
+const NEBULA_MAGENTA = "rgba(207,17,109,0.55)";
+const NEBULA_VIOLET = "rgba(82,63,255,0.45)";
 
 // Cometas del banner: [left%, top%, ángulo, delay s, período s, largo px, color, estela]
+// Un ÚNICO cometa. Con la nebulosa del logo ya hay actividad de sobra; dos
+// cometas convertían la portada en una feria.
 const BANNER_COMETS: Array<[number, number, number, number, number, number, string, string]> = [
-  [6, 16, 21, 1.2, 9, 150, "rgba(255,255,255,0.95)", "rgba(34,211,238,0.8)"],
-  [52, 4, 26, 5.4, 13, 190, "rgba(251,191,36,0.95)", "rgba(251,191,36,0.75)"],
+  [6, 14, 19, 1.6, 11, 160, "rgba(255,255,255,0.95)", "rgba(34,211,238,0.8)"],
 ];
 
-/** La constelación GÉNESIS i7 como subrayado: 7 nodos hacia la estrella. */
-function ConstellationUnderline() {
-  const nodes: Array<[number, number]> = [
-    [4, 22], [26, 17], [48, 20], [70, 12], [92, 15], [114, 7], [138, 9],
-  ];
-  return (
-    <svg viewBox="0 0 150 26" className="mt-2 h-5 w-36 sm:w-40" aria-hidden>
-      <polyline
-        points={nodes.map(([x, y]) => `${x},${y}`).join(" ")}
-        fill="none"
-        stroke="rgba(34,211,238,0.65)"
-        strokeWidth="1.3"
-      />
-      {nodes.slice(0, -1).map(([x, y], i) => (
-        <circle key={i} cx={x} cy={y} r={i % 2 ? 1.7 : 2.3} fill="#22d3ee" opacity="0.9" />
-      ))}
-      <path
-        d="M138 1 l2.4 5.6 5.6 2.4 -5.6 2.4 -2.4 5.6 -2.4 -5.6 -5.6 -2.4 5.6 -2.4 Z"
-        fill="#fbbf24"
-      />
-    </svg>
-  );
-}
-
 /**
- * Portada de la comunidad: el universo visual de la plataforma (cielo navy,
- * visor HUD del hero, LEDs cyan/dorado) con el arte real del logo dentro del
- * visor y la constelación GÉNESIS i7 como firma bajo el mensaje.
+ * Portada de la comunidad.
+ *
+ * Composición: cielo navy, HORIZONTE PLANETARIO al pie y el arte del logo como
+ * núcleo de luz. Se quitaron las esquinas HUD (encajonaban la escena: un cielo
+ * no tiene esquinas), el segundo cometa y el subrayado de constelación, que a
+ * ese tamaño se leía como un gráfico de bolsa en vez de como GÉNESIS i7.
+ *
+ * La entrada es CSS puro y escalonada —luz, horizonte, mensaje— así que ocurre
+ * en el primer pintado, sin esperar a que hidrate React.
  */
 export async function SpaceBanner({ label }: { label?: string }) {
   const { dict } = await getDict();
@@ -78,7 +57,23 @@ export async function SpaceBanner({ label }: { label?: string }) {
         className="absolute inset-0 bg-[linear-gradient(140deg,#0a1020_0%,#1a2744_58%,#0e3a4f_100%)]"
         aria-hidden
       />
-      <NightSky />
+      {/* Brumas de nebulosa lejanas: repiten la paleta del logo en la otra
+          punta de la portada para que la escena se lea como una sola. */}
+      <div
+        className="parallax-near pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full blur-[70px]"
+        style={{ background: `radial-gradient(circle, ${NEBULA_MAGENTA}, transparent 70%)` }}
+        aria-hidden
+      />
+      <div
+        className="parallax-near pointer-events-none absolute -bottom-20 right-1/4 h-48 w-64 rounded-full blur-[70px]"
+        style={{ background: `radial-gradient(circle, ${NEBULA_VIOLET}, transparent 72%)` }}
+        aria-hidden
+      />
+      {/* Las estrellas se mueven menos que las brumas: esa diferencia de
+          recorrido al hacer scroll es lo que se percibe como profundidad. */}
+      <div className="parallax-far pointer-events-none absolute inset-0" aria-hidden>
+        <NightSky />
+      </div>
       {/* Cometas cruzando la portada */}
       {BANNER_COMETS.map(([x, y, angle, delay, period, len, color, glow], i) => (
         <span
@@ -100,38 +95,52 @@ export async function SpaceBanner({ label }: { label?: string }) {
         />
       ))}
 
+      {/* HORIZONTE PLANETARIO — el elemento que más cambia la pieza: le da
+          suelo, curvatura y escala. Sin él la portada era una caja con
+          estrellas; con él es un LUGAR, visto desde la órbita. */}
+      <span
+        className="animate-horizon pointer-events-none absolute left-1/2 top-[82%] h-[130%] w-[190%] rounded-[50%]"
+        style={{
+          animationDelay: "260ms",
+          background: "linear-gradient(180deg, rgba(12,32,56,0.92) 0%, #060a18 42%)",
+          border: "1px solid rgba(34,211,238,0.45)",
+          boxShadow:
+            "0 -16px 55px -8px rgba(34,211,238,0.32), inset 0 28px 70px -34px rgba(34,211,238,0.45)",
+        }}
+        aria-hidden
+      />
+      {/* Atmósfera justo sobre la línea del horizonte */}
+      <span
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-28"
+        style={{
+          background:
+            "linear-gradient(0deg, rgba(34,211,238,0.16) 0%, rgba(34,211,238,0.05) 45%, transparent 100%)",
+        }}
+        aria-hidden
+      />
+
       {/* El nombre vive UNA vez: dentro del arte del logo. El texto es el mensaje. */}
-      <div className="relative flex aspect-[16/9] flex-col items-center justify-center gap-5 px-6 text-center text-white sm:aspect-[3/1] sm:flex-row sm:gap-9 sm:text-left">
-        {/* Visor HUD con el arte original */}
-        <div className="relative shrink-0">
-          <div className="animate-led absolute -inset-3 rounded-[22px] bg-cyan-bright/10 blur-xl" aria-hidden />
-          <Image
-            src="/brand/starbiz-logo.png"
-            alt="Starbiz Academy"
-            width={144}
-            height={144}
-            className="relative h-28 w-28 rounded-2xl shadow-[0_10px_36px_rgba(0,0,0,0.45)] ring-1 ring-white/20 sm:h-36 sm:w-36"
-          />
-          <div className="pointer-events-none absolute -inset-2" aria-hidden>
-            {HUD_CORNERS.map((pos) => (
-              <span
-                key={pos}
-                className={cn(
-                  "absolute h-4 w-4 border-cyan-bright/90 drop-shadow-[0_0_6px_rgba(34,211,238,0.8)]",
-                  pos,
-                )}
-              />
-            ))}
-          </div>
-        </div>
+      {/* En escritorio la portada es apaisada: el logo se agranda, el bloque
+          respira más y el conjunto se asienta a la izquierda para que el cielo
+          y el cometa tengan sitio propio a la derecha en vez de quedar como
+          relleno detrás del texto. */}
+      <div className="relative flex aspect-[16/9] flex-col items-center justify-center gap-5 px-6 text-center text-white sm:aspect-[3/1] sm:flex-row sm:justify-start sm:gap-10 sm:px-10 sm:text-left xl:gap-14 xl:px-14">
+        {/* El logo y su nebulosa. Todo cuelga de este contenedor, así que la
+            nebulosa sigue al logo tanto en columna (móvil) como en fila. */}
+        <BannerLogo />
 
         <div className="flex flex-col items-center sm:items-start">
-          <p className="font-display text-[1.65rem] font-extrabold leading-tight text-white [text-wrap:balance] sm:text-4xl">
+          <p
+            className="animate-rise font-display text-[1.95rem] font-extrabold leading-[1.08] text-white [text-wrap:balance] sm:text-5xl"
+            style={{ animationDelay: "540ms" }}
+          >
             {label ?? dict.community.taglineMain}
           </p>
-          <ConstellationUnderline />
           {!label && (
-            <p className="mt-1.5 text-sm font-medium tracking-wide text-[#aebad8]">
+            <p
+              className="animate-rise mt-2.5 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-white/45"
+              style={{ animationDelay: "700ms" }}
+            >
               {dict.community.taglineSub}
             </p>
           )}

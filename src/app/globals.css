@@ -246,6 +246,96 @@
   animation: float 7s ease-in-out infinite;
 }
 
+/* ---------------------------------------------------------------------------
+   Entrada de la portada de comunidad.
+
+   Todo en CSS y sin JavaScript: así el "wow" ocurre en el primer pintado, sin
+   esperar a que hidrate React. El bloque de prefers-reduced-motion del final
+   las desactiva solas.
+--------------------------------------------------------------------------- */
+
+/* Ignición: el resplandor nace de un punto y se expande. */
+@keyframes ignite {
+  0% { opacity: 0; transform: scale(0.3); }
+  55% { opacity: 1; }
+  100% { opacity: 1; transform: scale(1); }
+}
+.animate-ignite {
+  animation: ignite 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* El titular resuelve después de la luz. */
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-rise {
+  animation: rise-in 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* El horizonte sube al aparecer, como si la nave se estabilizara. */
+@keyframes horizon-in {
+  from { opacity: 0; transform: translate(-50%, 26px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+.animate-horizon {
+  animation: horizon-in 1100ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Parallax al hacer scroll, atado a la línea de tiempo de la vista. Es una
+   mejora progresiva: donde no exista `animation-timeline`, simplemente no
+   pasa nada — cero JavaScript y cero escuchadores de scroll. */
+@keyframes parallax-far {
+  from { transform: translateY(-10px); }
+  to { transform: translateY(10px); }
+}
+@keyframes parallax-near {
+  from { transform: translateY(-30px); }
+  to { transform: translateY(30px); }
+}
+@supports (animation-timeline: view()) {
+  .parallax-far,
+  .parallax-near {
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: view();
+    animation-range: entry 0% exit 100%;
+  }
+  /* La capa cercana recorre el triple: esa diferencia ES la profundidad. */
+  .parallax-far { animation-name: parallax-far; }
+  .parallax-near { animation-name: parallax-near; }
+}
+
+/* ---------------------------------------------------------------------------
+   Oficio de escritorio.
+
+   En escritorio hay cursor y hay sitio: dos cosas que el móvil no tiene y que
+   estaban sin aprovechar.
+--------------------------------------------------------------------------- */
+
+/* Foco visible de teclado. Sin esto el sitio es inutilizable sin ratón, y
+   además es de las señales que más delatan a un front descuidado. */
+:focus-visible {
+  outline: 2px solid var(--color-cyan);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* La cabecera gana sombra a medida que se hace scroll: una pista de
+   profundidad que dice "hay contenido por encima". Atado a la línea de tiempo
+   del scroll, así que no hay escuchadores ni JavaScript. */
+@keyframes header-lift {
+  from { box-shadow: 0 0 0 0 rgba(26, 39, 68, 0); }
+  to { box-shadow: 0 8px 26px -12px rgba(26, 39, 68, 0.28); }
+}
+@supports (animation-timeline: scroll()) {
+  .scroll-lift {
+    animation: header-lift linear both;
+    animation-timeline: scroll();
+    animation-range: 0 140px;
+  }
+}
+
 @layer components {
   .kicker {
     font-family: var(--font-display), sans-serif;
