@@ -37,13 +37,15 @@ const PANEL_W = "w-[50vw] min-w-[210px] max-w-[340px]";
 
 /** Curva de salida larga: arranca rápido y se posa. */
 const SOFT = [0.22, 1, 0.36, 1] as const;
-/** Despliegue. Se acortó de 0.56s a 0.42s: cuanto menos dura el gesto, menos
-    margen tiene un tirón para hacerse visible — y con transform puro ya no hay
-    razón para estirarlo. Sale rápido y se posa. */
-const UNFOLD = { duration: 0.42, ease: [0.16, 1, 0.3, 1] } as const;
-/** Cierre: siempre más rápido que la apertura. Esperar a que algo desaparezca
-    irrita más que esperar a que aparezca. */
-const EXIT = { duration: 0.22, ease: [0.4, 0, 1, 0.6] } as const;
+/** Apertura. 0.20s, no 0.42s.
+    Lo que se percibía como lentitud no eran fotogramas perdidos: era que el
+    menú tardaba en poder LEERSE. El panel crecía 0.42s y el texto empezaba a
+    entrar a los 0.22s, así que hasta pasados ~0.42s no había nada legible.
+    Medio segundo después del toque es una eternidad para un menú. */
+const UNFOLD = { duration: 0.2, ease: [0.16, 1, 0.3, 1] } as const;
+/** Cierre: aún más corto. Esperar a que algo desaparezca irrita más que
+    esperar a que aparezca. */
+const EXIT = { duration: 0.14, ease: [0.4, 0, 1, 0.6] } as const;
 
 type Item = {
   key: string;
@@ -65,8 +67,17 @@ export function CommunityNavDrawer() {
       if (e.key === "Escape") closeMenu();
     };
     document.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
+    // El bloqueo del scroll se aplaza un fotograma a propósito. Cambiar
+    // `overflow` en el body invalida la disposición de TODO el documento, y
+    // hacerlo en el mismo fotograma del toque obliga al navegador a recalcular
+    // el feed entero justo cuando debería estar arrancando la animación. Un
+    // fotograma después, el gesto ya está en marcha y el recálculo no compite
+    // con él.
+    const rafId = requestAnimationFrame(() => {
+      document.body.style.overflow = "hidden";
+    });
     return () => {
+      cancelAnimationFrame(rafId);
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
@@ -127,10 +138,16 @@ export function CommunityNavDrawer() {
               "shadow-[18px_0_60px_-12px_rgba(6,10,24,0.6)]",
               PANEL_W,
             )}
+            // Escala 0.92 -> 1, no 0.16 -> 1. Ampliar seis veces obliga al
+            // navegador a estirar una textura rasterizada a tamaño pequeño: el
+            // panel se ve blando mientras crece y se endurece de golpe al
+            // final. No es un tirón, pero se lee igual de mal. Con el origen en
+            // el botón, un empujón corto desde ahí basta para que se entienda
+            // de dónde sale — y llega nítido desde el primer fotograma.
             style={{ transformOrigin: at }}
-            initial={{ opacity: 0, scale: 0.16 }}
+            initial={{ opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1, transition: UNFOLD }}
-            exit={{ opacity: 0, scale: 0.16, transition: EXIT }}
+            exit={{ opacity: 0, scale: 0.94, transition: EXIT }}
           >
             {/* Reflejo especular: una banda de luz muy tenue en el
                 borde superior. Es lo que separa un panel translúcido de uno que
@@ -150,12 +167,12 @@ export function CommunityNavDrawer() {
               // Se despliega CON la lámina, tirando desde el botón, y no
               // aparece hasta que la forma ya creció (si no, se leería texto
               // dentro de un cuadradito del tamaño del botón).
-              // Sólo opacidad: la escala ya se la da el padre. Aparece cuando
-              // la lámina está al ~85% y termina de asentarse con ella, que es
-              // lo que hace que se lea como un objeto y no como dos capas.
+              // Sin retraso. Antes esperaba 0.22s a que la lámina creciera, y
+              // ese hueco era la mayor parte de la lentitud percibida. Ahora
+              // entra con ella: el menú se puede leer a los ~0.15s del toque.
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1, transition: { duration: 0.2, ease: "linear", delay: 0.22 } }}
-              exit={{ opacity: 0, transition: { duration: 0.1, ease: "linear" } }}
+              animate={{ opacity: 1, transition: { duration: 0.16, ease: "linear" } }}
+              exit={{ opacity: 0, transition: { duration: 0.08, ease: "linear" } }}
             >
               <div className="flex items-center justify-between px-4 pt-4">
                 <span className="font-display text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45">
