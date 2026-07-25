@@ -17,7 +17,12 @@ export function SectionTabs({ leading }: { leading?: ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="scroll-lift sticky top-16 z-30 border-b border-black/[0.05] bg-surface/80 backdrop-blur-xl">
+    // Cristal sólo desde `lg`. Esta barra es sticky y queda justo encima del
+    // banner, que tiene animaciones infinitas: un `backdrop-filter` sobre algo
+    // que se mueve obliga a recalcular el desenfoque en cada fotograma, sin
+    // parar nunca. En un móvil eso se lleva por delante la fluidez de todo lo
+    // demás. Opaca abajo, cristal arriba, donde sobra potencia.
+    <div className="scroll-lift sticky top-16 z-30 border-b border-black/[0.05] bg-surface lg:bg-surface/80 lg:backdrop-blur-xl">
       <div className="container-ac">
         <nav className="flex items-center gap-1 overflow-x-auto py-2" aria-label="Secciones">
           {/* El botón de espacios de la comunidad va primero, en el flujo: así

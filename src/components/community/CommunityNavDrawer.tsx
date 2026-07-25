@@ -7,7 +7,6 @@ import { AnimatePresence, motion } from "motion/react";
 import { useI18n } from "@/lib/i18n/client";
 import { COMMUNITY_SPACES } from "@/lib/constants";
 import { Icon, type IconName } from "@/components/icons";
-import { NightSky } from "@/components/Constellation";
 import { cn } from "@/components/ui";
 import { useCommunityNav } from "./navContext";
 
@@ -136,11 +135,17 @@ export function CommunityNavDrawer() {
           <motion.div
             className={cn(
               "absolute left-0 top-0 flex h-full flex-col overflow-hidden rounded-r-[28px]",
-              "border-r border-white/[0.18] bg-navy/50 backdrop-blur-2xl",
+              // El vidrio pasó de blur-2xl (40px) a blur-lg (16px) y el fondo
+              // de 50% a 75% de opacidad. El coste de `backdrop-filter` crece
+              // con el radio, y con el fondo más opaco el resultado se lee casi
+              // igual: sigue viéndose la página detrás, difuminada.
+              "border-r border-white/[0.18] bg-navy/75 backdrop-blur-lg",
               "shadow-[18px_0_60px_-12px_rgba(6,10,24,0.55)]",
               PANEL_W,
             )}
-            style={{ willChange: "clip-path" }}
+            // Sin `willChange` a mano: motion promueve la capa durante la
+            // animación y la libera al acabar. Fijarlo aquí dejaba la capa
+            // promovida todo el rato, y sumado al backdrop-filter era caro.
             // Arranca siendo EXACTAMENTE la caja del botón y crece hasta el
             // panel; al cerrar hace el camino inverso y se recoge en el botón.
             initial={{ clipPath: seedClip, opacity: 0 }}
@@ -155,7 +160,21 @@ export function CommunityNavDrawer() {
               transition: { ...EXIT, opacity: { duration: 0.12, delay: 0.18, ease: "linear" } },
             }}
           >
-            <NightSky />
+            {/* Aquí vivía un <NightSky /> entero: unas cuarenta animaciones
+                infinitas DENTRO de un contenedor con `backdrop-filter`. Esa
+                combinación es la peor posible — el navegador tiene que rehacer
+                el desenfoque en cada fotograma mientras algo se mueva detrás, y
+                no para mientras el menú esté abierto. Detrás de un cristal de
+                50vw las estrellas apenas se distinguían. Se sustituyen por dos
+                resplandores fijos, que es lo que de verdad se veía. */}
+            <span
+              className="pointer-events-none absolute -left-16 bottom-0 h-72 w-72 rounded-full bg-cyan-bright/15 blur-3xl"
+              aria-hidden
+            />
+            <span
+              className="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full bg-gold/10 blur-3xl"
+              aria-hidden
+            />
 
             {/* Reflejo especular del cristal: una banda de luz muy tenue en el
                 borde superior. Es lo que separa un panel translúcido de uno que

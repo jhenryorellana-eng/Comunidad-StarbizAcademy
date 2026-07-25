@@ -69,10 +69,18 @@ const HALOS: Array<[number, number, number, number, string]> = [
   [12, 78, 2.5, 3.2, "rgba(167,139,250,0.9)"],
 ];
 
-/** Full-bleed twinkling star layer. Place inside a `relative` navy section. */
+/**
+ * Capa de estrellas a sangre. Se coloca dentro de una sección navy `relative`.
+ *
+ * En móvil se pinta MUCHO menos, y no por capricho: cada elemento con animación
+ * infinita mantiene ocupado al compositor mientras la capa esté en pantalla.
+ * En escritorio sobra potencia; en un teléfono de gama media, cuarenta a la vez
+ * se notan en la fluidez de todo lo demás. La composición se conserva porque lo
+ * que se retira está repartido, no recortado por una zona.
+ */
 export function NightSky() {
   return (
-    <div className="pointer-events-none absolute inset-0" aria-hidden>
+    <div className="sky-layer pointer-events-none absolute inset-0" aria-hidden>
       {/* Polvo estelar (capa de profundidad) */}
       {DUST.map(([x, y], i) => (
         <span
@@ -84,7 +92,7 @@ export function NightSky() {
       {AMBIENT.map(([x, y, s, d, t], i) => (
         <span
           key={i}
-          className={i % 2 ? "star-twinkle absolute hidden rounded-full bg-white sm:block" : "star-twinkle absolute rounded-full bg-white"}
+          className={i % 3 ? "star-twinkle absolute hidden rounded-full bg-white sm:block" : "star-twinkle absolute rounded-full bg-white"}
           style={{
             left: `${x}%`,
             top: `${y}%`,
@@ -107,7 +115,7 @@ export function NightSky() {
       {SPARKLES.map(([x, y, s, d, t, c], i) => (
         <span
           key={`sparkle-${i}`}
-          className={i % 2 ? "star-sparkle max-sm:hidden" : "star-sparkle"}
+          className={i === 0 ? "star-sparkle" : "star-sparkle max-sm:hidden"}
           style={
             {
               left: `${x}%`,
@@ -125,7 +133,7 @@ export function NightSky() {
       {HALOS.map(([x, y, s, d, c], i) => (
         <span
           key={`halo-${i}`}
-          className="star-halo"
+          className={i < 2 ? "star-halo" : "star-halo max-sm:hidden"}
           style={
             {
               left: `${x}%`,
@@ -142,7 +150,7 @@ export function NightSky() {
       {COMETS.map(([x, y, angle, delay, period, tail, color, glow], i) => (
         <span
           key={`comet-${i}`}
-          className={i >= 2 ? "comet max-sm:hidden" : "comet"}
+          className={i >= 1 ? "comet max-sm:hidden" : "comet"}
           style={
             {
               left: `${x}%`,
@@ -164,7 +172,7 @@ export function NightSky() {
       ] as Array<[number, number, string]>).map(([x, y, c], i) => (
         <span
           key={`led-${i}`}
-          className="animate-led absolute rounded-full"
+          className={i < 2 ? "animate-led absolute rounded-full" : "animate-led absolute hidden rounded-full sm:block"}
           style={{
             left: `${x}%`,
             top: `${y}%`,

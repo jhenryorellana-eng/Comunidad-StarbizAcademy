@@ -100,6 +100,18 @@
   }
 }
 
+/* Capa decorativa del cielo estrellado.
+   `content-visibility: auto` permite al navegador saltarse por completo el
+   pintado cuando la capa queda fuera de la pantalla. Al bajar por el feed, las
+   ~40 animaciones del banner dejan de consumir en vez de seguir corriendo para
+   nadie. Es seguro porque la capa es decorativa (aria-hidden), va en posición
+   absoluta y todos sus contenedores ya llevan `overflow-hidden`: la contención
+   de pintado recorta por el mismo rectángulo, así que no cambia nada visual. */
+.sky-layer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 320px;
+}
+
 /* Twinkling star (NightSky). Respects the global reduced-motion override. */
 @keyframes twinkle {
   0%, 100% { opacity: 0.2; transform: scale(0.85); }
@@ -193,17 +205,30 @@
   50% { opacity: 1; transform: scale(1.2) rotate(90deg); }
 }
 
-/* Bright star whose halo breathes. */
+/* Estrella brillante cuyo halo respira.
+   El halo va en un ::after con la sombra FIJA, y sólo se anima su opacidad y
+   su escala. Antes se animaba el propio `box-shadow`: eso obliga al navegador
+   a repintar un desenfoque en cada fotograma, y con cuatro de estas en pantalla
+   era lo más caro de toda la página en un móvil. El resultado se ve igual
+   —el resplandor crece y se enciende— pero ahora lo resuelve el compositor. */
 .star-halo {
   position: absolute;
   border-radius: 999px;
   background: #fff;
+  opacity: 0.85;
+}
+.star-halo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  box-shadow: 0 0 18px 5px var(--halo-color, rgba(255, 255, 255, 0.85));
   animation: halo-breathe var(--halo-period, 5s) ease-in-out infinite;
   animation-delay: var(--halo-delay, 0s);
 }
 @keyframes halo-breathe {
-  0%, 100% { box-shadow: 0 0 6px 1px rgba(255, 255, 255, 0.5); opacity: 0.7; }
-  50% { box-shadow: 0 0 18px 5px var(--halo-color, rgba(255, 255, 255, 0.85)); opacity: 1; }
+  0%, 100% { opacity: 0.3; transform: scale(0.62); }
+  50% { opacity: 1; transform: scale(1); }
 }
 
 /* Colored comet-light flares bleeding around the hero frame, as if comets
