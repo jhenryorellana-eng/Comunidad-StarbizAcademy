@@ -36,7 +36,7 @@ async function main() {
   await prisma.user.deleteMany();
 
   console.log("Seeding users…");
-  await prisma.user.create({
+  const equipo = await prisma.user.create({
     data: {
       name: "Equipo StarbizAcademy",
       email: ADMIN_EMAIL,
@@ -350,6 +350,70 @@ async function main() {
       // Demo del video embebido en el feed (charla TED de ejemplo)
       videoUrl: "https://www.youtube.com/watch?v=iG9CE55wbtY",
       createdAt: at(-3, 8),
+    },
+  });
+
+  // Bootcamp Utah 2027 — el feed tiene que respirar bootcamp: el anuncio, las
+  // dudas reales de las familias y la prueba social de un padre ya en trámite.
+  console.log("Seeding bootcamp posts…");
+  const b1 = await prisma.post.create({
+    data: {
+      authorId: equipo.id,
+      title: "🚀 Abrimos inscripciones: Bootcamp Utah 2027",
+      // Fijado: abre el feed y lleva dentro el cuadro de acceso al bootcamp.
+      pinned: true,
+      body: "Del 26 al 31 de enero de 2027: 4 días y 5 noches en Utah. Universidades por dentro (BYU, University of Utah, American Fork High School), las empresas de Silicon Slopes, el día GÉNESIS i7™ con un profesional por cada inteligencia y la ceremonia donde se premia el mejor proyecto Star App.\n\nInscripción $250: reserva tu cupo y emitimos la carta de invitación oficial para tu hijo Y para un acompañante. Hay 50 cupos y el cierre es el 15 de diciembre. El programa completo está en la sección Bootcamp 2027.",
+      category: "BOOTCAMP",
+      createdAt: at(-1, 9),
+    },
+  });
+  await prisma.comment.createMany({
+    data: [
+      { postId: b1.id, authorId: roberto.id, body: "¿La carta de invitación sirve para la cita en el consulado de mi país?", createdAt: at(-1, 10) },
+      { postId: b1.id, authorId: ana.id, body: "Sí, Roberto. Es la carta oficial que presentas en la entrevista. Agenda la cita apenas la recibas: es el paso que más tarda.", createdAt: at(-1, 11) },
+    ],
+  });
+  await prisma.reaction.createMany({
+    data: [
+      { postId: b1.id, userId: mateo.id, type: "CELEBRATE" },
+      { postId: b1.id, userId: roberto.id, type: "CELEBRATE" },
+      { postId: b1.id, userId: ana.id, type: "CELEBRATE" },
+    ],
+  });
+
+  await prisma.post.create({
+    data: {
+      authorId: ana.id,
+      title: "Día 3 del bootcamp: siete profesionales, uno por cada inteligencia",
+      body: "Es el día que más ilusión me hace. Siete mesas, siete conversaciones reales: Espiritual, Mental, Física, Emocional, Social, Financiera y Tecnológica. Y al cierre, la ceremonia Star App con escenario y jurado.\n\nA los chicos les cambia la cara cuando un profesional de verdad les pregunta qué están construyendo.",
+      category: "BOOTCAMP",
+      createdAt: at(-2, 15),
+    },
+  });
+
+  const b3 = await prisma.post.create({
+    data: {
+      authorId: roberto.id,
+      title: "Ya empezamos el trámite de la visa para Utah",
+      body: "Nos inscribimos la semana pasada, la carta llegó en tres días y hoy agendamos la cita en el consulado. Si están pensando ir con sus hijos: no lo dejen para después, la cita es lo que más demora.",
+      category: "BOOTCAMP",
+      createdAt: at(-3, 19),
+    },
+  });
+  await prisma.comment.create({
+    data: { postId: b3.id, authorId: equipo.id, body: "Gracias por contarlo, Roberto. Es exactamente el orden correcto. 👏", createdAt: at(-3, 20) },
+  });
+  await prisma.reaction.create({
+    data: { postId: b3.id, userId: mateo.id, type: "CELEBRATE" },
+  });
+
+  await prisma.post.create({
+    data: {
+      authorId: equipo.id,
+      title: "Qué cubre (y qué no) la inscripción de $250",
+      body: "Cubre: tu cupo en el bootcamp, la carta de invitación oficial para tu hijo Y para un acompañante, el programa completo de los 4 días y nuestro acompañamiento durante todo el proceso. Son DOS cartas por los mismos $250.\n\nNo cubre: vuelos, hospedaje de las 5 noches, comidas, transporte local en Utah ni las tasas consulares. Lo decimos claro desde el principio para que cada familia haga su cuenta con datos reales.",
+      category: "BOOTCAMP",
+      createdAt: at(-4, 11),
     },
   });
 

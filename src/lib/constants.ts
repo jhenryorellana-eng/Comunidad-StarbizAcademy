@@ -31,10 +31,14 @@ export const INTELLIGENCES = [
 ] as const;
 
 // Top-level platform sections. Each grows its own spaces like Comunidad.
+// `live` = ya tiene contenido real (las demás muestran "Próximamente").
+// Bootcamp va SEGUNDO a propósito: en móvil la fila arranca con sangría para
+// el botón de espacios, y desde la cuarta posición ya no se ve sin arrastrar.
 export const PLATFORM_SECTIONS = [
-  { key: "comunidad", href: "/comunidad/posts", base: "/comunidad" },
-  { key: "padres", href: "/padres", base: "/padres" },
-  { key: "academy", href: "/academia", base: "/academia" },
+  { key: "comunidad", href: "/comunidad/posts", base: "/comunidad", live: true },
+  { key: "bootcamp", href: "/bootcamp", base: "/bootcamp", live: true },
+  { key: "padres", href: "/padres", base: "/padres", live: false },
+  { key: "academy", href: "/academia", base: "/academia", live: false },
 ] as const;
 
 // Community spaces (left sidebar), in the PDF-spec order: activity first.
@@ -53,7 +57,15 @@ export const COMMUNITY_SPACES = [
 // Mobile bottom bar: first 3 spaces + "Más" (the rest live in the sheet).
 export const MOBILE_BAR_KEYS = ["posts", "members", "events"] as const;
 
-export const POST_CATEGORIES = ["COMMUNITY", "VOICE", "ANNOUNCEMENT", "FIRST_SALE"] as const;
+// Post.category es String libre en la BD, así que sumar BOOTCAMP no necesita
+// migración: los posts del bootcamp se filtran y se destacan por esta clave.
+export const POST_CATEGORIES = [
+  "COMMUNITY",
+  "VOICE",
+  "ANNOUNCEMENT",
+  "FIRST_SALE",
+  "BOOTCAMP",
+] as const;
 
 // "Mi primera venta" — structured post. The 4 answers travel JSON-encoded in
 // Post.body under this shape; rendering is special-cased in the feed.
