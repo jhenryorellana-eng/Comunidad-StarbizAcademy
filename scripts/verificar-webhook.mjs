@@ -1,17 +1,25 @@
 /**
- * Prueba del manejador del webhook — TEMPORAL, se borra al terminar.
+ * Prueba del manejador del webhook.
  *
  * No hace falta ninguna clave real: `constructEvent` es criptografía local,
  * no llama a la API de Stripe. Así que se puede verificar de verdad lo que
  * importa: que la firma se comprueba, que un evento repetido no duplica fila,
  * y que una firma manipulada se rechaza.
+ *
+ *   npm run stripe:verificar
  */
 import Stripe from "stripe";
 import { PrismaClient } from "@prisma/client";
 
 const SECRETO = process.env.STRIPE_WEBHOOK_SECRET;
 const URL = "http://localhost:3000/api/stripe/webhook";
-const ID_SESION = "cs_test_verificacion_local_" + process.argv[2];
+
+// El sufijo se genera aquí, no en el script de npm. Antes venía de `$RANDOM`,
+// que en Windows no lo expande cmd.exe: llegaba la cadena literal "$RANDOM" y
+// dos ejecuciones seguidas compartían id, así que la prueba de idempotencia se
+// aprobaba sola.
+const MARCA = process.argv[2] || Date.now().toString(36);
+const ID_SESION = "cs_test_verificacion_local_" + MARCA;
 
 const stripe = new Stripe("sk_test_x");
 const prisma = new PrismaClient();
@@ -29,7 +37,7 @@ const sesion = {
 
 function evento(tipo, objeto) {
   return JSON.stringify({
-    id: "evt_test_" + process.argv[2],
+    id: "evt_test_" + MARCA,
     object: "event",
     type: tipo,
     livemode: false,

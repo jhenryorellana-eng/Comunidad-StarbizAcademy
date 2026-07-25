@@ -9,7 +9,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "postinstall": "prisma generate",
-    "stripe:verificar": "node scripts/verificar-webhook.mjs $RANDOM",
+    "stripe:verificar": "node scripts/verificar-webhook.mjs",
     "db:migrate": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma db push --force-reset"
