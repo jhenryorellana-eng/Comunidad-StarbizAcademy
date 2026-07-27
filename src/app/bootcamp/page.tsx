@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { SectionTabs } from "@/components/SectionTabs";
 import { CountdownInline } from "@/components/bootcamp/Countdown";
 import { CheckoutButton } from "@/components/bootcamp/CheckoutButton";
+import { UtahWordmark } from "@/components/bootcamp/UtahWordmark";
 import { stripeEnabled } from "@/lib/stripe";
 import { Icon } from "@/components/icons";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
@@ -106,7 +107,7 @@ export default async function BootcampPage({
 
   return (
     <div className="flex min-h-screen flex-col bg-surface">
-      <SiteHeader mobileMenu nav={false} />
+      <SiteHeader mobileMenu />
       <SectionTabs />
 
       {/* Vuelta de un pago cancelado. Sin alarma: no se le ha cobrado nada y el
@@ -175,6 +176,10 @@ export default async function BootcampPage({
           </>
         )}
         <NightSky />
+        {/* Va ANTES del bloque de texto a propósito: ese contenedor es
+            `relative`, así que se pinta encima y la inscripción nunca compite
+            con el titular ni tapa el botón. */}
+        <UtahWordmark />
 
         <div className="container-ac relative flex flex-1 flex-col justify-start pb-10 pt-10 sm:justify-center sm:py-16">
           <div className="max-w-xl">

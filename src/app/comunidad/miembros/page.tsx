@@ -68,7 +68,7 @@ export default async function MembersPage({
   return (
     <div>
       <SpaceHeader icon="members" title={M.title} />
-      <SpaceBanner />
+      <SpaceBanner space="members" />
 
       {/* Filtros permitidos: país · recién llegados. Ninguno más. */}
       <div className="mb-6 flex flex-wrap items-center gap-2">

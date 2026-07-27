@@ -18,7 +18,7 @@ export default async function PodcastPage() {
   return (
     <div>
       <SpaceHeader icon="podcast" title={P.title} />
-      <SpaceBanner label="StarVoice · Combustible Diario" />
+      <SpaceBanner space="podcast" />
 
       {episodes.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-surface-line bg-paper p-12 text-center">

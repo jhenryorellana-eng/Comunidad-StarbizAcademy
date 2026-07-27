@@ -62,7 +62,9 @@ export function SectionTabs({ leading }: { leading?: ReactNode }) {
                   size={9}
                   className="shrink-0 self-center text-muted/50"
                 />
-                <span className="truncate font-display text-sm font-bold text-navy">
+                {/* Con el titular fuera de la página en móvil, esta línea ES el
+                    título. Necesita el peso que le corresponde. */}
+                <span className="truncate font-display text-[1.05rem] font-extrabold text-navy">
                   {etiquetaHoja}
                 </span>
               </>

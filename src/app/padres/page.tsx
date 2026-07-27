@@ -8,8 +8,8 @@ import { SectionComingSoon } from "@/components/SectionComingSoon";
 export default async function PadresSection() {
   const { dict } = await getDict();
   return (
-    <div className="flex min-h-screen flex-col bg-surface">
-      <SiteHeader mobileMenu={false} nav={false} />
+    <div data-seccion="padres" className="flex min-h-screen flex-col bg-surface">
+      <SiteHeader mobileMenu={false} />
       <SectionTabs />
       <SectionComingSoon
         title={dict.landing.pillar2Title}

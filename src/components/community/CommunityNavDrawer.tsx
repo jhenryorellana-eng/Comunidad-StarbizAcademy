@@ -150,7 +150,9 @@ export function CommunityNavDrawer() {
                 {PLATFORM_TREE.map((seccion) => {
                   const abierta = Boolean(abiertas[seccion.key]);
                   return (
-                    <div key={seccion.key} className="mt-1.5">
+                    // Sobre fondo oscuro manda `--acento-vivo`, no `--acento`:
+                    // el tono medio que funciona sobre blanco aquí se apaga.
+                    <div key={seccion.key} data-seccion={seccion.key} className="mt-1.5">
                       <button
                         type="button"
                         aria-expanded={abierta}
@@ -163,15 +165,20 @@ export function CommunityNavDrawer() {
                           name="arrowRight"
                           size={11}
                           className={cn(
-                            "shrink-0 text-white/40 transition-transform duration-200",
-                            abierta && "rotate-90",
+                            "shrink-0 transition-transform duration-200",
+                            abierta ? "rotate-90 text-acento-vivo" : "text-white/40",
                           )}
                         />
-                        <span className="font-display text-[0.66rem] font-bold uppercase tracking-[0.15em] text-white/55">
+                        <span
+                          className={cn(
+                            "font-display text-[0.66rem] font-bold uppercase tracking-[0.15em]",
+                            abierta ? "text-acento-vivo" : "text-white/55",
+                          )}
+                        >
                           {N.sections[seccion.key as keyof typeof N.sections]}
                         </span>
                         {!seccion.live && (
-                          <span className="ml-auto rounded-full bg-gold/20 px-1.5 py-0.5 text-[0.52rem] font-bold uppercase tracking-wide text-gold">
+                          <span className="ml-auto rounded-full bg-white/10 px-1.5 py-0.5 text-[0.52rem] font-bold uppercase tracking-wide text-acento-vivo">
                             {N.soon}
                           </span>
                         )}
@@ -194,7 +201,7 @@ export function CommunityNavDrawer() {
                               ) : (
                                 <>
                                   <span
-                                    className="absolute bottom-2 left-[22px] top-1 w-px bg-gradient-to-b from-cyan-bright/50 via-cyan/20 to-gold/40"
+                                    className="absolute bottom-2 left-[22px] top-1 w-px bg-[linear-gradient(to_bottom,var(--acento-vivo),transparent)] opacity-45"
                                     aria-hidden
                                   />
                                   {seccion.children.map((hoja) => (
@@ -247,10 +254,17 @@ function DrawerItem({
   const { dict } = useI18n();
   const label = dict.community.spaces[hoja.key as keyof typeof dict.community.spaces];
 
+  // Igual que en la lateral: lo que sale del sitio se abre en pestaña nueva.
+  const Etiqueta = hoja.external ? "a" : Link;
+  const extra = hoja.external
+    ? { target: "_blank" as const, rel: "noopener noreferrer" }
+    : {};
+
   return (
-    <Link
+    <Etiqueta
       href={hoja.href}
       onClick={onNavigate}
+      {...extra}
       className={cn(
         "relative flex items-center gap-2.5 rounded-xl py-2 pl-1.5 pr-2 transition-colors active:scale-[0.98]",
         locked && !active && "opacity-55",
@@ -258,7 +272,7 @@ function DrawerItem({
     >
       {active && (
         <span
-          className="absolute left-0 h-6 w-1 rounded-full bg-cyan-bright shadow-[0_0_8px_2px_rgba(34,211,238,0.7)]"
+          className="absolute left-0 h-6 w-1 rounded-full bg-acento-vivo shadow-[0_0_8px_2px_var(--acento-vivo)]"
           aria-hidden
         />
       )}
@@ -269,7 +283,7 @@ function DrawerItem({
             ? "border-gold/60 bg-gold text-navy shadow-[0_0_14px_2px_rgba(251,191,36,0.4)]"
             : hoja.featured
               ? "border-gold/45 bg-gold/15 text-gold"
-              : "border-white/15 bg-white/[0.07] text-cyan-bright",
+              : "border-white/15 bg-white/[0.07] text-acento-vivo",
         )}
       >
         <Icon name={hoja.icon as IconName} size={15} />
@@ -287,6 +301,9 @@ function DrawerItem({
         {label}
       </span>
       {locked && <Icon name="lock" size={12} className="ml-auto shrink-0 text-white/40" />}
-    </Link>
+      {hoja.external && (
+        <Icon name="external" size={12} className="ml-auto shrink-0 text-gold" />
+      )}
+    </Etiqueta>
   );
 }

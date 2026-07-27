@@ -15,12 +15,22 @@ export async function SectionComingSoon({
   lead,
   features,
   accent,
+  ecosystem,
 }: {
   title: string;
   tag: string;
   lead: string;
   features: ReadonlyArray<readonly string[]>;
   accent: "cyan" | "gold";
+  /**
+   * Salida al ecosistema completo, fuera de esta plataforma.
+   *
+   * Cuando existe, pasa a ser la llamada PRINCIPAL y "Ir a la Comunidad" baja a
+   * secundaria. Es lo correcto: a quien entra en una sección en construcción,
+   * mandarlo de vuelta a la comunidad es un consuelo — mandarlo al sitio que ya
+   * está en pie es una respuesta.
+   */
+  ecosystem?: { href: string; label: string };
 }) {
   const { dict } = await getDict();
   const S = dict.sections;
@@ -43,11 +53,43 @@ export async function SectionComingSoon({
             </p>
             <p className="mx-auto mt-4 max-w-xl text-white/75">{lead}</p>
             <p className="mx-auto mt-6 max-w-lg text-sm text-white/55">{S.soonBody}</p>
-            <div className="mt-8">
-              <LinkButton href="/comunidad/posts" size="lg">
-                {S.backToCommunity}
-                <Icon name="arrowRight" size={17} />
-              </LinkButton>
+            <div className="mt-8 flex flex-col items-center gap-3">
+              {ecosystem ? (
+                <>
+                  <a
+                    href={ecosystem.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    // El halo dorado y el barrido de luz sólo viven aquí. Es el
+                    // único botón de la página que lleva a algo que YA existe:
+                    // tiene que verse distinto a todo lo demás.
+                    className="group relative inline-flex items-center gap-2.5 overflow-hidden rounded-full bg-gradient-to-r from-gold-300 via-gold to-gold-300 px-8 py-3.5 font-display font-bold text-navy shadow-[0_0_0_1px_rgba(251,191,36,0.5),0_14px_40px_-8px_rgba(251,191,36,0.65)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_rgba(251,191,36,0.7),0_18px_50px_-8px_rgba(251,191,36,0.8)]"
+                  >
+                    <span
+                      className="animate-sheen pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-white/55 to-transparent"
+                      aria-hidden
+                    />
+                    <Icon name="sparkles" size={17} />
+                    <span className="relative">{ecosystem.label}</span>
+                    <Icon
+                      name="external"
+                      size={14}
+                      className="relative transition-transform duration-300 group-hover:translate-x-0.5"
+                    />
+                  </a>
+                  <Link
+                    href="/comunidad/posts"
+                    className="text-sm font-semibold text-white/55 underline-offset-4 transition-colors hover:text-white hover:underline"
+                  >
+                    {S.backToCommunity}
+                  </Link>
+                </>
+              ) : (
+                <LinkButton href="/comunidad/posts" size="lg">
+                  {S.backToCommunity}
+                  <Icon name="arrowRight" size={17} />
+                </LinkButton>
+              )}
             </div>
           </div>
         </div>

@@ -79,29 +79,37 @@ function Seccion({
   const titulo = N.sections[seccion.key as keyof typeof N.sections];
 
   return (
-    <div>
+    // Cada grupo declara su propio acento. Así, desplegar Padres lo tiñe de
+    // dorado aunque estés dentro de Comunidad: el color dice de quién es esa
+    // sección antes incluso de entrar.
+    <div data-seccion={seccion.key}>
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={abierta}
         className={cn(
           "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left transition-colors",
-          "hover:bg-navy/[0.04]",
+          abierta ? "bg-acento-suave" : "hover:bg-navy/[0.04]",
         )}
       >
         <Icon
           name="arrowRight"
           size={12}
           className={cn(
-            "shrink-0 text-navy/40 transition-transform duration-200",
-            abierta && "rotate-90",
+            "shrink-0 transition-transform duration-200",
+            abierta ? "rotate-90 text-acento" : "text-navy/40",
           )}
         />
-        <span className="font-display text-[0.7rem] font-bold uppercase tracking-[0.13em] text-navy/70">
+        <span
+          className={cn(
+            "font-display text-[0.7rem] font-bold uppercase tracking-[0.13em]",
+            abierta ? "text-acento-tinta" : "text-navy/70",
+          )}
+        >
           {titulo}
         </span>
         {!seccion.live && (
-          <span className="ml-auto rounded-full bg-gold/15 px-1.5 py-0.5 text-[0.55rem] font-bold uppercase tracking-wide text-gold-700">
+          <span className="ml-auto rounded-full bg-acento-suave px-1.5 py-0.5 text-[0.55rem] font-bold uppercase tracking-wide text-acento-tinta">
             {N.soon}
           </span>
         )}
@@ -160,14 +168,23 @@ function NavItem({
   const { dict } = useI18n();
   const label = dict.community.spaces[hoja.key as keyof typeof dict.community.spaces];
 
+  // Los enlaces que salen del sitio no son navegación interna: se abren en
+  // pestaña nueva para no sacar a nadie de la comunidad, y lo dicen con un
+  // icono en vez de dejar que se descubra al volver.
+  const Etiqueta = hoja.external ? "a" : Link;
+  const extra = hoja.external
+    ? { target: "_blank" as const, rel: "noopener noreferrer" }
+    : {};
+
   return (
-    <Link
+    <Etiqueta
       href={hoja.href}
+      {...extra}
       className={cn(
         "group relative ml-2 flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200",
         active
           ? "bg-navy text-white shadow-[0_4px_18px_rgba(26,39,68,0.28)]"
-          : "text-ink hover:translate-x-0.5 hover:bg-navy/[0.05] hover:text-navy",
+          : "text-ink hover:translate-x-0.5 hover:bg-acento-suave hover:text-navy",
         // El bootcamp es el destino que queremos que se vea. Sin gritar: un
         // borde dorado basta cuando todo lo demás es neutro.
         hoja.featured && !active && "border border-gold/35 bg-gold/[0.06]",
@@ -177,7 +194,7 @@ function NavItem({
       {active && (
         <motion.span
           layoutId="community-nav-led"
-          className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-cyan-bright shadow-[0_0_10px_2px_rgba(34,211,238,0.75)]"
+          className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-acento-vivo shadow-[0_0_10px_2px_var(--acento-vivo)]"
           transition={{ type: "spring", stiffness: 420, damping: 34 }}
           aria-hidden
         />
@@ -188,10 +205,10 @@ function NavItem({
         className={cn(
           "transition-colors duration-200",
           active
-            ? "text-cyan-bright"
+            ? "text-acento-vivo"
             : hoja.featured
               ? "text-gold-700"
-              : "text-navy/55 group-hover:text-cyan",
+              : "text-navy/55 group-hover:text-acento",
         )}
       />
       <span className={cn(hoja.featured && !active && "font-semibold text-navy")}>
@@ -205,13 +222,16 @@ function NavItem({
           <span
             className={cn(
               "ml-auto rounded-full px-1.5 py-0.5 text-[0.65rem] font-bold tabular-nums transition-colors",
-              active ? "bg-white/12 text-cyan-bright" : "bg-navy/[0.06] text-muted",
+              active ? "bg-white/12 text-acento-vivo" : "bg-navy/[0.06] text-muted",
             )}
           >
             {count}
           </span>
         )
       )}
-    </Link>
+      {hoja.external && (
+        <Icon name="external" size={12} className="ml-auto shrink-0 text-gold-700" />
+      )}
+    </Etiqueta>
   );
 }

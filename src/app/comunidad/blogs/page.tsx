@@ -48,7 +48,7 @@ export default async function BlogsPage() {
   return (
     <div>
       <SpaceHeader icon="fileText" title={B.title} subtitle={B.subtitle} />
-      <SpaceBanner />
+      <SpaceBanner space="blogs" />
 
       {posts.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-surface-line bg-paper p-12 text-center">

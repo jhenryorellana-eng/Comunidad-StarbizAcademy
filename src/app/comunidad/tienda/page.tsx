@@ -46,7 +46,7 @@ export default async function CommunityStorePage() {
         title={dict.community.spaces.store}
         subtitle={S.lead}
       />
-      <SpaceBanner label={S.kicker} />
+      <SpaceBanner space="store" />
 
       {products.length === 0 ? (
         <p className="text-muted">{S.empty}</p>

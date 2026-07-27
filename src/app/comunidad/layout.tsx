@@ -27,7 +27,7 @@ export default async function CommunityLayout({
     // secciones (para seguirla siempre) y el panel fuera (la barra tiene
     // backdrop-blur, que atraparía a un hijo `position: fixed`).
     <CommunityNavProvider isMember={member}>
-      <div className="relative flex min-h-screen flex-col bg-surface">
+      <div data-seccion="comunidad" className="relative flex min-h-screen flex-col bg-surface">
         {/* AMBIENTE. En pantallas anchas sobran ~540px a cada lado del
             contenido; en gris plano eso se lee como página sin terminar. Tres
             manchas de marca muy tenues los convierten en atmósfera. Fijo, así
@@ -37,7 +37,7 @@ export default async function CommunityLayout({
           <div className="absolute -left-52 top-[28%] h-[560px] w-[560px] rounded-full bg-cyan/[0.06] blur-[130px]" />
           <div className="absolute -right-52 top-[62%] h-[600px] w-[600px] rounded-full bg-gold/[0.06] blur-[130px]" />
         </div>
-        <SiteHeader mobileMenu={false} nav={false} />
+        <SiteHeader mobileMenu={false} />
         <SectionTabs leading={<CommunityNavLauncher />} />
         <PodcastPlayerProvider>
           <CommunityNavDrawer />

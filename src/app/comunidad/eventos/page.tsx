@@ -80,7 +80,7 @@ export default async function EventsPage({
   return (
     <div>
       <SpaceHeader icon="events" title={E.title} />
-      <SpaceBanner />
+      <SpaceBanner space="events" />
 
       {/* filtros */}
       <div className="mb-6 flex gap-2">

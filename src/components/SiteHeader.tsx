@@ -9,21 +9,9 @@ import { BootcampRibbon } from "./bootcamp/BootcampRibbon";
 
 export async function SiteHeader({
   mobileMenu = true,
-  nav = true,
 }: {
   /** Hide the marketing hamburger where another nav exists (community hub). */
   mobileMenu?: boolean;
-  /**
-   * Enlaces de plataforma del header.
-   *
-   * Dentro del hub (Comunidad, Bootcamp, Padres, StarbizAcademy) van en FALSE:
-   * allí la navegación entera vive en el árbol de la barra lateral, y esta fila
-   * repetía casi literalmente lo mismo un renglón más arriba.
-   *
-   * Fuera del hub —la portada, /familia, login— esta fila SÍ es la única
-   * navegación que hay, así que se queda.
-   */
-  nav?: boolean;
 }) {
   const [user, { dict }] = await Promise.all([getCurrentUser(), getDict()]);
   return (
@@ -37,32 +25,6 @@ export async function SiteHeader({
       <header className="scroll-lift sticky top-0 z-40 border-b border-line bg-cream lg:bg-cream/85 lg:backdrop-blur">
         <div className="container-ac flex h-16 items-center justify-between gap-2 sm:gap-4">
           <Logo />
-          {nav && (
-          <nav className="hidden items-center gap-7 text-sm font-medium text-navy md:flex">
-            <Link href="/comunidad" className="transition-colors hover:text-cyan">
-              {dict.nav.community}
-            </Link>
-            <Link
-              href="/bootcamp"
-              className="inline-flex items-center gap-1.5 font-semibold text-navy transition-colors hover:text-cyan"
-            >
-              <span
-                className="animate-led h-1.5 w-1.5 rounded-full bg-gold shadow-[0_0_6px_2px_rgba(251,191,36,0.7)]"
-                aria-hidden
-              />
-              {dict.nav.bootcamp}
-            </Link>
-            <Link href="/padres" className="transition-colors hover:text-cyan">
-              {dict.nav.padres}
-            </Link>
-            <Link href="/academia" className="transition-colors hover:text-cyan">
-              {dict.nav.academy}
-            </Link>
-            <Link href="/comunidad/tienda" className="transition-colors hover:text-cyan">
-              {dict.nav.store}
-            </Link>
-          </nav>
-          )}
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             {mobileMenu && <MobileMenu />}
             <LocaleToggle />

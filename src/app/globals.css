@@ -55,6 +55,93 @@
   --font-sans: var(--font-inter);
   --font-display: var(--font-sora);
   --font-serif: var(--font-lora);
+
+}
+
+/* ----------------------------------------------------------------------------
+   ACENTO POR SECCIÓN
+
+   Las tres secciones son mundos distintos —chicos de 13 a 17, padres, la
+   academia— y hasta ahora se veían idénticas: el árbol decía que eran hermanas
+   pero nada decía que fueran para gente distinta.
+
+   La diferenciación va por ACENTO, no repintando. Si cada sección tuviera su
+   paleta completa dejarían de parecer partes de una plataforma y cada
+   componente compartido necesitaría tres variantes. Aquí sólo cambia quién
+   lidera: los componentes leen `var(--acento)` en lugar de llevar el cyan
+   escrito a fuego, y teñir una sección es cambiar una variable.
+
+   Lo que NUNCA cambia: la estructura navy, las superficies, la tipografía, los
+   espaciados y la forma de las tarjetas. Si eso también se moviera, dejaría de
+   leerse como una sola plataforma.
+
+   Se aplica con `data-seccion` en cualquier contenedor — la sección entera, o
+   un solo grupo del árbol, que es lo que permite que al desplegar Padres se
+   tiña de dorado aunque estés dentro de Comunidad.
+---------------------------------------------------------------------------- */
+:root,
+[data-seccion="comunidad"] {
+  /* CEO Junior · 13-17. El violeta ya vive en el arte del logo (#523FFF);
+     sumarlo al cyan la vuelve más eléctrica sin inventar color nuevo. */
+  --acento: #0891b2;
+  --acento-vivo: #22d3ee;
+  --acento-alt: #523fff;
+  --acento-suave: rgba(8, 145, 178, 0.1);
+  --acento-borde: rgba(8, 145, 178, 0.28);
+  --acento-tinta: #0e7490;
+  --acento-degradado: linear-gradient(135deg, #22d3ee 0%, #0891b2 55%, #523fff 100%);
+}
+
+[data-seccion="padres"] {
+  /* Padres 3.0. Cálido y adulto: el mismo dorado de la estrella de marca. */
+  --acento: #d97706;
+  --acento-vivo: #fbbf24;
+  --acento-alt: #b45309;
+  --acento-suave: rgba(217, 119, 6, 0.1);
+  --acento-borde: rgba(217, 119, 6, 0.3);
+  --acento-tinta: #b45309;
+  --acento-degradado: linear-gradient(135deg, #fbbf24 0%, #d97706 60%, #b45309 100%);
+}
+
+[data-seccion="academy"] {
+  /* StarbizAcademy. Institucional: la voz de la casa, sin acento propio. */
+  --acento: #2f4470;
+  --acento-vivo: #3b5488;
+  --acento-alt: #1a2744;
+  --acento-suave: rgba(47, 68, 112, 0.08);
+  --acento-borde: rgba(47, 68, 112, 0.25);
+  --acento-tinta: #27395d;
+  --acento-degradado: linear-gradient(135deg, #3b5488 0%, #27395d 60%, #1a2744 100%);
+}
+
+/* Las utilidades se escriben a mano en vez de registrarlas en `@theme`.
+   Se intentó con `@theme inline { --color-acento: var(--acento) }` y Tailwind
+   no llegó a generar las clases: el token apunta a una variable que se define
+   más abajo en el archivo, y el motor la descarta en silencio — la clase
+   quedaba en el HTML sin ninguna regla detrás. Declararlas aquí es explícito,
+   no depende de cómo resuelva el motor, y son seis líneas. */
+@layer utilities {
+  .bg-acento {
+    background-color: var(--acento);
+  }
+  .bg-acento-vivo {
+    background-color: var(--acento-vivo);
+  }
+  .bg-acento-suave {
+    background-color: var(--acento-suave);
+  }
+  .text-acento {
+    color: var(--acento);
+  }
+  .text-acento-vivo {
+    color: var(--acento-vivo);
+  }
+  .text-acento-tinta {
+    color: var(--acento-tinta);
+  }
+  .border-acento {
+    border-color: var(--acento-borde);
+  }
 }
 
 @layer base {

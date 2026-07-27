@@ -3,6 +3,21 @@ import { BannerLogo } from "./BannerLogo";
 import { NightSky } from "@/components/Constellation";
 import { getDict } from "@/lib/i18n/server";
 
+/**
+ * Título del espacio.
+ *
+ * En MÓVIL no se pinta: la barra de ubicación ya dice "Comunidad › Posts" justo
+ * encima, y repetirlo era decir lo mismo dos veces seguidas gastando una franja
+ * de alto donde menos sobra. Además esa barra es sticky, así que sigue diciendo
+ * dónde estás mientras bajas — el titular se iba al primer scroll.
+ *
+ * El `h1` se queda en el documento (sr-only) en vez de desaparecer: sin él la
+ * página no tendría encabezado de primer nivel para lectores de pantalla ni
+ * para los buscadores.
+ *
+ * En ESCRITORIO sí se pinta: allí la barra de ubicación no existe, porque la
+ * lateral está siempre a la vista.
+ */
 export function SpaceHeader({
   icon,
   title,
@@ -13,13 +28,17 @@ export function SpaceHeader({
   subtitle?: string;
 }) {
   return (
-    <div className="mb-5 flex items-center gap-3">
-      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-50 text-cyan ring-1 ring-cyan/25 shadow-[0_0_16px_rgba(8,145,178,0.2)]">
-        <Icon name={icon} size={22} />
-      </span>
-      <div className="min-w-0">
-        <h1 className="text-xl font-extrabold text-navy sm:text-2xl">{title}</h1>
-        {subtitle && <p className="text-sm text-muted">{subtitle}</p>}
+    <div className={subtitle ? "mb-5" : "mb-0 lg:mb-5"}>
+      <div className="flex items-center gap-3">
+        <span className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-50 text-cyan shadow-[0_0_16px_rgba(8,145,178,0.2)] ring-1 ring-cyan/25 lg:flex">
+          <Icon name={icon} size={22} />
+        </span>
+        <div className="min-w-0">
+          <h1 className="sr-only text-xl font-extrabold text-navy sm:text-2xl lg:not-sr-only">
+            {title}
+          </h1>
+          {subtitle && <p className="text-sm text-muted">{subtitle}</p>}
+        </div>
       </div>
     </div>
   );
@@ -48,8 +67,36 @@ const BANNER_COMETS: Array<[number, number, number, number, number, number, stri
  * La entrada es CSS puro y escalonada —luz, horizonte, mensaje— así que ocurre
  * en el primer pintado, sin esperar a que hidrate React.
  */
-export async function SpaceBanner({ label }: { label?: string }) {
+export async function SpaceBanner({
+  label,
+  space,
+}: {
+  /** Titular a medida. Sólo tiene sentido en modo marca. */
+  label?: string;
+  /**
+   * Clave del espacio (`posts`, `members`…). Cambia SÓLO el texto del banner —
+   * el logo, la nebulosa y el horizonte son los mismos en todas las secciones,
+   * porque son la marca. Lo que no tenía sentido era repetir "El Ecosistema
+   * Familiar" en las ocho páginas: eso sí deja de comunicar.
+   */
+  space?: string;
+}) {
   const { dict } = await getDict();
+
+  // Lo ÚNICO que cambia por sección son las palabras. Sin `space` —en Inicio—
+  // sale el mensaje de marca de siempre.
+  const titular = space
+    ? dict.community.banners[space as keyof typeof dict.community.banners]
+    : (label ?? dict.community.taglineMain);
+
+  // La línea de debajo se reutiliza de Inicio: es la misma frase que describe
+  // la sección en sus tarjetas, así que no se escribe dos veces.
+  const sub = space
+    ? dict.community.home.spaceDesc[space as keyof typeof dict.community.home.spaceDesc]
+    : label
+      ? undefined
+      : dict.community.taglineSub;
+
   return (
     <div className="relative mb-6 overflow-hidden rounded-3xl shadow-[0_18px_50px_rgba(26,39,68,0.28)] ring-1 ring-navy/25">
       {/* El mismo cielo del hero: navy profundo hacia el azul del amanecer */}
@@ -119,11 +166,13 @@ export async function SpaceBanner({ label }: { label?: string }) {
         aria-hidden
       />
 
-      {/* El nombre vive UNA vez: dentro del arte del logo. El texto es el mensaje. */}
-      {/* En escritorio la portada es apaisada: el logo se agranda, el bloque
+      {/* El logo se queda SIEMPRE: es lo que representa a la marca y no cambia
+          de una sección a otra. Lo único que cambia son las palabras — cada
+          espacio dice lo suyo en lugar de repetir la misma frase ocho veces.
+
+          En escritorio la portada es apaisada: el logo se agranda, el bloque
           respira más y el conjunto se asienta a la izquierda para que el cielo
-          y el cometa tengan sitio propio a la derecha en vez de quedar como
-          relleno detrás del texto. */}
+          y el cometa tengan sitio propio a la derecha. */}
       <div className="relative flex aspect-[16/9] flex-col items-center justify-center gap-5 px-6 text-center text-white sm:aspect-[3/1] sm:flex-row sm:justify-start sm:gap-10 sm:px-10 sm:text-left xl:gap-14 xl:px-14">
         {/* El logo y su nebulosa. Todo cuelga de este contenedor, así que la
             nebulosa sigue al logo tanto en columna (móvil) como en fila. */}
@@ -134,14 +183,14 @@ export async function SpaceBanner({ label }: { label?: string }) {
             className="animate-rise font-display text-[1.95rem] font-extrabold leading-[1.08] text-white [text-wrap:balance] sm:text-5xl"
             style={{ animationDelay: "540ms" }}
           >
-            {label ?? dict.community.taglineMain}
+            {titular}
           </p>
-          {!label && (
+          {sub && (
             <p
-              className="animate-rise mt-2.5 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-white/45"
+              className="animate-rise mt-2.5 max-w-[42ch] text-[0.78rem] leading-snug text-white/55 sm:text-sm"
               style={{ animationDelay: "700ms" }}
             >
-              {dict.community.taglineSub}
+              {sub}
             </p>
           )}
         </div>

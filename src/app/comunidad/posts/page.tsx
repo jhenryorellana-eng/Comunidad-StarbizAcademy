@@ -61,7 +61,7 @@ export default async function PostsPage({
   return (
     <div>
       <SpaceHeader icon="posts" title={P.title} />
-      <SpaceBanner />
+      <SpaceBanner space="posts" />
 
       {member ? (
         <PostComposer userName={user!.name} initialOpen={publicar === "1"} />

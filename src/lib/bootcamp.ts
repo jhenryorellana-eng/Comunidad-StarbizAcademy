@@ -45,6 +45,17 @@ export const BOOTCAMP_MEDIA = {
     srcMobile: "/bootcamp/hero-utah-movil.jpg",
     alt: "Montañas nevadas de Utah al anochecer",
   } as { src: string; srcMobile: string; alt: string } | null,
+  /**
+   * La foto que INVITA. Se usa donde hay que hacer que alguien se imagine allí
+   * —el cuadro de acceso del feed— y por eso es una foto real con adolescentes,
+   * no la ilustración de marca: chicos con mochila cruzando el campus nevado
+   * con las montañas detrás. Un padre se ve a su hijo dentro de ese grupo, que
+   * es exactamente lo que tiene que pasar.
+   */
+  invite: {
+    src: "/bootcamp/dia-1-foto.jpg",
+    alt: "Grupo de adolescentes con mochilas cruzando un campus nevado en Utah, con las montañas al fondo",
+  } as { src: string; alt: string } | null,
   /** Banda ancha del cierre. public/bootcamp/cierre-grupo.jpg — 2400×800 */
   closing: {
     src: "/bootcamp/cierre-grupo.jpg",

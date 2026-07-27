@@ -3,8 +3,8 @@ import { getDict } from "@/lib/i18n/server";
 import { getCurrentUser } from "@/lib/auth";
 import { getSpaceCounts } from "@/lib/communityData";
 import { PLATFORM_TREE } from "@/lib/constants";
-import { BOOTCAMP } from "@/lib/bootcamp";
-import { CountdownInline } from "@/components/bootcamp/Countdown";
+import { BootcampShowcase } from "@/components/bootcamp/BootcampShowcase";
+import { SpaceBanner } from "@/components/community/SpaceHeader";
 import { Icon, type IconName } from "@/components/icons";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { cn } from "@/components/ui";
@@ -48,41 +48,34 @@ export default async function ComunidadInicio() {
   return (
     <div className="flex flex-col gap-5">
       {/* ═══════════ PORTADA ═══════════
-          El único bloque en navy y a sangre. Contraste de escala: si todo pesa
-          lo mismo, no pesa nada. */}
-      <Reveal className="relative overflow-hidden rounded-3xl bg-[linear-gradient(152deg,#12203c_0%,#0d1830_48%,#0a1020_100%)] px-6 py-9 text-white shadow-[0_18px_50px_rgba(26,39,68,0.28)] sm:px-9 sm:py-12">
-        {/* Atmósfera en degradados, no en capas con filtro: forma parte de la
-            textura y no cuesta un repintado por fotograma. */}
-        <span
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(80%_60%_at_0%_100%,rgba(34,211,238,0.18),transparent_62%),radial-gradient(70%_50%_at_100%_0%,rgba(251,191,36,0.14),transparent_60%)]"
-          aria-hidden
-        />
-        <div className="relative">
-          <p className="kicker text-gold">{dentro ? H.welcomeBack : H.kicker}</p>
-          <h1 className="mt-3 max-w-[22ch] font-display text-[1.9rem] font-extrabold leading-[1.08] tracking-tight text-white [text-wrap:balance] sm:text-[2.6rem]">
-            {H.title}
-          </h1>
-          <p className="mt-4 max-w-lg text-[0.98rem] leading-relaxed text-white/70 sm:text-lg">
-            {H.lead}
-          </p>
+          El banner de marca vive AQUÍ y sólo aquí: el logo, la nebulosa y "El
+          Ecosistema Familiar". Es donde la marca se presenta. En las demás
+          secciones el banner cambia a la identidad de cada una — repetir el
+          logo ocho veces era lo que lo convertía en papel pintado. */}
+      <SpaceBanner />
 
-          <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2">
-            <Link
-              href={dentro ? "/comunidad/posts" : "/signup"}
-              className="inline-flex items-center gap-2 rounded-full bg-gold px-6 py-3 font-semibold text-navy shadow-[0_10px_30px_rgba(251,191,36,0.35)] transition-all duration-200 hover:-translate-y-px hover:bg-gold-300"
-            >
-              {dentro ? H.ctaMember : H.ctaJoin}
-              <Icon name="arrowRight" size={16} />
-            </Link>
-            <span className="text-xs text-white/45">
-              {dentro ? H.ctaMemberNote : H.ctaJoinNote}
-            </span>
-          </div>
+      {/* El mensaje va en claro, justo debajo. Dos bloques navy seguidos pesan
+          demasiado y ninguno de los dos destaca: el banner pone la imagen, esta
+          tarjeta pone las palabras. */}
+      <Reveal className="-mt-1 rounded-3xl border border-surface-line bg-paper p-6 sm:p-8">
+        <p className="kicker">{dentro ? H.welcomeBack : H.kicker}</p>
+        <h1 className="mt-2 max-w-[22ch] font-display text-[1.75rem] font-extrabold leading-[1.1] tracking-tight text-navy [text-wrap:balance] sm:text-[2.4rem]">
+          {H.title}
+        </h1>
+        <p className="mt-3.5 max-w-lg leading-relaxed text-ink/85 sm:text-lg">{H.lead}</p>
+
+        <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <Link
+            href={dentro ? "/comunidad/posts" : "/signup"}
+            className="inline-flex items-center gap-2 rounded-full bg-navy px-6 py-3 font-semibold text-white shadow-[0_10px_30px_rgba(26,39,68,0.25)] transition-all duration-200 hover:-translate-y-px hover:bg-navy-800"
+          >
+            {dentro ? H.ctaMember : H.ctaJoin}
+            <Icon name="arrowRight" size={16} />
+          </Link>
+          <span className="text-xs text-muted">
+            {dentro ? H.ctaMemberNote : H.ctaJoinNote}
+          </span>
         </div>
-        <span
-          className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-cyan-bright via-cyan to-gold"
-          aria-hidden
-        />
       </Reveal>
 
       {/* ═══════════ POR QUÉ EXISTIMOS ═══════════ */}
@@ -98,11 +91,11 @@ export default async function ComunidadInicio() {
         <Stagger className="mt-7 grid gap-3 sm:grid-cols-3">
           {H.pillars.map((p, i) => (
             <StaggerItem key={p.title}>
-              <div className="h-full rounded-2xl border border-surface-line bg-surface p-4 transition-colors hover:border-cyan/25">
+              <div className="group h-full rounded-2xl border border-surface-line bg-surface p-4 transition-all duration-300 hover:-translate-y-1 hover:border-acento-borde hover:shadow-[0_12px_30px_-10px_var(--acento-suave)]">
                 <span
                   className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-xl text-white",
-                    i === 0 ? "bg-cyan" : i === 1 ? "bg-gold text-navy" : "bg-navy",
+                    "flex h-9 w-9 items-center justify-center rounded-xl text-white transition-transform duration-300 group-hover:scale-110",
+                    i === 0 ? "bg-acento" : i === 1 ? "bg-gold text-navy" : "bg-navy",
                   )}
                 >
                   <Icon
@@ -129,7 +122,7 @@ export default async function ComunidadInicio() {
           "rounded-3xl border p-6 sm:p-8",
           dentro
             ? "border-surface-line bg-paper"
-            : "border-cyan/25 bg-gradient-to-br from-cyan-50/70 to-paper",
+            : "border-acento-borde bg-[radial-gradient(90%_70%_at_0%_0%,var(--acento-suave),transparent_65%)] bg-paper",
         )}
       >
         <Reveal>
@@ -143,7 +136,7 @@ export default async function ComunidadInicio() {
           {H.benefits.map((b) => (
             <StaggerItem key={b.title}>
               <div className="flex gap-3">
-                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-cyan text-white">
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-acento text-white">
                   <Icon name="check" size={13} />
                 </span>
                 <div className="min-w-0">
@@ -171,54 +164,11 @@ export default async function ComunidadInicio() {
         )}
       </section>
 
-      {/* ═══════════ BOOTCAMP ═══════════ */}
-      <Reveal className="relative overflow-hidden rounded-3xl border border-gold/40 bg-[linear-gradient(150deg,#1a2744_0%,#0d1830_100%)] p-6 text-white sm:p-8">
-        <span
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_60%_at_100%_0%,rgba(251,191,36,0.2),transparent_62%)]"
-          aria-hidden
-        />
-        <div className="relative">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <p className="kicker text-gold">{H.bootcampKicker}</p>
-            <span className="text-[0.7rem] font-bold uppercase tracking-[0.12em] text-white/40">
-              <CountdownInline />
-            </span>
-          </div>
-          <h2 className="mt-2 max-w-[24ch] font-display text-xl font-extrabold leading-tight text-white sm:text-2xl">
-            {H.bootcampTitle}
-          </h2>
-          <p className="mt-3 max-w-[54ch] text-sm leading-relaxed text-white/70">
-            {H.bootcampBody}
-          </p>
-
-          <div className="mt-5 flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-gold px-3 py-1 text-[0.7rem] font-bold uppercase tracking-[0.08em] text-navy">
-              <Icon name="star" size={11} />
-              {BOOTCAMP.seats} cupos · ${BOOTCAMP.priceUSD}
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/40 px-3 py-1 text-[0.7rem] font-bold uppercase tracking-[0.08em] text-gold">
-              <Icon name="clock" size={11} />
-              {BOOTCAMP.deadlineEs}
-            </span>
-          </div>
-
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <Link
-              href="/bootcamp#inscripcion"
-              className="inline-flex items-center gap-2 rounded-full bg-gold px-6 py-2.5 font-semibold text-navy shadow-[0_10px_30px_rgba(251,191,36,0.35)] transition-all duration-200 hover:-translate-y-px hover:bg-gold-300"
-            >
-              {H.bootcampCta}
-              <Icon name="arrowRight" size={15} />
-            </Link>
-            <Link
-              href="/bootcamp"
-              className="text-sm font-semibold text-white/60 underline-offset-4 transition-colors hover:text-white hover:underline"
-            >
-              {H.bootcampMore}
-            </Link>
-          </div>
-        </div>
-      </Reveal>
+      {/* ═══════════ BOOTCAMP ═══════════
+          Con fotos. Un viaje a Utah no se vende contándolo, y las imágenes ya
+          existían: sólo vivían en la página del programa, donde llega quien ya
+          está interesado. Aquí es donde hacen falta. */}
+      <BootcampShowcase />
 
       {/* ═══════════ EL MAPA ═══════════ */}
       <section className="rounded-3xl border border-surface-line bg-paper p-6 sm:p-8">
@@ -243,11 +193,18 @@ export default async function ComunidadInicio() {
               <StaggerItem key={hoja.key}>
                 <Link
                   href={bloqueado ? "/signup" : hoja.href}
-                  className="group flex h-full flex-col rounded-2xl border border-surface-line bg-surface p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-cyan/30 hover:shadow-[0_10px_28px_rgba(8,145,178,0.09)]"
+                  className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-surface-line bg-surface p-4 transition-all duration-300 hover:-translate-y-1 hover:border-acento-borde hover:shadow-[0_14px_34px_-8px_var(--acento-suave)]"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-navy/[0.06] text-navy transition-colors group-hover:bg-cyan group-hover:text-white">
-                      <Icon name={hoja.icon as IconName} size={15} />
+                  {/* Un resplandor del acento crece desde la esquina al pasar
+                      por encima. Es una capa que sólo cambia de opacidad, así
+                      que el navegador la resuelve sin repintar nada. */}
+                  <span
+                    className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-acento opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-[0.18]"
+                    aria-hidden
+                  />
+                  <div className="relative flex items-center gap-2.5">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-navy/[0.06] text-navy transition-all duration-300 group-hover:scale-110 group-hover:bg-acento group-hover:text-white">
+                      <Icon name={hoja.icon as IconName} size={16} />
                     </span>
                     <p className="font-display text-[0.95rem] font-bold text-navy">
                       {label}
@@ -263,8 +220,8 @@ export default async function ComunidadInicio() {
                       )
                     )}
                   </div>
-                  <p className="mt-2.5 flex-1 text-sm leading-snug text-muted">{desc}</p>
-                  <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.1em] text-cyan-700">
+                  <p className="relative mt-2.5 flex-1 text-sm leading-snug text-muted">{desc}</p>
+                  <span className="relative mt-3 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.1em] text-acento-tinta">
                     {H.spaceGo}
                     <Icon
                       name="arrowRight"

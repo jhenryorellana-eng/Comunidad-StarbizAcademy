@@ -236,6 +236,7 @@ export const es = {
       store: "Tienda",
       chat: "Chat",
       bootcamp: "Bootcamp 2027",
+      ecosistema: "Entrar al ecosistema",
       chapters: "GÉNESIS i7",
     },
     nav: {
@@ -247,6 +248,19 @@ export const es = {
       soon: "Pronto",
       emptySection: "Estamos construyendo esta sección. Muy pronto vas a poder entrar.",
       current: "Estás en",
+    },
+    /* Titular del banner en cada espacio. La línea de debajo NO se repite
+       aquí: se reutiliza `home.spaceDesc`, que ya describe cada sección para
+       las tarjetas de Inicio. Un solo sitio donde cambiarlo. */
+    banners: {
+      posts: "Lo que está pasando ahora",
+      members: "Quién está construyendo",
+      events: "Nos vemos en vivo",
+      blogs: "El Observatorio",
+      podcast: "Ponte los audífonos",
+      rules: "Cómo funciona esto",
+      store: "Lo que construimos",
+      chat: "La conversación diaria",
     },
     home: {
       kicker: "Bienvenido a la Comunidad",
@@ -314,7 +328,7 @@ export const es = {
         members: "Quién está aquí. Familias, mentores y cohortes de toda Latinoamérica.",
         events: "La reunión semanal y los talleres. En vivo y gratis, con cupo.",
         blogs: "El Observatorio: artículos largos sobre las siete inteligencias.",
-        podcast: "Conversaciones para escuchar mientras conduces o cocinas.",
+        podcast: "Audios cortos sobre las siete inteligencias, para escuchar de camino.",
         rules: "Las cuatro reglas que sostienen este sitio. Se leen en un minuto.",
         store: "Las apps y plantillas que construimos, para usar desde hoy.",
         chat: "La conversación del día a día. Sólo para miembros.",
@@ -797,6 +811,7 @@ export const en: typeof es = {
       store: "Store",
       chat: "Chat",
       bootcamp: "Bootcamp 2027",
+      ecosistema: "Enter the ecosystem",
       chapters: "GÉNESIS i7",
     },
     nav: {
@@ -808,6 +823,16 @@ export const en: typeof es = {
       soon: "Soon",
       emptySection: "We're building this section. You'll be able to step in very soon.",
       current: "You are in",
+    },
+    banners: {
+      posts: "What's happening right now",
+      members: "Who's building",
+      events: "See you live",
+      blogs: "The Observatory",
+      podcast: "Put your headphones on",
+      rules: "How this works",
+      store: "What we build",
+      chat: "The daily conversation",
     },
     home: {
       kicker: "Welcome to the Community",
@@ -876,7 +901,7 @@ export const en: typeof es = {
         members: "Who's here. Families, mentors and cohorts from across Latin America.",
         events: "The weekly meetup and the workshops. Live and free, with limited seats.",
         blogs: "The Observatory: long-form pieces on the seven intelligences.",
-        podcast: "Conversations to listen to while you drive or cook.",
+        podcast: "Short audio on the seven intelligences, for the way there.",
         rules: "The four rules that hold this place together. A minute to read.",
         store: "The apps and templates we build, ready to use today.",
         chat: "The day-to-day conversation. Members only.",

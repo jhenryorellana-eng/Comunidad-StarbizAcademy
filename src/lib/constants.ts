@@ -60,6 +60,9 @@ export type NavLeaf = {
   exact?: boolean;
   /** Se pinta en dorado: es el destino que queremos que se vea. */
   featured?: boolean;
+  /** Sale del sitio: se abre en pestaña nueva y lo advierte con un icono.
+      Nunca coincide con una ruta, así que jamás se marca como activo. */
+  external?: boolean;
 };
 
 export type NavSection = {
@@ -89,7 +92,20 @@ export const PLATFORM_TREE: readonly NavSection[] = [
     ],
   },
   { key: "padres", base: "/padres", live: false, children: [] },
-  { key: "academy", base: "/academia", live: false, children: [] },
+  {
+    key: "academy",
+    base: "/academia",
+    live: false,
+    children: [
+      {
+        key: "ecosistema",
+        href: "https://www.starbizacademy.com/",
+        icon: "sparkles",
+        external: true,
+        featured: true,
+      },
+    ],
+  },
 ];
 
 /** Todos los destinos, aplanados. Útil para resolver "¿dónde estoy?". */
@@ -136,6 +152,8 @@ export const BRAND = {
   tagline_en: "One universe. Two platforms in sync.",
   whatsapp: "https://wa.me/13854564470?text=Hola%20Henry%2C%20me%20interesa%20StarbizAcademy",
   whatsappNumber: "13854564470",
+  /** El ecosistema completo, fuera de esta plataforma. */
+  site: "https://www.starbizacademy.com/",
 };
 
 /** WhatsApp link with a prefilled interest message (used by the store CTA). */
