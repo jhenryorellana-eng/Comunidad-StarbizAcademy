@@ -1,6 +1,4 @@
-import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
-import { getDict } from "@/lib/i18n/server";
 import { Logo } from "./Star";
 import { LocaleToggle } from "./LocaleToggle";
 import { AuthControls } from "./AuthControls";
@@ -13,7 +11,9 @@ export async function SiteHeader({
   /** Hide the marketing hamburger where another nav exists (community hub). */
   mobileMenu?: boolean;
 }) {
-  const [user, { dict }] = await Promise.all([getCurrentUser(), getDict()]);
+  // El diccionario ya no hace falta aquí: con la fila de enlaces fuera, el
+  // header no tiene ni un texto propio.
+  const user = await getCurrentUser();
   return (
     <>
       {/* Cinta del bootcamp: va FUERA del header sticky a propósito, para no

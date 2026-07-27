@@ -6,6 +6,7 @@ import { CommunityRail } from "@/components/community/CommunityRail";
 import { CommunityNavProvider } from "@/components/community/navContext";
 import { CommunityNavLauncher } from "@/components/community/CommunityNavLauncher";
 import { CommunityNavDrawer } from "@/components/community/CommunityNavDrawer";
+import { CommunityGuide } from "@/components/community/CommunityGuide";
 import { PodcastPlayerProvider } from "@/components/community/PodcastPlayer";
 import { SectionTabs } from "@/components/SectionTabs";
 
@@ -41,6 +42,10 @@ export default async function CommunityLayout({
         <SectionTabs leading={<CommunityNavLauncher />} />
         <PodcastPlayerProvider>
           <CommunityNavDrawer />
+          {/* Guía de bienvenida. Se muestra una vez —recuerda en localStorage—
+              y se puede reabrir desde Inicio. Vive en el layout para que dé
+              igual por qué espacio de la comunidad se entre. */}
+          <CommunityGuide />
           {/* Contenedor propio, más ancho que el del resto del sitio: aquí
               caben tres columnas y en pantallas grandes el de 76rem dejaba
               media pantalla vacía. */}

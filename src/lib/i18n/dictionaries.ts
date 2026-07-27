@@ -249,6 +249,48 @@ export const es = {
       emptySection: "Estamos construyendo esta sección. Muy pronto vas a poder entrar.",
       current: "Estás en",
     },
+    /* Guía de bienvenida. Cinco pasos para diez destinos: agrupados por lo que
+       vas a HACER, no uno por espacio — una guía de diez pantallas la cierra
+       todo el mundo antes de la cuarta. */
+    guide: {
+      eyebrow: "Guía rápida",
+      title: "Así está organizado esto",
+      lead: "Un minuto y sabes dónde está cada cosa.",
+      whereIs: "Dónde está",
+      skip: "Saltar",
+      back: "Atrás",
+      next: "Siguiente",
+      done: "Empezar a explorar",
+      reopen: "Ver la guía",
+      stepOf: "de",
+      steps: [
+        {
+          title: "Aquí aterrizas",
+          body: "Inicio es la puerta: quiénes somos, qué se abre al unirte y accesos directos a todo lo demás. Si te pierdes, vuelves aquí.",
+          highlight: ["home"],
+        },
+        {
+          title: "Donde se conversa",
+          body: "El feed es el pulso del día: avances, primeras ventas y preguntas reales. El chat es la conversación continua, y ese sí pide cuenta.",
+          highlight: ["posts", "chat"],
+        },
+        {
+          title: "Con quién, y cuándo",
+          body: "Miembros es el directorio de familias y mentores. Eventos son los encuentros en vivo — la reunión semanal es abierta y gratis.",
+          highlight: ["members", "events"],
+        },
+        {
+          title: "Para aprender y para usar",
+          body: "Blogs y Podcast son el fondo: las siete inteligencias en largo y en audio. Tienda son las apps que construimos. Reglas se lee en un minuto.",
+          highlight: ["blogs", "podcast", "store", "rules"],
+        },
+        {
+          title: "Y el viaje",
+          body: "Cuatro días en Utah, del 26 al 31 de enero de 2027. Universidades, Silicon Slopes y la ceremonia Star App. Es la sección que corre: los cupos cierran el 15 de diciembre.",
+          highlight: ["bootcamp"],
+        },
+      ],
+    },
     /* Titular del banner en cada espacio. La línea de debajo NO se repite
        aquí: se reutiliza `home.spaceDesc`, que ya describe cada sección para
        las tarjetas de Inicio. Un solo sitio donde cambiarlo. */
@@ -823,6 +865,45 @@ export const en: typeof es = {
       soon: "Soon",
       emptySection: "We're building this section. You'll be able to step in very soon.",
       current: "You are in",
+    },
+    guide: {
+      eyebrow: "Quick guide",
+      title: "How this is organised",
+      lead: "One minute and you'll know where everything is.",
+      whereIs: "Where it is",
+      skip: "Skip",
+      back: "Back",
+      next: "Next",
+      done: "Start exploring",
+      reopen: "See the guide",
+      stepOf: "of",
+      steps: [
+        {
+          title: "This is where you land",
+          body: "Home is the door: who we are, what opens up when you join, and shortcuts to everything else. Lost? Come back here.",
+          highlight: ["home"],
+        },
+        {
+          title: "Where the talking happens",
+          body: "The feed is the day's pulse: progress, first sales and real questions. Chat is the running conversation, and that one needs an account.",
+          highlight: ["posts", "chat"],
+        },
+        {
+          title: "Who, and when",
+          body: "Members is the directory of families and mentors. Events are the live gatherings — the weekly meetup is open and free.",
+          highlight: ["members", "events"],
+        },
+        {
+          title: "To learn and to use",
+          body: "Blogs and Podcast are the depth: the seven intelligences, long-form and in audio. Store holds the apps we build. Rules takes a minute to read.",
+          highlight: ["blogs", "podcast", "store", "rules"],
+        },
+        {
+          title: "And the trip",
+          body: "Four days in Utah, 26–31 January 2027. Universities, Silicon Slopes and the Star App ceremony. This is the one on a clock: seats close on 15 December.",
+          highlight: ["bootcamp"],
+        },
+      ],
     },
     banners: {
       posts: "What's happening right now",
