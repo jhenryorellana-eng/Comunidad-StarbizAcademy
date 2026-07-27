@@ -85,8 +85,6 @@ function StarPeek({ wink }: { wink: boolean }) {
  * server catches up in a background refresh.
  */
 export function LocaleToggle({ className }: { className?: string }) {
-  // `data-tour` marca el ancla de la guía; se busca por atributo para no
-  // acoplar la guía a clases de estilo, que cambian.
   const { locale, setLocale } = useI18n();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -119,7 +117,7 @@ export function LocaleToggle({ className }: { className?: string }) {
   const index = LOCALES.indexOf(locale);
 
   return (
-    <div data-tour="locale" className={cn("relative", className)}>
+    <div className={cn("relative", className)}>
       {/* Ventana de asomado: recorta a Estrellita justo en el borde superior
           de la cápsula, para que parezca que sale desde atrás. */}
       <div

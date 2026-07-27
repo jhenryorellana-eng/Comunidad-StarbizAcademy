@@ -32,7 +32,7 @@ export function AuthControls({
         >
           {dict.common.login}
         </Link>
-        <LinkButton href="/signup" size="sm" data-tour="join">
+        <LinkButton href="/signup" size="sm">
           {dict.common.join}
         </LinkButton>
       </div>

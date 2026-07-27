@@ -249,23 +249,6 @@ export const es = {
       emptySection: "Estamos construyendo esta sección. Muy pronto vas a poder entrar.",
       current: "Estás en",
     },
-    /* Guía de bienvenida. Cinco pasos para diez destinos: agrupados por lo que
-       vas a HACER, no uno por espacio — una guía de diez pantallas la cierra
-       todo el mundo antes de la cuarta. */
-    guide: {
-      /* Una frase por elemento. La guía ya no explica el mapa entero: señala
-         cuatro cosas que hacen falta el primer minuto y se aparta. */
-      skip: "Saltar",
-      next: "Siguiente",
-      done: "Entendido",
-      reopen: "Ver la guía",
-      tips: {
-        logo: "Toca el logo para volver al inicio desde cualquier página.",
-        nav: "Este es el menú: desde aquí entras a Posts, Eventos, el Bootcamp y todo lo demás.",
-        locale: "Cambia entre español e inglés cuando quieras.",
-        join: "Crea tu cuenta gratis. Publicar, el chat y reservar eventos se abren al unirte.",
-      },
-    },
     /* Titular del banner en cada espacio. La línea de debajo NO se repite
        aquí: se reutiliza `home.spaceDesc`, que ya describe cada sección para
        las tarjetas de Inicio. Un solo sitio donde cambiarlo. */
@@ -840,18 +823,6 @@ export const en: typeof es = {
       soon: "Soon",
       emptySection: "We're building this section. You'll be able to step in very soon.",
       current: "You are in",
-    },
-    guide: {
-      skip: "Skip",
-      next: "Next",
-      done: "Got it",
-      reopen: "See the guide",
-      tips: {
-        logo: "Tap the logo to get back home from any page.",
-        nav: "This is the menu: Posts, Events, the Bootcamp and everything else live here.",
-        locale: "Switch between Spanish and English whenever you like.",
-        join: "Create your free account. Posting, chat and booking events open up when you join.",
-      },
     },
     banners: {
       posts: "What's happening right now",

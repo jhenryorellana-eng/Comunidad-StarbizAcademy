@@ -4,7 +4,6 @@ import { getCurrentUser } from "@/lib/auth";
 import { getSpaceCounts } from "@/lib/communityData";
 import { PLATFORM_TREE } from "@/lib/constants";
 import { BootcampShowcase } from "@/components/bootcamp/BootcampShowcase";
-import { GuideReopenButton } from "@/components/community/CommunityGuide";
 import { SpaceBanner } from "@/components/community/SpaceHeader";
 import { Icon, type IconName } from "@/components/icons";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
@@ -77,11 +76,6 @@ export default async function ComunidadInicio() {
             {dentro ? H.ctaMemberNote : H.ctaJoinNote}
           </span>
         </div>
-
-        {/* Reabrir la guía. Discreto pero permanente: la guía se cierra una vez
-            y si no hay forma de volver, a los dos días nadie recuerda dónde
-            estaba el chat. */}
-        <GuideReopenButton className="mt-5 inline-flex items-center gap-1.5 rounded-full border border-surface-line px-3 py-1.5 text-xs font-semibold text-muted transition-colors hover:border-acento-borde hover:text-acento-tinta" />
       </Reveal>
 
       {/* ═══════════ POR QUÉ EXISTIMOS ═══════════ */}
