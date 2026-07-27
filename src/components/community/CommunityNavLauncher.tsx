@@ -27,6 +27,7 @@ export function CommunityNavLauncher() {
       }}
       aria-label={dict.community.spacesLabel}
       aria-expanded={open}
+      data-tour="nav"
       className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-navy text-white shadow-[0_4px_14px_rgba(26,39,68,0.3)] transition-transform active:scale-95 lg:hidden"
     >
       <Icon name="menu" size={18} />

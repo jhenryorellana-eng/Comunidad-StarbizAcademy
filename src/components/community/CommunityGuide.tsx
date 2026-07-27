@@ -1,39 +1,40 @@
 "use client";
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 import { useI18n } from "@/lib/i18n/client";
-import { PLATFORM_TREE } from "@/lib/constants";
-import { Icon, type IconName } from "@/components/icons";
-import { cn } from "@/components/ui";
+import { Icon } from "@/components/icons";
 
 const SEEN_KEY = "sba_guide_seen";
 
 /* ===========================================================================
-   GUÍA DE BIENVENIDA
+   GUÍA — SEÑALES, NO UN MODAL
 
-   Quien entra por primera vez aterriza en Inicio y tiene que deducir el mapa
-   solo. Esto se lo cuenta en cinco pasos.
+   La primera versión era un modal a pantalla completa que se plantaba delante
+   antes de dejar ver nada. Contaba bien el mapa, pero le pedía a alguien que
+   acaba de llegar que se leyera cinco pantallas antes de mirar la página. Eso
+   es exactamente lo que hace que se cierren las guías sin leerlas.
 
-   LA DECISIÓN QUE IMPORTA: la guía no describe el menú, lo ENSEÑA. Cada paso
-   ilumina sus destinos sobre una miniatura del árbol real. Leer "Posts está en
-   la barra lateral" no enseña nada; ver Posts encenderse en su sitio, sí. Por
-   eso la miniatura se construye desde `PLATFORM_TREE`, la misma fuente que la
-   navegación de verdad — si mañana se mueve un espacio, la guía se mueve sola.
+   Ahora el usuario entra normal, ve Inicio, y aparece UNA burbuja pequeña
+   señalando un elemento real: el logo, el menú, el idioma, el botón de unirse.
+   Cuatro señales de una frase. Se puede seguir usando la página con la guía
+   abierta — no hay velo que bloquee ni scroll bloqueado.
 
-   Cinco pasos para diez destinos, agrupados por lo que vas a HACER. Una guía de
-   diez pantallas la cierra todo el mundo antes de la cuarta.
+   CÓMO ENCUENTRA LOS ELEMENTOS: por `data-tour` en el componente real, no por
+   clases ni por posición. Las clases de estilo cambian cada semana; el atributo
+   dice para qué está ahí. Si un paso no encuentra su elemento —el botón de
+   unirse no existe si ya iniciaste sesión— ese paso simplemente se salta.
 
-   Rendimiento, con las reglas que ya rigen el resto del proyecto:
-   · Sólo se animan `transform` y `opacity`. Nada de `clip-path`, `filter` ni
-     `backdrop-filter` — cada uno obliga a repintar en cada fotograma.
-   · El velo es opaco liso, sin desenfoque. Un `backdrop-filter` a pantalla
-     completa sobre un fondo con animaciones no para nunca de recalcularse.
+   El recuadro que rodea al elemento es un `box-shadow` enorme y FIJO: dibuja
+   el halo y oscurece todo lo demás de una sola vez, sin una segunda capa y sin
+   nada que se repinte por fotograma.
 =========================================================================== */
 
-/** Store mínimo sobre localStorage para `useSyncExternalStore`.
-    Leer localStorage dentro de un efecto obliga a un setState síncrono que
-    dispara renders en cascada; este hook existe justo para evitarlo. */
+/** Orden de los pasos. La clave es el `data-tour` del elemento al que apunta. */
+const PASOS = ["logo", "nav", "locale", "join"] as const;
+type Paso = (typeof PASOS)[number];
+
 const seenStore = {
   listeners: new Set<() => void>(),
   subscribe(cb: () => void) {
@@ -46,7 +47,7 @@ const seenStore = {
     try {
       return localStorage.getItem(SEEN_KEY) === "1";
     } catch {
-      return false; // localStorage bloqueado: se muestra igual.
+      return false;
     }
   },
   markSeen() {
@@ -67,273 +68,210 @@ const seenStore = {
   },
 };
 
-/** En servidor se asume vista: así no se pinta nada hasta hidratar y no hay
-    desajuste entre lo que manda el servidor y lo que ve el navegador. */
+/** En servidor se asume vista: nada se pinta hasta hidratar, sin desajuste. */
 const seenOnServer = () => true;
+
+type Caja = { top: number; left: number; width: number; height: number };
+
+/** Rectángulo del elemento VISIBLE con ese `data-tour`.
+    Hay dos anclas para `nav` —la barra lateral en escritorio y el botón en
+    móvil— y sólo una está pintada según el ancho. */
+function cajaDe(clave: string): Caja | null {
+  const nodos = [...document.querySelectorAll<HTMLElement>(`[data-tour="${clave}"]`)];
+  const visible = nodos.find((n) => n.offsetParent !== null || n.getClientRects().length);
+  if (!visible) return null;
+  const r = visible.getBoundingClientRect();
+  if (r.width === 0 || r.height === 0) return null;
+  return { top: r.top, left: r.left, width: r.width, height: r.height };
+}
 
 export function CommunityGuide() {
   const { dict } = useI18n();
   const G = dict.community.guide;
   const vista = useSyncExternalStore(seenStore.subscribe, seenStore.wasSeen, seenOnServer);
 
-  const [paso, setPaso] = useState(0);
-  const total = G.steps.length;
-  const abierto = !vista;
+  const [i, setI] = useState(0);
+  const [caja, setCaja] = useState<Caja | null>(null);
+  const abierta = !vista;
 
   const cerrar = useCallback(() => {
     seenStore.markSeen();
-    setPaso(0);
+    setI(0);
+  }, []);
+
+  // Avanza saltando los pasos cuyo elemento no está en pantalla.
+  const siguienteIndice = useCallback((desde: number): number => {
+    for (let n = desde; n < PASOS.length; n++) {
+      if (cajaDe(PASOS[n])) return n;
+    }
+    return -1;
   }, []);
 
   const avanzar = useCallback(() => {
-    setPaso((p) => (p + 1 < total ? p + 1 : p));
-  }, [total]);
+    const n = siguienteIndice(i + 1);
+    if (n === -1) cerrar();
+    else setI(n);
+  }, [i, siguienteIndice, cerrar]);
 
-  const retroceder = useCallback(() => setPaso((p) => Math.max(0, p - 1)), []);
+  // Medir el elemento del paso actual, y volver a medir si cambia la ventana.
+  useEffect(() => {
+    if (!abierta) return;
+
+    let vivo = true;
+    const medir = () => {
+      if (!vivo) return;
+      const n = siguienteIndice(i);
+      if (n === -1) {
+        cerrar();
+        return;
+      }
+      if (n !== i) {
+        setI(n);
+        return;
+      }
+      setCaja(cajaDe(PASOS[i]));
+    };
+
+    // Un fotograma de margen: al abrir, la barra lateral aún puede estar
+    // entrando y su rectángulo sería el de mitad de animación.
+    const raf = requestAnimationFrame(medir);
+    window.addEventListener("resize", medir);
+    window.addEventListener("scroll", medir, { passive: true });
+    return () => {
+      vivo = false;
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", medir);
+      window.removeEventListener("scroll", medir);
+    };
+  }, [abierta, i, siguienteIndice, cerrar]);
 
   useEffect(() => {
-    if (!abierto) return;
+    if (!abierta) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") cerrar();
-      if (e.key === "ArrowRight") avanzar();
-      if (e.key === "ArrowLeft") retroceder();
+      if (e.key === "ArrowRight" || e.key === "Enter") avanzar();
     };
     document.addEventListener("keydown", onKey);
-    // Se aplaza un fotograma: cambiar `overflow` en el body invalida la
-    // disposición de todo el documento, y hacerlo en el mismo fotograma que
-    // abre el modal hace competir el recálculo con la animación de entrada.
-    const raf = requestAnimationFrame(() => {
-      document.body.style.overflow = "hidden";
-    });
-    return () => {
-      cancelAnimationFrame(raf);
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-    };
-  }, [abierto, cerrar, avanzar, retroceder]);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [abierta, cerrar, avanzar]);
 
-  const actual = G.steps[paso];
-  const ultimo = paso === total - 1;
-  const comunidad = PLATFORM_TREE.find((s) => s.key === "comunidad");
-  const destinos = comunidad?.children ?? [];
+  if (!abierta || !caja) return null;
 
-  return (
+  const clave = PASOS[i] as Paso;
+  const texto = G.tips[clave];
+  const ultimo = siguienteIndice(i + 1) === -1;
+
+  // La burbuja va debajo del elemento salvo que no quepa, y se mantiene dentro
+  // de la ventana por los lados.
+  const margen = 12;
+  const anchoBurbuja = 268;
+  const debajo = caja.top + caja.height + margen;
+  const cabeDebajo = debajo + 150 < window.innerHeight;
+  const top = cabeDebajo ? debajo : Math.max(margen, caja.top - 150 - margen);
+  const centro = caja.left + caja.width / 2;
+  const left = Math.min(
+    Math.max(margen, centro - anchoBurbuja / 2),
+    window.innerWidth - anchoBurbuja - margen,
+  );
+
+  // Portal a <body>. Un `z-index` alto no basta: la guía vive dentro del layout
+  // de la comunidad, y basta un ancestro con `transform` u `opacity` para crear
+  // un contexto de apilamiento que lo atrapa. Se veía: la barra de ubicación
+  // (z-30) se pintaba ENCIMA de la burbuja (z-60). Sacándola a body no hay
+  // ancestro que la contenga.
+  return createPortal(
     <AnimatePresence>
-      {abierto && (
-        <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center">
-          {/* Velo liso, sin desenfoque: a pantalla completa y sobre un fondo con
-              animaciones, un `backdrop-filter` no para de recalcularse. */}
-          <motion.div
-            className="absolute inset-0 bg-navy/70"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1, transition: { duration: 0.22 } }}
-            exit={{ opacity: 0, transition: { duration: 0.15 } }}
-            onClick={cerrar}
-          />
+      <div className="pointer-events-none fixed inset-0 z-[60]">
+        {/* EL RECUADRO. Un solo elemento hace las dos cosas: el halo alrededor
+            del objetivo y el oscurecido de todo lo demás, con una sombra
+            gigante y fija. Sin segunda capa y sin nada que repintar. */}
+        <motion.div
+          key={`halo-${clave}`}
+          className="absolute rounded-xl"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1, transition: { duration: 0.2 } }}
+          exit={{ opacity: 0 }}
+          style={{
+            top: caja.top - 6,
+            left: caja.left - 6,
+            width: caja.width + 12,
+            height: caja.height + 12,
+            boxShadow:
+              "0 0 0 2px rgba(34,211,238,0.9), 0 0 22px 2px rgba(34,211,238,0.45), 0 0 0 9999px rgba(10,16,32,0.62)",
+          }}
+          aria-hidden
+        />
 
-          <motion.div
-            role="dialog"
-            aria-modal="true"
-            aria-label={G.title}
-            className="relative flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl border border-white/10 bg-[linear-gradient(155deg,#152744_0%,#0d1830_52%,#0a1020_100%)] shadow-[0_-8px_60px_rgba(6,10,24,0.6)] sm:rounded-3xl"
-            initial={{ opacity: 0, y: 28, scale: 0.97 }}
-            animate={{
-              opacity: 1,
-              y: 0,
-              scale: 1,
-              transition: { duration: 0.26, ease: [0.16, 1, 0.3, 1] },
-            }}
-            exit={{ opacity: 0, y: 20, scale: 0.98, transition: { duration: 0.16 } }}
-            // Arrastrar horizontalmente para cambiar de paso: en móvil es el
-            // gesto que la gente ya intenta sin que nadie se lo diga.
-            drag="x"
-            dragElastic={0.12}
-            dragConstraints={{ left: 0, right: 0 }}
-            onDragEnd={(_, info) => {
-              if (info.offset.x < -70) avanzar();
-              if (info.offset.x > 70) retroceder();
-            }}
-          >
-            {/* ── CABECERA ── */}
-            <div className="flex items-start justify-between gap-4 px-5 pt-5 sm:px-7 sm:pt-6">
-              <div className="min-w-0">
-                <p className="text-[0.62rem] font-bold uppercase tracking-[0.18em] text-cyan-bright">
-                  {G.eyebrow}
-                </p>
-                <p className="mt-1 font-display text-lg font-extrabold text-white sm:text-xl">
-                  {G.title}
-                </p>
-              </div>
+        {/* LA BURBUJA */}
+        <motion.div
+          key={`tip-${clave}`}
+          role="dialog"
+          aria-live="polite"
+          // `z-10` no es cosmético: el halo dibuja el oscurecido con una sombra
+          // de 9999px que se derrama sobre TODO, incluida esta burbuja, y el
+          // texto quedaba lavado. Con la burbuja por encima, el velo se queda
+          // donde debe — detrás.
+          className="pointer-events-auto absolute z-10 rounded-2xl border border-cyan/40 bg-[linear-gradient(155deg,#182c4c_0%,#0e1a33_100%)] p-4 shadow-[0_18px_48px_-12px_rgba(6,10,24,0.9)]"
+          style={{ top, left, width: anchoBurbuja }}
+          initial={{ opacity: 0, y: cabeDebajo ? -8 : 8, scale: 0.97 }}
+          animate={{
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            transition: { duration: 0.18, ease: [0.16, 1, 0.3, 1] },
+          }}
+          exit={{ opacity: 0, transition: { duration: 0.1 } }}
+        >
+          <div className="flex items-start gap-2.5">
+            <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-cyan text-white">
+              <Icon name="sparkles" size={12} />
+            </span>
+            <p className="text-[0.86rem] leading-snug text-white/85">{texto}</p>
+          </div>
+
+          <div className="mt-3.5 flex items-center justify-between gap-2">
+            <div className="flex gap-1" aria-hidden>
+              {PASOS.map((p, n) => (
+                <span
+                  key={p}
+                  className={
+                    n === i
+                      ? "h-1.5 w-4 rounded-full bg-cyan-bright"
+                      : "h-1.5 w-1.5 rounded-full bg-white/25"
+                  }
+                />
+              ))}
+            </div>
+            <div className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={cerrar}
-                className="shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+                className="rounded-full px-2.5 py-1.5 text-xs font-semibold text-white/45 transition-colors hover:text-white"
               >
                 {G.skip}
               </button>
-            </div>
-
-            {/* ── PROGRESO ──
-                Barras, no puntos: la anchura dice cuánto queda, un punto no. */}
-            <div className="mt-4 flex gap-1.5 px-5 sm:px-7">
-              {G.steps.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setPaso(i)}
-                  aria-label={`${i + 1} ${G.stepOf} ${total}`}
-                  className="group h-1 flex-1 overflow-hidden rounded-full bg-white/12"
-                >
-                  <span
-                    className={cn(
-                      "block h-full origin-left rounded-full bg-gradient-to-r from-cyan-bright to-cyan transition-transform duration-300",
-                      i <= paso ? "scale-x-100" : "scale-x-0",
-                    )}
-                  />
-                </button>
-              ))}
-            </div>
-
-            {/* ── CUERPO ── */}
-            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-7 sm:py-6">
-              <div className="grid gap-5 sm:grid-cols-[1fr_190px] sm:gap-7">
-                {/* El texto del paso */}
-                {/* `mode="wait"` encadena salida y entrada, así que cambiar de
-                    paso costaba 0.12s + 0.22s antes de poder LEER el texto
-                    nuevo. Con clics seguidos se ve el paso anterior colgado.
-                    Ahora el bloque se sustituye de golpe y sólo funde 0.14s:
-                    lo que cambia de verdad —el mapa— ya tiene su transición. */}
-                <AnimatePresence mode="popLayout" initial={false}>
-                  <motion.div
-                    key={paso}
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0, transition: { duration: 0.14 } }}
-                    exit={{ opacity: 0, transition: { duration: 0.06 } }}
-                  >
-                    <p className="font-display text-xl font-extrabold leading-tight text-white [text-wrap:balance] sm:text-2xl">
-                      {actual.title}
-                    </p>
-                    <p className="mt-3 text-[0.92rem] leading-relaxed text-white/65">
-                      {actual.body}
-                    </p>
-
-                    <div className="mt-5 flex flex-wrap gap-2">
-                      {actual.highlight.map((k) => {
-                        const hoja = destinos.find((d) => d.key === k);
-                        if (!hoja) return null;
-                        return (
-                          <span
-                            key={k}
-                            className="inline-flex items-center gap-1.5 rounded-full border border-cyan/30 bg-cyan/10 px-2.5 py-1 text-[0.72rem] font-semibold text-cyan-bright"
-                          >
-                            <Icon name={hoja.icon as IconName} size={12} />
-                            {
-                              dict.community.spaces[
-                                k as keyof typeof dict.community.spaces
-                              ]
-                            }
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-
-                {/* EL MAPA — miniatura del árbol real, con los destinos del
-                    paso encendidos. Es la pieza que de verdad enseña: leer
-                    "está en la barra lateral" no ubica a nadie; verlo
-                    encenderse en su sitio, sí. */}
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-2.5">
-                  <p className="px-1.5 pb-1.5 text-[0.55rem] font-bold uppercase tracking-[0.16em] text-white/35">
-                    {G.whereIs}
-                  </p>
-                  <div className="flex flex-col gap-px">
-                    {destinos.map((hoja) => {
-                      const encendido = actual.highlight.includes(hoja.key);
-                      return (
-                        <div
-                          key={hoja.key}
-                          className={cn(
-                            "flex items-center gap-2 rounded-lg px-2 py-1.5 transition-all duration-300",
-                            encendido
-                              ? "bg-cyan/20 ring-1 ring-cyan-bright/40"
-                              : "opacity-35",
-                          )}
-                        >
-                          <Icon
-                            name={hoja.icon as IconName}
-                            size={12}
-                            className={encendido ? "text-cyan-bright" : "text-white/60"}
-                          />
-                          <span
-                            className={cn(
-                              "truncate text-[0.7rem]",
-                              encendido
-                                ? "font-bold text-white"
-                                : "font-medium text-white/70",
-                            )}
-                          >
-                            {
-                              dict.community.spaces[
-                                hoja.key as keyof typeof dict.community.spaces
-                              ]
-                            }
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* ── PIE ── */}
-            <div className="flex items-center justify-between gap-3 border-t border-white/10 px-5 py-4 sm:px-7">
               <button
                 type="button"
-                onClick={retroceder}
-                disabled={paso === 0}
-                className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold text-white/55 transition-colors hover:text-white disabled:pointer-events-none disabled:opacity-0"
-              >
-                <Icon name="arrowRight" size={14} className="rotate-180" />
-                {G.back}
-              </button>
-
-              <span className="text-[0.7rem] font-bold tabular-nums text-white/30">
-                {paso + 1} {G.stepOf} {total}
-              </span>
-
-              <button
-                type="button"
-                onClick={ultimo ? cerrar : avanzar}
-                className={cn(
-                  "inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200 hover:-translate-y-px",
-                  ultimo
-                    ? "bg-gold text-navy shadow-[0_8px_24px_-8px_rgba(251,191,36,0.7)] hover:bg-gold-300"
-                    : "bg-white/12 text-white hover:bg-white/20",
-                )}
+                onClick={avanzar}
+                className="inline-flex items-center gap-1.5 rounded-full bg-cyan px-3.5 py-1.5 text-xs font-bold text-white transition-colors hover:bg-cyan-bright hover:text-navy"
               >
                 {ultimo ? G.done : G.next}
-                <Icon name="arrowRight" size={14} />
+                {!ultimo && <Icon name="arrowRight" size={12} />}
               </button>
             </div>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
+          </div>
+        </motion.div>
+      </div>
+    </AnimatePresence>,
+    document.body,
   );
 }
 
-/** Reabre la guía. Se cierra una vez y se pierde para siempre si no hay forma
-    de volver — y a los dos días nadie recuerda dónde estaba el chat. */
+/** Reabre la guía. Sin esto se cierra una vez y se pierde para siempre. */
 export function GuideReopenButton({ className }: { className?: string }) {
   const { dict } = useI18n();
   return (
-    <button
-      type="button"
-      onClick={() => seenStore.reopen()}
-      className={className}
-    >
+    <button type="button" onClick={() => seenStore.reopen()} className={className}>
       <Icon name="sparkles" size={13} />
       {dict.community.guide.reopen}
     </button>

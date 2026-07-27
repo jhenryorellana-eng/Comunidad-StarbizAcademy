@@ -41,7 +41,7 @@ export function CommunityNav({
   });
 
   return (
-    <aside className="hidden w-[260px] shrink-0 lg:block">
+    <aside data-tour="nav" className="hidden w-[260px] shrink-0 lg:block">
       <nav className="sticky top-20 flex flex-col gap-1.5 rounded-2xl border border-surface-line bg-paper p-2 shadow-sm">
         {PLATFORM_TREE.map((seccion) => (
           <Seccion

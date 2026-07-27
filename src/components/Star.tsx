@@ -41,7 +41,11 @@ export function Logo({
 }) {
   const color = tone === "light" ? "text-white" : "text-navy";
   return (
-    <Link href="/" className={`inline-flex items-center ${color} ${className ?? ""}`}>
+    <Link
+      href="/"
+      data-tour="logo"
+      className={`inline-flex items-center ${color} ${className ?? ""}`}
+    >
       <span className="whitespace-nowrap font-display text-[0.82rem] uppercase leading-none tracking-[0.13em] sm:text-[0.95rem] sm:tracking-[0.18em]">
         <span className="font-extrabold">Starbiz</span>{" "}
         <span className="font-light">Academy</span>
