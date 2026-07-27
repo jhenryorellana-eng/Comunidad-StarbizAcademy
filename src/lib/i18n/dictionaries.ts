@@ -226,6 +226,7 @@ export const es = {
     // bootcamp. Aqui, en letra pequena, tres ideas juntas no las lee nadie.
     taglineSub: "CEO Junior · Padres 3.0",
     spaces: {
+      home: "Inicio",
       posts: "Posts",
       members: "Miembros",
       events: "Eventos",
@@ -234,7 +235,118 @@ export const es = {
       rules: "Reglas",
       store: "Tienda",
       chat: "Chat",
+      bootcamp: "Bootcamp 2027",
       chapters: "GÉNESIS i7",
+    },
+    nav: {
+      sections: {
+        comunidad: "Comunidad",
+        padres: "Padres 3.0",
+        academy: "StarbizAcademy",
+      },
+      soon: "Pronto",
+      emptySection: "Estamos construyendo esta sección. Muy pronto vas a poder entrar.",
+      current: "Estás en",
+    },
+    home: {
+      kicker: "Bienvenido a la Comunidad",
+      title: "Aquí tu hijo deja de consumir pantallas y empieza a construir",
+      lead: "StarbizAcademy es un ecosistema familiar: los adolescentes aprenden a crear, vender y liderar, y los padres caminan al lado en vez de mirar desde fuera.",
+      ctaJoin: "Crear mi cuenta gratis",
+      ctaJoinNote: "Gratis · 30 segundos · sin tarjeta",
+      ctaMember: "Ir al feed",
+      ctaMemberNote: "Mira qué se ha publicado hoy",
+      welcomeBack: "Qué bueno tenerte de vuelta",
+
+      purposeKicker: "Por qué existimos",
+      purposeTitle: "Un adolescente que vende algo suyo nunca vuelve a verse igual",
+      purposeBody:
+        "La mayoría llega a los 18 sin haber creado nada propio. No por falta de talento: por falta de un sitio donde intentarlo acompañado. Eso es lo que construimos aquí.",
+      pillars: [
+        {
+          title: "CEO Junior",
+          body: "Adolescentes desde 14 años. Aprenden a detectar una necesidad, construir la solución y cobrar por ella.",
+        },
+        {
+          title: "Padres 3.0",
+          body: "Para el padre que quiere acompañar sin invadir. Herramientas para entender lo que su hijo está construyendo.",
+        },
+        {
+          title: "GÉNESIS i7™",
+          body: "Siete inteligencias: espiritual, mental, física, emocional, social, financiera y tecnológica. Ninguna sola alcanza.",
+        },
+      ],
+
+      benefitsKicker: "Qué recibes al unirte",
+      benefitsTitle: "La cuenta es gratis. Esto es lo que se abre",
+      benefits: [
+        {
+          title: "Tu voz en el feed",
+          body: "Publica avances, pregunta, celebra tu primera venta. Sin cuenta sólo puedes mirar.",
+        },
+        {
+          title: "El chat de la comunidad",
+          body: "La conversación del día a día con otras familias. Exclusivo de miembros.",
+        },
+        {
+          title: "Plaza en los eventos en vivo",
+          body: "Reunión semanal, talleres y sesiones. Gratis, pero hay que reservar.",
+        },
+        {
+          title: "Tu perfil de miembro",
+          body: "Apareces en el directorio, con tu cohorte y en qué estás trabajando.",
+        },
+        {
+          title: "Acceso a la tienda",
+          body: "Las apps y plantillas que vamos construyendo, con precio de comunidad.",
+        },
+        {
+          title: "Prioridad en el Bootcamp",
+          body: "Los cupos de Utah se avisan aquí primero. Son 50 y no se amplían.",
+        },
+      ],
+
+      spacesKicker: "Qué vas a encontrar",
+      spacesTitle: "Siete puertas, y cada una lleva a otra parte",
+      spacesLead: "Éntrale a cualquiera. No hace falta orden.",
+      spaceDesc: {
+        posts: "Lo que pasa hoy: avances, primeras ventas y preguntas reales de otras familias.",
+        members: "Quién está aquí. Familias, mentores y cohortes de toda Latinoamérica.",
+        events: "La reunión semanal y los talleres. En vivo y gratis, con cupo.",
+        blogs: "El Observatorio: artículos largos sobre las siete inteligencias.",
+        podcast: "Conversaciones para escuchar mientras conduces o cocinas.",
+        rules: "Las cuatro reglas que sostienen este sitio. Se leen en un minuto.",
+        store: "Las apps y plantillas que construimos, para usar desde hoy.",
+        chat: "La conversación del día a día. Sólo para miembros.",
+      },
+      spaceGo: "Entrar",
+
+      bootcampKicker: "El siguiente paso",
+      bootcampTitle: "Cuatro días en Utah que le cambian el mapa",
+      bootcampBody:
+        "Universidades por dentro, las empresas de Silicon Slopes, los siete profesionales de GÉNESIS i7™ y una ceremonia con escenario. La inscripción incluye la carta de invitación oficial para tu hijo Y para un acompañante.",
+      bootcampCta: "Reservar cupo",
+      bootcampMore: "Ver el programa completo",
+
+      startKicker: "Cómo empezar",
+      startTitle: "Tres pasos y ya estás dentro",
+      steps: [
+        {
+          title: "Crea tu cuenta",
+          body: "Gratis y en menos de un minuto. Sólo pedimos nombre y correo.",
+        },
+        {
+          title: "Preséntate en Posts",
+          body: "Cuéntanos quién eres y qué quiere construir tu hijo. Aquí se responde.",
+        },
+        {
+          title: "Apúntate a la reunión semanal",
+          body: "Es el encuentro abierto donde vive el ecosistema. Se entra por Zoom.",
+        },
+      ],
+      finalTitle: "¿Empezamos?",
+      finalBody:
+        "La cuenta es gratis y puedes irte cuando quieras. Lo que no vuelve es el año que tu hijo pasa sin intentarlo.",
     },
     gatedTitle: "Este espacio es solo para miembros",
     gatedBody: "Para acceder a nuestra comunidad primero necesitas ser miembro.",
@@ -675,6 +787,7 @@ export const en: typeof es = {
     taglineMain: "The Family Ecosystem",
     taglineSub: "CEO Junior · Padres 3.0",
     spaces: {
+      home: "Home",
       posts: "Posts",
       members: "Members",
       events: "Events",
@@ -683,7 +796,119 @@ export const en: typeof es = {
       rules: "Rules",
       store: "Store",
       chat: "Chat",
+      bootcamp: "Bootcamp 2027",
       chapters: "GÉNESIS i7",
+    },
+    nav: {
+      sections: {
+        comunidad: "Community",
+        padres: "Padres 3.0",
+        academy: "StarbizAcademy",
+      },
+      soon: "Soon",
+      emptySection: "We're building this section. You'll be able to step in very soon.",
+      current: "You are in",
+    },
+    home: {
+      kicker: "Welcome to the Community",
+      title: "This is where your teen stops consuming screens and starts building",
+      lead: "StarbizAcademy is a family ecosystem: teens learn to create, sell and lead, and parents walk alongside instead of watching from outside.",
+      ctaJoin: "Create my free account",
+      ctaJoinNote: "Free · 30 seconds · no card",
+      ctaMember: "Go to the feed",
+      ctaMemberNote: "See what was posted today",
+      welcomeBack: "Good to have you back",
+
+      purposeKicker: "Why we exist",
+      purposeTitle:
+        "A teenager who sells something of their own never sees themselves the same way again",
+      purposeBody:
+        "Most reach 18 without having built anything of their own. Not for lack of talent — for lack of a place to try it with company. That's what we're building here.",
+      pillars: [
+        {
+          title: "CEO Junior",
+          body: "Teens from 14. They learn to spot a need, build the solution and charge for it.",
+        },
+        {
+          title: "Padres 3.0",
+          body: "For the parent who wants to accompany without invading. Tools to understand what their child is building.",
+        },
+        {
+          title: "GÉNESIS i7™",
+          body: "Seven intelligences: spiritual, mental, physical, emotional, social, financial and technological. No single one is enough.",
+        },
+      ],
+
+      benefitsKicker: "What you get by joining",
+      benefitsTitle: "The account is free. This is what opens up",
+      benefits: [
+        {
+          title: "Your voice in the feed",
+          body: "Post progress, ask, celebrate your first sale. Without an account you can only watch.",
+        },
+        {
+          title: "The community chat",
+          body: "The day-to-day conversation with other families. Members only.",
+        },
+        {
+          title: "A seat at live events",
+          body: "Weekly meetup, workshops and sessions. Free, but you need to book.",
+        },
+        {
+          title: "Your member profile",
+          body: "You show up in the directory, with your cohort and what you're working on.",
+        },
+        {
+          title: "Access to the store",
+          body: "The apps and templates we build, at community pricing.",
+        },
+        {
+          title: "Priority for the Bootcamp",
+          body: "Utah seats are announced here first. There are 50 and they don't grow.",
+        },
+      ],
+
+      spacesKicker: "What you'll find",
+      spacesTitle: "Seven doors, and each leads somewhere else",
+      spacesLead: "Walk into any of them. No particular order.",
+      spaceDesc: {
+        posts: "What's happening today: progress, first sales and real questions from other families.",
+        members: "Who's here. Families, mentors and cohorts from across Latin America.",
+        events: "The weekly meetup and the workshops. Live and free, with limited seats.",
+        blogs: "The Observatory: long-form pieces on the seven intelligences.",
+        podcast: "Conversations to listen to while you drive or cook.",
+        rules: "The four rules that hold this place together. A minute to read.",
+        store: "The apps and templates we build, ready to use today.",
+        chat: "The day-to-day conversation. Members only.",
+      },
+      spaceGo: "Enter",
+
+      bootcampKicker: "The next step",
+      bootcampTitle: "Four days in Utah that redraw the map",
+      bootcampBody:
+        "Universities from the inside, the Silicon Slopes companies, the seven GÉNESIS i7™ professionals and a ceremony with a real stage. Registration includes the official invitation letter for your child AND one companion.",
+      bootcampCta: "Reserve a seat",
+      bootcampMore: "See the full programme",
+
+      startKicker: "How to start",
+      startTitle: "Three steps and you're in",
+      steps: [
+        {
+          title: "Create your account",
+          body: "Free and under a minute. We only ask for a name and an email.",
+        },
+        {
+          title: "Introduce yourself in Posts",
+          body: "Tell us who you are and what your child wants to build. People answer here.",
+        },
+        {
+          title: "Join the weekly meetup",
+          body: "It's the open gathering where the ecosystem lives. Runs on Zoom.",
+        },
+      ],
+      finalTitle: "Shall we start?",
+      finalBody:
+        "The account is free and you can leave whenever you want. What doesn't come back is the year your child spends without trying.",
     },
     gatedTitle: "This space is only visible to members",
     gatedBody: "To access our community you'll need to become a member first.",

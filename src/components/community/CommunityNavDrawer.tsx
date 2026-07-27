@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useI18n } from "@/lib/i18n/client";
-import { COMMUNITY_SPACES } from "@/lib/constants";
+import { PLATFORM_TREE, type NavLeaf } from "@/lib/constants";
 import { Icon, type IconName } from "@/components/icons";
 import { cn } from "@/components/ui";
 import { useCommunityNav } from "./navContext";
@@ -14,6 +14,8 @@ import { useCommunityNav } from "./navContext";
    MENÚ DE LA COMUNIDAD (móvil)
 
    Lámina a media pantalla de ancho y completa de alto, que brota del botón.
+   Lleva el MISMO árbol que la barra lateral de escritorio: tres secciones
+   desplegables, con Bootcamp, Chat y Tienda dentro de Comunidad.
 
    REGLA DE ORO: durante el gesto sólo se animan `transform` y `opacity`.
    Son las dos únicas propiedades que el navegador resuelve moviendo una
@@ -26,40 +28,38 @@ import { useCommunityNav } from "./navContext";
 
    · UN SOLO GESTO. La lámina entra como un único objeto, con el origen puesto
      en el botón: nace de ahí y vuelve ahí.
-   · CONTENIDO Y LÁMINA NO VIAJAN JUNTOS. Al abrir llega antes la lámina; al
-     cerrar el contenido se va primero. Ese desfase es lo que da materia.
    · CERRAR SIEMPRE MÁS RÁPIDO QUE ABRIR. Esperar a que algo desaparezca irrita.
+   · SIN ESPERAS PARA EL CONTENIDO. Lo que se percibía como lentitud no eran
+     fotogramas perdidos: era que el texto tardaba en llegar.
 =========================================================================== */
 
-/** Ancho: la MITAD exacta de la pantalla. El mínimo sólo actúa en móviles muy
-    estrechos (<420px), donde si no las etiquetas se cortarían. */
-const PANEL_W = "w-[50vw] min-w-[210px] max-w-[340px]";
+/** Ancho: algo más de la mitad. Con tres grupos y once destinos, la mitad justa
+    dejaba las etiquetas demasiado apretadas. */
+const PANEL_W = "w-[62vw] min-w-[236px] max-w-[340px]";
 
 /** Curva de salida larga: arranca rápido y se posa. */
 const SOFT = [0.22, 1, 0.36, 1] as const;
 /** Apertura. 0.20s, no 0.42s.
     Lo que se percibía como lentitud no eran fotogramas perdidos: era que el
-    menú tardaba en poder LEERSE. El panel crecía 0.42s y el texto empezaba a
-    entrar a los 0.22s, así que hasta pasados ~0.42s no había nada legible.
-    Medio segundo después del toque es una eternidad para un menú. */
+    menú tardaba en poder LEERSE. Medio segundo después del toque es una
+    eternidad para un menú. */
 const UNFOLD = { duration: 0.2, ease: [0.16, 1, 0.3, 1] } as const;
 /** Cierre: aún más corto. Esperar a que algo desaparezca irrita más que
     esperar a que aparezca. */
 const EXIT = { duration: 0.14, ease: [0.4, 0, 1, 0.6] } as const;
 
-type Item = {
-  key: string;
-  href: string;
-  icon: IconName;
-  label: string;
-  active: boolean;
-  locked: boolean;
-};
-
 export function CommunityNavDrawer() {
   const { dict } = useI18n();
   const pathname = usePathname();
   const { open, isMember, origin, closeMenu } = useCommunityNav();
+  const N = dict.community.nav;
+
+  const [abiertas, setAbiertas] = useState<Record<string, boolean>>(() => {
+    const inicial: Record<string, boolean> = {};
+    for (const s of PLATFORM_TREE) inicial[s.key] = pathname.startsWith(s.base);
+    if (!Object.values(inicial).some(Boolean)) inicial.comunidad = true;
+    return inicial;
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -70,9 +70,7 @@ export function CommunityNavDrawer() {
     // El bloqueo del scroll se aplaza un fotograma a propósito. Cambiar
     // `overflow` en el body invalida la disposición de TODO el documento, y
     // hacerlo en el mismo fotograma del toque obliga al navegador a recalcular
-    // el feed entero justo cuando debería estar arrancando la animación. Un
-    // fotograma después, el gesto ya está en marcha y el recálculo no compite
-    // con él.
+    // el feed entero justo cuando debería estar arrancando la animación.
     const rafId = requestAnimationFrame(() => {
       document.body.style.overflow = "hidden";
     });
@@ -83,15 +81,6 @@ export function CommunityNavDrawer() {
     };
   }, [open, closeMenu]);
 
-  const items: Item[] = COMMUNITY_SPACES.map((s) => ({
-    key: s.key,
-    href: s.href,
-    icon: s.icon as IconName,
-    label: dict.community.spaces[s.key as keyof typeof dict.community.spaces],
-    active: pathname.startsWith(s.href),
-    locked: s.gated && !isMember,
-  }));
-
   // El origen del gesto es el botón: la lámina crece desde ahí y se recoge ahí.
   const at = `${origin.x}px ${origin.y}px`;
 
@@ -99,7 +88,6 @@ export function CommunityNavDrawer() {
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true">
-          {/* Velo muy leve: el vidrio pierde la gracia si tapa la página. */}
           <motion.div
             className="absolute inset-0 bg-navy/45"
             initial={{ opacity: 0 }}
@@ -108,50 +96,26 @@ export function CommunityNavDrawer() {
             onClick={closeMenu}
           />
 
-          {/* LA LÁMINA — un solo objeto, un solo gesto.
-
-              Antes esto animaba `clip-path` sobre un elemento con
-              `backdrop-filter`. Esa pareja NO se puede componer en GPU: cada
-              fotograma obliga a muestrear el fondo, desenfocarlo y recortarlo
-              con la geometría nueva. Bajar el radio del desenfoque abarataba el
-              trabajo, pero el trabajo seguía ahí — y se notaba.
-
-              Ahora sólo se animan `transform` y `opacity`, las dos únicas
-              propiedades que nunca repintan, con el origen puesto en el botón.
-              Es exactamente la técnica de los menús contextuales de iOS: la
-              lámina brota del botón y se recoge en él, pero el navegador sólo
-              tiene que mover una textura ya pintada. */}
           <motion.div
             className={cn(
               "absolute left-0 top-0 flex h-full flex-col overflow-hidden rounded-r-[28px]",
-              // Degradado sólido en vez de vidrio. En un panel navy oscuro se
-              // lee prácticamente igual que el 75% + desenfoque que había, y
-              // deja de costar por fotograma. El velo de detrás se oscureció un
-              // punto para compensar la separación que daba el difuminado.
               "border-r border-white/[0.18]",
-              // Los dos resplandores (cyan abajo-izquierda, dorado arriba-derecha)
-              // van como degradados radiales del propio fondo. Antes eran dos
-              // <span> con `blur-3xl`: un filtro de 64px dentro de una capa que
-              // escala puede forzar a re-rasterizar durante el gesto. Un
-              // degradado es parte de la textura y no cuesta nada.
+              // Los resplandores van como degradados radiales del propio fondo.
+              // Antes eran <span> con `blur-3xl`: un filtro de 64px dentro de
+              // una capa que escala puede forzar a re-rasterizar durante el
+              // gesto. Un degradado es parte de la textura y no cuesta nada.
               "bg-[radial-gradient(120%_60%_at_0%_100%,rgba(34,211,238,0.16),transparent_60%),radial-gradient(90%_45%_at_100%_0%,rgba(251,191,36,0.12),transparent_62%),linear-gradient(158deg,#12203c_0%,#0d1830_46%,#0a1020_100%)]",
               "shadow-[18px_0_60px_-12px_rgba(6,10,24,0.6)]",
               PANEL_W,
             )}
             // Escala 0.92 -> 1, no 0.16 -> 1. Ampliar seis veces obliga al
             // navegador a estirar una textura rasterizada a tamaño pequeño: el
-            // panel se ve blando mientras crece y se endurece de golpe al
-            // final. No es un tirón, pero se lee igual de mal. Con el origen en
-            // el botón, un empujón corto desde ahí basta para que se entienda
-            // de dónde sale — y llega nítido desde el primer fotograma.
+            // panel se ve blando mientras crece y se endurece de golpe al final.
             style={{ transformOrigin: at }}
             initial={{ opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1, transition: UNFOLD }}
             exit={{ opacity: 0, scale: 0.94, transition: EXIT }}
           >
-            {/* Reflejo especular: una banda de luz muy tenue en el
-                borde superior. Es lo que separa un panel translúcido de uno que
-                parece vidrio de verdad. */}
             <span
               className="pointer-events-none absolute inset-x-0 top-0 h-24"
               style={{
@@ -161,15 +125,9 @@ export function CommunityNavDrawer() {
               aria-hidden
             />
 
-            {/* CONTENIDO — llega después de la lámina y se va antes que ella. */}
             <motion.div
               className="relative flex min-h-0 flex-1 flex-col"
-              // Se despliega CON la lámina, tirando desde el botón, y no
-              // aparece hasta que la forma ya creció (si no, se leería texto
-              // dentro de un cuadradito del tamaño del botón).
-              // Sin retraso. Antes esperaba 0.22s a que la lámina creciera, y
-              // ese hueco era la mayor parte de la lentitud percibida. Ahora
-              // entra con ella: el menú se puede leer a los ~0.15s del toque.
+              // Sin retraso: el menú se puede leer a los ~0.15s del toque.
               initial={{ opacity: 0 }}
               animate={{ opacity: 1, transition: { duration: 0.16, ease: "linear" } }}
               exit={{ opacity: 0, transition: { duration: 0.08, ease: "linear" } }}
@@ -188,64 +146,82 @@ export function CommunityNavDrawer() {
                 </button>
               </div>
 
-              <div className="relative mt-3 min-h-0 flex-1 overflow-y-auto px-3 pb-6">
-                <span
-                  className="absolute bottom-6 left-[34px] top-3 w-px bg-gradient-to-b from-cyan-bright/60 via-cyan/30 to-gold/50"
-                  aria-hidden
-                />
-                <nav className="flex flex-col gap-0.5">
-                  {/* Sin escalonado por item. Antes cada uno llevaba su propia
-                      animación: seis cálculos más por fotograma en el hilo
-                      principal, justo mientras la lámina crece. A 200 ms el
-                      desfase no se percibía — sólo estorbaba. El contenido
-                      entra como un bloque, con el fundido del padre. */}
-                  {items.map((it) => (
-                    <div key={it.key}>
-                      <Link
-                        href={it.href}
-                        onClick={closeMenu}
-                        className={cn(
-                          "relative flex items-center gap-3 rounded-xl py-2.5 pl-1.5 pr-2 transition-colors active:scale-[0.98]",
-                          it.locked && !it.active && "opacity-55",
-                        )}
+              <div className="mt-2 min-h-0 flex-1 overflow-y-auto px-2.5 pb-6">
+                {PLATFORM_TREE.map((seccion) => {
+                  const abierta = Boolean(abiertas[seccion.key]);
+                  return (
+                    <div key={seccion.key} className="mt-1.5">
+                      <button
+                        type="button"
+                        aria-expanded={abierta}
+                        onClick={() =>
+                          setAbiertas((a) => ({ ...a, [seccion.key]: !a[seccion.key] }))
+                        }
+                        className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left active:bg-white/10"
                       >
-                        {it.active && (
-                          <span
-                            className="absolute left-0 h-6 w-1 rounded-full bg-cyan-bright shadow-[0_0_8px_2px_rgba(34,211,238,0.7)]"
-                            aria-hidden
-                          />
-                        )}
-                        <span
+                        <Icon
+                          name="arrowRight"
+                          size={11}
                           className={cn(
-                            "relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border",
-                            it.active
-                              ? "border-gold/60 bg-gold text-navy shadow-[0_0_14px_2px_rgba(251,191,36,0.4)]"
-                              : "border-white/15 bg-white/[0.07] text-cyan-bright",
+                            "shrink-0 text-white/40 transition-transform duration-200",
+                            abierta && "rotate-90",
                           )}
-                        >
-                          <Icon name={it.icon} size={16} />
+                        />
+                        <span className="font-display text-[0.66rem] font-bold uppercase tracking-[0.15em] text-white/55">
+                          {N.sections[seccion.key as keyof typeof N.sections]}
                         </span>
-                        <span
-                          className={cn(
-                            "min-w-0 truncate font-display text-[0.98rem] font-bold",
-                            it.active
-                              ? "bg-gradient-to-r from-gold to-cyan-bright bg-clip-text text-transparent"
-                              : "text-white/85",
-                          )}
-                        >
-                          {it.label}
-                        </span>
-                        {it.locked && (
-                          <Icon name="lock" size={12} className="ml-auto shrink-0 text-white/40" />
+                        {!seccion.live && (
+                          <span className="ml-auto rounded-full bg-gold/20 px-1.5 py-0.5 text-[0.52rem] font-bold uppercase tracking-wide text-gold">
+                            {N.soon}
+                          </span>
                         )}
-                      </Link>
+                      </button>
+
+                      <AnimatePresence initial={false}>
+                        {abierta && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                            className="overflow-hidden"
+                          >
+                            <div className="relative flex flex-col gap-0.5 pt-1">
+                              {seccion.children.length === 0 ? (
+                                <p className="px-3 pb-2 text-[0.78rem] leading-relaxed text-white/45">
+                                  {N.emptySection}
+                                </p>
+                              ) : (
+                                <>
+                                  <span
+                                    className="absolute bottom-2 left-[22px] top-1 w-px bg-gradient-to-b from-cyan-bright/50 via-cyan/20 to-gold/40"
+                                    aria-hidden
+                                  />
+                                  {seccion.children.map((hoja) => (
+                                    <DrawerItem
+                                      key={hoja.key}
+                                      hoja={hoja}
+                                      active={
+                                        hoja.exact
+                                          ? pathname === hoja.href
+                                          : pathname.startsWith(hoja.href)
+                                      }
+                                      locked={Boolean(hoja.gated) && !isMember}
+                                      onNavigate={closeMenu}
+                                    />
+                                  ))}
+                                </>
+                              )}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
-                  ))}
-                </nav>
+                  );
+                })}
               </div>
             </motion.div>
 
-            {/* Filo de marca en el canto derecho: cyan → dorado, muy fino. */}
             <span
               className="absolute inset-y-0 right-0 w-px bg-gradient-to-b from-cyan-bright/80 via-cyan/60 to-gold/80"
               aria-hidden
@@ -254,5 +230,63 @@ export function CommunityNavDrawer() {
         </div>
       )}
     </AnimatePresence>
+  );
+}
+
+function DrawerItem({
+  hoja,
+  active,
+  locked,
+  onNavigate,
+}: {
+  hoja: NavLeaf;
+  active: boolean;
+  locked: boolean;
+  onNavigate: () => void;
+}) {
+  const { dict } = useI18n();
+  const label = dict.community.spaces[hoja.key as keyof typeof dict.community.spaces];
+
+  return (
+    <Link
+      href={hoja.href}
+      onClick={onNavigate}
+      className={cn(
+        "relative flex items-center gap-2.5 rounded-xl py-2 pl-1.5 pr-2 transition-colors active:scale-[0.98]",
+        locked && !active && "opacity-55",
+      )}
+    >
+      {active && (
+        <span
+          className="absolute left-0 h-6 w-1 rounded-full bg-cyan-bright shadow-[0_0_8px_2px_rgba(34,211,238,0.7)]"
+          aria-hidden
+        />
+      )}
+      <span
+        className={cn(
+          "relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border",
+          active
+            ? "border-gold/60 bg-gold text-navy shadow-[0_0_14px_2px_rgba(251,191,36,0.4)]"
+            : hoja.featured
+              ? "border-gold/45 bg-gold/15 text-gold"
+              : "border-white/15 bg-white/[0.07] text-cyan-bright",
+        )}
+      >
+        <Icon name={hoja.icon as IconName} size={15} />
+      </span>
+      <span
+        className={cn(
+          "min-w-0 truncate font-display text-[0.92rem] font-bold",
+          active
+            ? "bg-gradient-to-r from-gold to-cyan-bright bg-clip-text text-transparent"
+            : hoja.featured
+              ? "text-gold"
+              : "text-white/85",
+        )}
+      >
+        {label}
+      </span>
+      {locked && <Icon name="lock" size={12} className="ml-auto shrink-0 text-white/40" />}
+    </Link>
   );
 }

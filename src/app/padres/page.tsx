@@ -9,7 +9,7 @@ export default async function PadresSection() {
   const { dict } = await getDict();
   return (
     <div className="flex min-h-screen flex-col bg-surface">
-      <SiteHeader mobileMenu={false} />
+      <SiteHeader mobileMenu={false} nav={false} />
       <SectionTabs />
       <SectionComingSoon
         title={dict.landing.pillar2Title}

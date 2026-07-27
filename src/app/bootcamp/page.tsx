@@ -106,7 +106,7 @@ export default async function BootcampPage({
 
   return (
     <div className="flex min-h-screen flex-col bg-surface">
-      <SiteHeader mobileMenu />
+      <SiteHeader mobileMenu nav={false} />
       <SectionTabs />
 
       {/* Vuelta de un pago cancelado. Sin alarma: no se le ha cobrado nada y el

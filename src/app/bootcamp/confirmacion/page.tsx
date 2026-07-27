@@ -80,7 +80,7 @@ export default async function ConfirmacionPage({
 
   return (
     <div className="flex min-h-screen flex-col bg-surface">
-      <SiteHeader mobileMenu />
+      <SiteHeader mobileMenu nav={false} />
 
       <section className="relative overflow-hidden bg-gradient-to-b from-navy to-navy-800 py-14 text-white sm:py-20">
         <div className="container-ac relative">

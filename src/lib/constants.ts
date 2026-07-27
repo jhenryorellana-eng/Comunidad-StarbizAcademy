@@ -34,28 +34,78 @@ export const INTELLIGENCES = [
 // `live` = ya tiene contenido real (las demás muestran "Próximamente").
 // Bootcamp va SEGUNDO a propósito: en móvil la fila arranca con sangría para
 // el botón de espacios, y desde la cuarta posición ya no se ve sin arrastrar.
-export const PLATFORM_SECTIONS = [
-  { key: "comunidad", href: "/comunidad/posts", base: "/comunidad", live: true },
-  { key: "bootcamp", href: "/bootcamp", base: "/bootcamp", live: true },
-  { key: "padres", href: "/padres", base: "/padres", live: false },
-  { key: "academy", href: "/academia", base: "/academia", live: false },
-] as const;
+/* ===========================================================================
+   ÁRBOL DE NAVEGACIÓN
 
-// Community spaces (left sidebar), in the PDF-spec order: activity first.
-// `gated` = members only. `extra` = shown after a divider (and inside "Más" on mobile).
-export const COMMUNITY_SPACES = [
-  { key: "posts", href: "/comunidad/posts", icon: "posts", gated: false, extra: false },
-  { key: "members", href: "/comunidad/miembros", icon: "members", gated: false, extra: false },
-  { key: "events", href: "/comunidad/eventos", icon: "events", gated: false, extra: false },
-  { key: "blogs", href: "/comunidad/blogs", icon: "fileText", gated: false, extra: false },
-  { key: "podcast", href: "/comunidad/podcast", icon: "podcast", gated: false, extra: false },
-  { key: "rules", href: "/comunidad/reglas", icon: "shieldCheck", gated: false, extra: false },
-  { key: "store", href: "/comunidad/tienda", icon: "store", gated: false, extra: true },
-  { key: "chat", href: "/comunidad/chat", icon: "chat", gated: true, extra: true },
-] as const;
+   TRES secciones, y sólo tres. Todo cuelga de aquí — antes la misma lista vivía
+   en tres sitios a la vez (la barra del header, la fila de pestañas y la barra
+   lateral), y las tres competían por decir lo mismo.
 
-// Mobile bottom bar: first 3 spaces + "Más" (the rest live in the sheet).
-export const MOBILE_BAR_KEYS = ["posts", "members", "events"] as const;
+   Bootcamp 2027 NO es una sección hermana: es un destino DENTRO de Comunidad,
+   igual que Chat y Tienda. Antes esos dos colgaban tras un separador como si
+   fueran otra cosa, y no lo son.
+
+   Padres 3.0 y StarbizAcademy quedan vacías a propósito. Se despliegan y
+   cuentan qué viene; el contenido está por decidir.
+=========================================================================== */
+
+export type NavLeaf = {
+  key: string;
+  href: string;
+  icon: string;
+  /** Sólo miembros. */
+  gated?: boolean;
+  /** El enlace es el índice de la sección: activo sólo con coincidencia exacta,
+      porque `/comunidad` es prefijo de todas las demás rutas. */
+  exact?: boolean;
+  /** Se pinta en dorado: es el destino que queremos que se vea. */
+  featured?: boolean;
+};
+
+export type NavSection = {
+  key: string;
+  base: string;
+  /** false → "próximamente": se despliega pero aún no lleva a ninguna parte. */
+  live: boolean;
+  children: readonly NavLeaf[];
+};
+
+export const PLATFORM_TREE: readonly NavSection[] = [
+  {
+    key: "comunidad",
+    base: "/comunidad",
+    live: true,
+    children: [
+      { key: "home", href: "/comunidad", icon: "home", exact: true },
+      { key: "posts", href: "/comunidad/posts", icon: "posts" },
+      { key: "members", href: "/comunidad/miembros", icon: "members" },
+      { key: "events", href: "/comunidad/eventos", icon: "events" },
+      { key: "blogs", href: "/comunidad/blogs", icon: "fileText" },
+      { key: "podcast", href: "/comunidad/podcast", icon: "podcast" },
+      { key: "rules", href: "/comunidad/reglas", icon: "shieldCheck" },
+      { key: "chat", href: "/comunidad/chat", icon: "chat", gated: true },
+      { key: "store", href: "/comunidad/tienda", icon: "store" },
+      { key: "bootcamp", href: "/bootcamp", icon: "star", featured: true },
+    ],
+  },
+  { key: "padres", base: "/padres", live: false, children: [] },
+  { key: "academy", base: "/academia", live: false, children: [] },
+];
+
+/** Todos los destinos, aplanados. Útil para resolver "¿dónde estoy?". */
+export const NAV_LEAVES: readonly NavLeaf[] = PLATFORM_TREE.flatMap((s) => s.children);
+
+/**
+ * Qué hoja corresponde a una ruta. La más específica gana: `/comunidad/posts`
+ * tiene que resolver a Posts, no a Inicio, aunque Inicio sea prefijo suyo.
+ */
+export function leafForPath(pathname: string): NavLeaf | undefined {
+  const exacta = NAV_LEAVES.find((l) => l.exact && l.href === pathname);
+  if (exacta) return exacta;
+  return NAV_LEAVES.filter((l) => !l.exact && pathname.startsWith(l.href)).sort(
+    (a, b) => b.href.length - a.href.length,
+  )[0];
+}
 
 // Post.category es String libre en la BD, así que sumar BOOTCAMP no necesita
 // migración: los posts del bootcamp se filtran y se destacan por esta clave.

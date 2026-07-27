@@ -37,7 +37,7 @@ export default async function CommunityLayout({
           <div className="absolute -left-52 top-[28%] h-[560px] w-[560px] rounded-full bg-cyan/[0.06] blur-[130px]" />
           <div className="absolute -right-52 top-[62%] h-[600px] w-[600px] rounded-full bg-gold/[0.06] blur-[130px]" />
         </div>
-        <SiteHeader mobileMenu={false} />
+        <SiteHeader mobileMenu={false} nav={false} />
         <SectionTabs leading={<CommunityNavLauncher />} />
         <PodcastPlayerProvider>
           <CommunityNavDrawer />

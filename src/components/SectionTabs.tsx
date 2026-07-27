@@ -1,79 +1,74 @@
 "use client";
 
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { motion } from "motion/react";
 import { useI18n } from "@/lib/i18n/client";
-import { PLATFORM_SECTIONS } from "@/lib/constants";
-import { cn } from "@/components/ui";
+import { PLATFORM_TREE, leafForPath } from "@/lib/constants";
+import { Icon, type IconName } from "@/components/icons";
 
 /**
- * Top-level section switcher — Comunidad · Padres · StarbizAcademy.
- * Sticky under the header on every section, desktop and mobile.
+ * Barra de ubicación (sólo móvil y tablet).
+ *
+ * Antes esto era una fila de pestañas —Comunidad · Bootcamp · Padres ·
+ * StarbizAcademy— que repetía casi literalmente la barra del header y competía
+ * además con la lateral. Tres navegaciones diciendo lo mismo.
+ *
+ * Ahora la navegación entera vive en un solo sitio (el árbol de la lateral, y
+ * su gemelo en el panel móvil), y lo que queda aquí es otra cosa: decir DÓNDE
+ * ESTÁS. Con tres secciones y once destinos, un icono de menú a secas deja al
+ * visitante sin referencia; la píldora la da y de paso abre el árbol completo.
+ *
+ * En escritorio no aparece: allí la lateral está siempre a la vista.
  */
 export function SectionTabs({ leading }: { leading?: ReactNode }) {
   const { dict } = useI18n();
   const pathname = usePathname();
 
+  const hoja = leafForPath(pathname);
+  const seccion = PLATFORM_TREE.find((s) => pathname.startsWith(s.base));
+
+  const N = dict.community.nav;
+  const etiquetaHoja = hoja
+    ? dict.community.spaces[hoja.key as keyof typeof dict.community.spaces]
+    : undefined;
+  const etiquetaSeccion = seccion
+    ? N.sections[seccion.key as keyof typeof N.sections]
+    : undefined;
+
   return (
-    // Cristal sólo desde `lg`. Esta barra es sticky y queda justo encima del
-    // banner, que tiene animaciones infinitas: un `backdrop-filter` sobre algo
-    // que se mueve obliga a recalcular el desenfoque en cada fotograma, sin
-    // parar nunca. En un móvil eso se lleva por delante la fluidez de todo lo
-    // demás. Opaca abajo, cristal arriba, donde sobra potencia.
-    <div className="scroll-lift sticky top-16 z-30 border-b border-black/[0.05] bg-surface lg:bg-surface/80 lg:backdrop-blur-xl">
+    // Opaca a propósito: esta barra es sticky y queda justo encima del banner,
+    // que tiene animaciones infinitas. Un `backdrop-filter` sobre algo que se
+    // mueve obliga a recalcular el desenfoque en cada fotograma, sin parar
+    // nunca, y en un móvil eso se lleva por delante la fluidez de todo.
+    <div className="scroll-lift sticky top-16 z-30 border-b border-black/[0.05] bg-surface lg:hidden">
       <div className="container-ac">
-        <nav className="flex items-center gap-1 overflow-x-auto py-2" aria-label="Secciones">
-          {/* El botón de espacios de la comunidad va primero, en el flujo: así
-              sigue a esta barra aunque cambie la altura de la cabecera. */}
+        <div className="flex items-center gap-2 py-1.5">
+          {/* El botón del menú va primero y en el flujo normal: así sigue a
+              esta barra aunque cambie la altura de la cabecera. Antes vivía en
+              un `fixed` con un desplazamiento a ojo, y la cinta del bootcamp
+              lo descuadraba. */}
           {leading}
-          {PLATFORM_SECTIONS.map((s) => {
-            const active = pathname.startsWith(s.base);
-            const soon = !s.live;
-            // El bootcamp es la única sección viva además de Comunidad, y es
-            // temporal: se marca en dorado para que no pase desapercibida.
-            const isNew = s.key === "bootcamp";
-            return (
-              <Link
-                key={s.key}
-                href={s.href}
-                className={cn(
-                  "relative flex shrink-0 items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold transition-all duration-200",
-                  active
-                    ? "bg-navy text-white shadow-[0_4px_16px_rgba(26,39,68,0.3)]"
-                    : "text-muted hover:bg-navy/[0.05] hover:text-navy",
-                )}
-              >
-                {active && (
-                  <motion.span
-                    layoutId="section-led"
-                    className="absolute inset-x-4 -bottom-2 h-[3px] rounded-full bg-cyan-bright shadow-[0_0_8px_2px_rgba(34,211,238,0.7)]"
-                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                    aria-hidden
-                  />
-                )}
-                {isNew && !active && (
-                  <span
-                    className="animate-led h-1.5 w-1.5 rounded-full bg-gold shadow-[0_0_6px_2px_rgba(251,191,36,0.75)]"
-                    aria-hidden
-                  />
-                )}
-                {dict.sections[s.key]}
-                {soon && !active && (
-                  <span className="rounded-full bg-gold/15 px-1.5 py-px text-[0.6rem] font-bold uppercase tracking-wide text-gold-700">
-                    {dict.sections.soonBadge}
-                  </span>
-                )}
-                {isNew && !active && (
-                  <span className="rounded-full bg-gold px-1.5 py-px text-[0.6rem] font-bold uppercase tracking-wide text-navy">
-                    {dict.sections.newBadge}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-        </nav>
+
+          <div className="flex min-w-0 items-baseline gap-1.5">
+            {etiquetaSeccion && (
+              <span className="shrink-0 font-display text-[0.6rem] font-bold uppercase tracking-[0.14em] text-muted">
+                {etiquetaSeccion}
+              </span>
+            )}
+            {etiquetaHoja && (
+              <>
+                <Icon
+                  name={"arrowRight" as IconName}
+                  size={9}
+                  className="shrink-0 self-center text-muted/50"
+                />
+                <span className="truncate font-display text-sm font-bold text-navy">
+                  {etiquetaHoja}
+                </span>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ export default async function AcademySection() {
   const { dict } = await getDict();
   return (
     <div className="flex min-h-screen flex-col bg-surface">
-      <SiteHeader mobileMenu={false} />
+      <SiteHeader mobileMenu={false} nav={false} />
       <SectionTabs />
       <SectionComingSoon
         title={dict.nav.academy}
