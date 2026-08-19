@@ -12,6 +12,7 @@ const ITEMS: Array<[string, string]> = [
   ["/admin/observatory", "Blogs"],
   ["/admin/posts", "Publicaciones"],
   ["/admin/store", "Tienda"],
+  ["/admin/bootcamp", "Bootcamp 2027"],
   ["/admin/reports", "Reportes"],
 ];
 

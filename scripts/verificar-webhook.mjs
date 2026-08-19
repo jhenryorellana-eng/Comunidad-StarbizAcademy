@@ -12,7 +12,11 @@ import Stripe from "stripe";
 import { PrismaClient } from "@prisma/client";
 
 const SECRETO = process.env.STRIPE_WEBHOOK_SECRET;
-const URL = "http://localhost:3000/api/stripe/webhook";
+// El puerto no va escrito a fuego: si el 3000 está ocupado, `npm run dev` sale
+// en otro y el script tenía que fallar seis veces para contarlo.
+//   PORT=3100 npm run stripe:verificar
+const BASE = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
+const URL = `${BASE}/api/stripe/webhook`;
 
 // El sufijo se genera aquí, no en el script de npm. Antes venía de `$RANDOM`,
 // que en Windows no lo expande cmd.exe: llegaba la cadena literal "$RANDOM" y
@@ -67,6 +71,9 @@ const comprobar = (nombre, ok, detalle) => {
   resultados.push({ nombre, ok, detalle });
   console.log(`${ok ? "  OK  " : " FALLA"}  ${nombre}${detalle ? "  ·  " + detalle : ""}`);
 };
+
+console.log(`  apuntando a ${URL}
+`);
 
 const pagado = evento("checkout.session.completed", sesion);
 
