@@ -106,7 +106,7 @@ export default async function FamiliaPage() {
                         </p>
                       ) : (
                         <Link
-                          href="/bootcamp#inscripcion"
+                          href="/bootcamp/reservar"
                           className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-gold/45 bg-gold/[0.08] px-3 py-1 text-xs font-bold text-gold-700 transition-colors hover:bg-gold hover:text-navy"
                         >
                           <Icon name="star" size={12} />

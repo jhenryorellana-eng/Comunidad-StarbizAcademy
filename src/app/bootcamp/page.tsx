@@ -5,10 +5,9 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SectionTabs } from "@/components/SectionTabs";
 import { CountdownInline } from "@/components/bootcamp/Countdown";
-import { CheckoutButton } from "@/components/bootcamp/CheckoutButton";
+import { ReservarLink } from "@/components/bootcamp/ReservarLink";
 import { UtahWordmark } from "@/components/bootcamp/UtahWordmark";
 import { stripeEnabled } from "@/lib/stripe";
-import { estadoBootcamp } from "@/lib/bootcampAccess";
 import { Icon } from "@/components/icons";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { cn } from "@/components/ui";
@@ -105,9 +104,6 @@ export default async function BootcampPage({
   const includes = BOOTCAMP_INCLUDES[locale];
   const { pago } = await searchParams;
   const pagoCancelado = pago === "cancelado";
-  // Quién eres y qué puedes reservar. Se resuelve una vez, en servidor, y viaja
-  // decidido a los tres botones de la página.
-  const acceso = await estadoBootcamp();
 
   return (
     <div className="flex min-h-screen flex-col bg-surface">
@@ -214,7 +210,7 @@ export default async function BootcampPage({
                 cae a WhatsApp, así la página nunca queda sin salida. */}
             <div className="mt-7">
               {stripeEnabled ? (
-                <CheckoutButton label={B.ctaPrimary} estado={acceso} />
+                <ReservarLink label={B.ctaPrimary} />
               ) : (
                 <a
                   href={WA_RESERVE}
@@ -526,7 +522,7 @@ export default async function BootcampPage({
             </div>
             <div className="flex flex-col items-start gap-2">
               {stripeEnabled ? (
-                <CheckoutButton label={B.payNow} estado={acceso} />
+                <ReservarLink label={B.payNow} />
               ) : (
                 <a
                   href={WA_RESERVE}
@@ -627,7 +623,7 @@ export default async function BootcampPage({
             </h2>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               {stripeEnabled ? (
-                <CheckoutButton label={B.ctaPrimary} estado={acceso} />
+                <ReservarLink label={B.ctaPrimary} />
               ) : (
                 <a
                   href={WA_RESERVE}

@@ -90,7 +90,7 @@ export async function BootcampShowcase() {
 
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <Link
-                href="/bootcamp#inscripcion"
+                href="/bootcamp/reservar"
                 className="inline-flex items-center gap-2 rounded-full bg-gold px-6 py-2.5 font-semibold text-navy shadow-[0_10px_30px_rgba(251,191,36,0.4)] transition-all duration-200 hover:-translate-y-px hover:bg-gold-300"
               >
                 {H.bootcampCta}
