@@ -3,6 +3,7 @@ import { Inter, Lora, Sora } from "next/font/google";
 import "./globals.css";
 import { getLocale } from "@/lib/i18n/server";
 import { I18nProvider } from "@/lib/i18n/client";
+import { siteUrl } from "@/lib/site";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,21 +26,18 @@ const sora = Sora({
 // (avoids hitting the database during `next build`).
 export const dynamic = "force-dynamic";
 
-// Absolute base URL for Open Graph images (WhatsApp/social link previews).
-// On Vercel it resolves automatically; override with NEXT_PUBLIC_SITE_URL if
-// a custom domain is attached.
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  (process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : "http://localhost:3000");
+// Base absoluta para las imágenes de Open Graph (miniaturas al compartir).
+// La lógica vive en `lib/site.ts`: estaba duplicada aquí y en `lib/stripe.ts`,
+// y esta copia usaba `??`, que no atrapa la cadena vacía — con la variable
+// declarada pero vacía, `new URL("")` tiraba el layout raíz entero.
+const base = siteUrl();
 
 const TITLE = "StarbizAcademy — El Ecosistema Familiar";
 const DESCRIPTION =
   "CEO Junior para adolescentes 14+ y Padres 3.0 para la familia. Un solo universo, dos plataformas sincronizadas, respaldadas por la metodología GÉNESIS i7™.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(base),
   title: TITLE,
   description: DESCRIPTION,
   openGraph: {

@@ -125,10 +125,10 @@ En este orden, no antes:
       por comprometida. Dashboard → Desarrolladores → Claves de API → Rotar.
 - [ ] `STRIPE_SECRET_KEY` / `STRIPE_PUBLISHABLE_KEY` de producción en las
       variables de entorno del hosting (nunca en un archivo del repo).
-- [ ] `NEXT_PUBLIC_SITE_URL="https://…"` — sin esto las URLs de vuelta apuntan
+- [ ] `NEXT_PUBLIC_SITE_URL="https://comunidad.starbizacademy.com"` — sin esto las URLs de vuelta apuntan
       a `localhost`.
 - [ ] Endpoint de webhook real: Dashboard → Desarrolladores → Webhooks →
-      *Añadir endpoint* → `https://TU-DOMINIO/api/stripe/webhook`.
+      *Añadir endpoint* → `https://comunidad.starbizacademy.com/api/stripe/webhook`.
       Eventos: `checkout.session.completed` y `charge.refunded`.
       Copia su `whsec_…` a la variable de producción (es **distinto** del de local).
 - [ ] Un pago real de $250 con tarjeta propia y su reembolso, para ver los dos

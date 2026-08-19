@@ -43,19 +43,7 @@ if (stripeIsLive) {
 export const BOOTCAMP_PRICE_CENTS = 25000;
 export const BOOTCAMP_CURRENCY = "usd";
 
-/**
- * URL base para las vueltas del checkout.
- *
- * Se descarta la cadena vacía a propósito: `??` sólo salta con null/undefined,
- * así que un `NEXT_PUBLIC_SITE_URL=""` en el .env se colaría como base válida
- * y Stripe rechazaría la sesión por una `success_url` relativa.
- */
-export function siteUrl(): string {
-  const explicita = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (explicita) return explicita.replace(/\/$/, "");
-
-  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
-  if (vercel) return `https://${vercel}`;
-
-  return "http://localhost:3000";
-}
+// La URL base vive en `lib/site.ts`, compartida con el layout: son la misma
+// pregunta —¿en qué dominio corre esto?— y tener dos respuestas era pedir que
+// se separaran, como ya había pasado.
+export { siteUrl } from "./site";
