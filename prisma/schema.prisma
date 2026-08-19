@@ -40,6 +40,11 @@ model User {
   parent   User?  @relation("Family", fields: [parentId], references: [id], onDelete: SetNull)
   children User[] @relation("Family")
 
+  /// Inscripciones al bootcamp que este padre ha pagado.
+  bootcampPagos BootcampRegistration[] @relation("BootcampPayer")
+  /// Inscripciones en las que este menor es el participante.
+  bootcampCupos BootcampRegistration[] @relation("BootcampParticipant")
+
   posts     Post[]
   comments  Comment[]
   reactions Reaction[]
@@ -310,6 +315,21 @@ model BootcampRegistration {
   status          String  @default("PAID") // PAID · REFUNDED
   livemode        Boolean @default(false)
 
+  // --- Quién paga y quién viaja ---
+  // Ambos opcionales: una inscripción hecha antes de este flujo, o un pago
+  // llegado por otra vía, sigue siendo válida aunque no tenga cuentas detrás.
+  // `SetNull` en vez de `Cascade` a propósito: borrar un usuario NO puede
+  // borrar el registro de un pago — eso es contabilidad.
+
+  /// La cuenta de padre/tutor que pagó.
+  parentId String?
+  parent   User?   @relation("BootcampPayer", fields: [parentId], references: [id], onDelete: SetNull)
+
+  /// El CEO Junior que ocupa el cupo. De aquí salen su nombre y su fecha de
+  /// nacimiento para la carta, así que ya no hay que pedirlos ni hay erratas.
+  childId String?
+  child   User?   @relation("BootcampParticipant", fields: [childId], references: [id], onDelete: SetNull)
+
   // --- Datos para las DOS cartas de invitación (formulario posterior) ---
   participantName      String?
   participantBirthdate DateTime?
@@ -324,4 +344,6 @@ model BootcampRegistration {
 
   @@index([email])
   @@index([createdAt])
+  @@index([parentId])
+  @@index([childId])
 }

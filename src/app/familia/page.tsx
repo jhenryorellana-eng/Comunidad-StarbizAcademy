@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
@@ -33,6 +34,14 @@ export default async function FamiliaPage() {
       building: true,
       birthdate: true,
       createdAt: true,
+      // El cupo del bootcamp es nominal, así que su estado pertenece a la
+      // ficha del chico y no a una pantalla aparte. Aquí es donde el padre
+      // mira cuando piensa en sus hijos.
+      bootcampCupos: {
+        where: { status: "PAID" },
+        select: { id: true, createdAt: true },
+        take: 1,
+      },
     },
   });
 
@@ -85,6 +94,26 @@ export default async function FamiliaPage() {
                       <p className="mt-1 text-xs text-muted">
                         {F.joined} {formatDate(c.createdAt, locale)}
                       </p>
+
+                      {/* El bootcamp, en la ficha de cada chico. Un padre con
+                          dos hijos necesita ver de un vistazo cuál tiene cupo
+                          y cuál no — en la página del bootcamp esa respuesta
+                          se pierde entre el resto del contenido. */}
+                      {c.bootcampCupos.length > 0 ? (
+                        <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 ring-1 ring-emerald-200">
+                          <Icon name="check" size={12} />
+                          Cupo reservado · Bootcamp Utah 2027
+                        </p>
+                      ) : (
+                        <Link
+                          href="/bootcamp#inscripcion"
+                          className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-gold/45 bg-gold/[0.08] px-3 py-1 text-xs font-bold text-gold-700 transition-colors hover:bg-gold hover:text-navy"
+                        >
+                          <Icon name="star" size={12} />
+                          Reservar su cupo en Utah
+                          <Icon name="arrowRight" size={11} />
+                        </Link>
+                      )}
                     </div>
                   </li>
                 ))}

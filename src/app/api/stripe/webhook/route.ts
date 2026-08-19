@@ -49,6 +49,14 @@ export async function POST(req: Request) {
         // (transferencias, OXXO…): sólo se da por pagada si está confirmado.
         if (s.payment_status !== "paid") break;
 
+        // Los ids viajan en la metadata de la sesión: es el único hilo que
+        // conecta este aviso con la familia que pagó. Sin ellos la inscripción
+        // sigue guardándose —nunca se pierde un pago— pero queda suelta.
+        const parentId = s.metadata?.parentId || null;
+        const childId = s.metadata?.childId || null;
+        const childName = s.metadata?.childName || null;
+        const childBirthdate = s.metadata?.childBirthdate || "";
+
         await prisma.bootcampRegistration.upsert({
           where: { stripeSessionId: s.id },
           create: {
@@ -61,8 +69,15 @@ export async function POST(req: Request) {
             currency: s.currency ?? "usd",
             status: "PAID",
             livemode: evento.livemode,
+            parentId,
+            childId,
+            // El nombre y la fecha del participante se copian del hijo en el
+            // momento del pago. Antes se pedían por formulario después, y quien
+            // no volvía dejaba una inscripción sin datos para la carta.
+            participantName: childName,
+            participantBirthdate: childBirthdate ? new Date(`${childBirthdate}T00:00:00Z`) : null,
           },
-          update: { status: "PAID" },
+          update: { status: "PAID", parentId, childId },
         });
         break;
       }

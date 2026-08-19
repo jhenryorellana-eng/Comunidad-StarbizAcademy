@@ -22,6 +22,12 @@ import { ExportCsv } from "@/components/admin/ExportCsv";
 export default async function AdminBootcamp() {
   const inscripciones = await prisma.bootcampRegistration.findMany({
     orderBy: [{ profileComplete: "asc" }, { createdAt: "desc" }],
+    include: {
+      // Ahora el cupo cuelga de una cuenta real. Traer al padre y al hijo
+      // permite escribirle a quien pagó sin buscar el correo a mano.
+      parent: { select: { name: true, email: true } },
+      child: { select: { name: true, email: true, birthdate: true } },
+    },
   });
 
   const pagadas = inscripciones.filter((r) => r.status === "PAID");
@@ -83,8 +89,9 @@ export default async function AdminBootcamp() {
               rows={inscripciones.map((r) => ({
                 Pagado: formatDateTime(r.createdAt, "es"),
                 Estado: r.status,
-                Correo: r.email,
-                Participante: r.participantName ?? "",
+                Correo: r.parent?.email ?? r.email,
+                Padre: r.parent?.name ?? r.payerName ?? "",
+                Participante: r.child?.name ?? r.participantName ?? "",
                 Nacimiento: fecha(r.participantBirthdate),
                 Acompanante: r.companionName ?? "",
                 Telefono: r.phone ?? "",
@@ -110,8 +117,11 @@ export default async function AdminBootcamp() {
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="font-display font-bold text-navy">
-                      {r.participantName ?? r.payerName ?? r.email}
+                      {r.child?.name ?? r.participantName ?? r.payerName ?? r.email}
                     </p>
+                    {!r.childId && (
+                      <Badge tone="neutral">sin cuenta vinculada</Badge>
+                    )}
                     {r.status === "REFUNDED" ? (
                       <Badge tone="neutral">Reembolsada</Badge>
                     ) : falta ? (
@@ -126,8 +136,9 @@ export default async function AdminBootcamp() {
                   </div>
 
                   <dl className="mt-3 grid gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
-                    <Dato k="Correo" v={r.email} />
-                    <Dato k="Quien pagó" v={r.payerName} />
+                    <Dato k="Correo" v={r.parent?.email ?? r.email} />
+                    <Dato k="Quien pagó" v={r.parent?.name ?? r.payerName} />
+                    <Dato k="Cuenta del chico" v={r.child?.email} />
                     <Dato k="Participante" v={r.participantName} destacado />
                     <Dato k="Nacimiento" v={fecha(r.participantBirthdate)} />
                     <Dato k="Acompañante" v={r.companionName} destacado />
