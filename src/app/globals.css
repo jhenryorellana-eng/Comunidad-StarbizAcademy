@@ -24,6 +24,26 @@
   --color-gold-300: #fcd34d;
   --color-gold-700: #b45309;
 
+  /* ------------------------------------------------------------------
+     Atardecer de Utah — paleta de la pantalla de reserva.
+
+     El dueño señaló que el registro era un muro azul de arriba abajo, y
+     tenía razón: el azul no era un acento, era el suelo, las paredes y el
+     techo. Estos tonos salen del cielo de Utah a la hora dorada, y el
+     recorrido del formulario no pasa por el azul en ningún momento.
+  ------------------------------------------------------------------ */
+  --color-ocaso: #c2410c;
+  --color-ocaso-vivo: #ea8c1c;
+  --color-ocaso-hondo: #7c2d12;
+  --color-ocaso-suave: #fef6e9;
+  --color-ocaso-borde: #f0c88f;
+  /* Suelo cálido sobre el que vive el formulario. */
+  --color-arena: #fdfaf4;
+  --color-arena-linea: #e8ded0;
+  --color-arena-punteada: #e2d6c4;
+  --color-arena-tinta: #9a8b78;
+  --color-arena-texto: #6b6153;
+
   /* Warm neutrals (marketing surfaces) */
   --color-cream: #f8f6f3;
   --color-cream-200: #f0ede7;

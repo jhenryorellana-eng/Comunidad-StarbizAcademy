@@ -27,6 +27,9 @@ import { SelectorPais, EstrellaMarca } from "./SelectorPais";
  * lo mismo que la reserva: es el seguro contra cerrar la pestaña sin querer a
  * mitad del formulario. No puede vivir en el servidor porque el correo —único
  * dato obligatorio para crear la fila— se pide en el último bloque.
+ *
+ * EL PASO VIVE FUERA. Lo sostiene `ReservaConCielo`, porque el cielo del
+ * encabezado también lo necesita: el sol se pone a medida que se avanza.
  */
 
 type Datos = {
@@ -149,9 +152,14 @@ function validar(paso: number, d: Datos): Errores {
 
 /* ── Componente ──────────────────────────────────────────────────────────── */
 
-export function FormularioReserva() {
+export function FormularioReserva({
+  paso,
+  setPaso,
+}: {
+  paso: number;
+  setPaso: (n: number) => void;
+}) {
   const [datos, setDatos] = useState<Datos>(VACIO);
-  const [paso, setPaso] = useState(1);
   const [errores, setErrores] = useState<Errores>({});
   const [enviando, setEnviando] = useState(false);
   const [fallo, setFallo] = useState<{ texto: string; guardada: boolean } | null>(null);
@@ -200,7 +208,9 @@ export function FormularioReserva() {
     const e = { ...validar(1, datos), ...validar(2, datos), ...validar(3, datos) };
     if (Object.keys(e).length > 0) {
       setErrores(e);
-      setPaso(Object.keys(validar(1, datos)).length ? 1 : Object.keys(validar(2, datos)).length ? 2 : 3);
+      setPaso(
+        Object.keys(validar(1, datos)).length ? 1 : Object.keys(validar(2, datos)).length ? 2 : 3,
+      );
       return;
     }
 
@@ -254,7 +264,10 @@ export function FormularioReserva() {
       }
       window.location.href = sesion.url;
     } catch {
-      setFallo({ texto: "No se pudo conectar. Tus datos siguen aquí — inténtalo otra vez.", guardada: false });
+      setFallo({
+        texto: "No se pudo conectar. Tus datos siguen aquí — inténtalo otra vez.",
+        guardada: false,
+      });
       setEnviando(false);
     }
   }
@@ -264,16 +277,16 @@ export function FormularioReserva() {
       <Progreso paso={paso} completo={completo} />
 
       {hayBorrador && paso === 1 && (
-        <div className="mt-5 rounded-2xl border border-cyan-bright/30 bg-cyan-bright/[0.07] p-4">
-          <p className="flex items-start gap-2.5 text-sm leading-snug text-white">
-            <EstrellaMarca className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold" />
+        <div className="mt-5 rounded-2xl border border-ocaso-borde bg-ocaso-suave p-4">
+          <p className="flex items-start gap-2.5 text-sm leading-snug text-navy">
+            <EstrellaMarca className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ocaso" />
             Tenías una reserva a medias en este dispositivo.
           </p>
           <div className="mt-3 flex flex-wrap gap-2.5">
             <button
               type="button"
               onClick={retomar}
-              className="min-h-[44px] rounded-full bg-cyan-bright/20 px-4 text-sm font-semibold text-cyan-50 transition-colors hover:bg-cyan-bright/30"
+              className="min-h-[44px] rounded-full bg-ocaso px-4 text-sm font-semibold text-white transition-colors hover:bg-ocaso-hondo"
             >
               Retomarla
             </button>
@@ -283,7 +296,7 @@ export function FormularioReserva() {
                 borrarBorrador();
                 setBorradorResuelto(true);
               }}
-              className="min-h-[44px] px-3 text-sm text-white/50 transition-colors hover:text-white/80"
+              className="min-h-[44px] px-3 text-sm text-arena-tinta transition-colors hover:text-navy"
             >
               Empezar de cero
             </button>
@@ -330,17 +343,19 @@ export function FormularioReserva() {
             type="button"
             onClick={avanzar}
             className={cn(
-              "mt-6 flex min-h-[54px] w-full items-center justify-center gap-2.5 rounded-full font-display text-[0.95rem] font-bold transition-all duration-200",
+              "mt-6 flex min-h-[54px] w-full items-center justify-center gap-2.5 rounded-full font-display text-[0.95rem] font-bold text-white transition-all duration-200",
               paso === 3
-                ? "bg-gold text-navy shadow-[0_12px_32px_-8px_rgba(251,191,36,0.65)] hover:bg-gold-300"
-                : "border border-white/15 bg-white/[0.09] text-white hover:bg-white/[0.14]",
+                ? "bg-gradient-to-br from-ocaso-vivo to-ocaso shadow-[0_12px_30px_-10px_rgba(194,65,12,0.55)] hover:brightness-110"
+                : "bg-navy hover:bg-navy-800",
             )}
           >
-            {paso === 3 ? `Repasar y pagar · $${BOOTCAMP.priceUSD}` : `Siguiente · ${BLOQUES[paso].titulo}`}
+            {paso === 3
+              ? `Repasar y pagar · $${BOOTCAMP.priceUSD}`
+              : `Siguiente · ${BLOQUES[paso].titulo}`}
             <Icon name="arrowRight" size={15} />
           </button>
 
-          <p className="mt-3.5 text-center text-xs leading-relaxed text-white/40">
+          <p className="mt-3.5 text-center text-xs leading-relaxed text-arena-tinta">
             {paso === 3
               ? "Todavía no se cobra nada. Verás todo junto antes de pagar."
               : `Al terminar los tres pasos: $${BOOTCAMP.priceUSD} con Stripe.`}
@@ -365,7 +380,7 @@ export function FormularioReserva() {
 function Progreso({ paso, completo }: { paso: number; completo: (n: number) => boolean }) {
   return (
     <div className="relative flex items-start">
-      <span className="absolute left-[16%] right-[16%] top-1.5 h-px bg-white/12" aria-hidden />
+      <span className="absolute left-[16%] right-[16%] top-1.5 h-px bg-arena-linea" aria-hidden />
       {BLOQUES.map((b) => {
         const hecho = b.n < paso && completo(b.n);
         const activo = b.n === paso;
@@ -375,16 +390,16 @@ function Progreso({ paso, completo }: { paso: number; completo: (n: number) => b
               className={cn(
                 "rounded-full",
                 hecho
-                  ? "h-3 w-3 bg-gold shadow-[0_0_12px_3px_rgba(251,191,36,0.5)]"
+                  ? "h-3 w-3 bg-ocaso"
                   : activo
-                    ? "h-3.5 w-3.5 bg-cyan-bright shadow-[0_0_0_4px_rgba(34,211,238,0.16),0_0_16px_3px_rgba(34,211,238,0.55)]"
-                    : "mt-1 h-2 w-2 bg-white/22",
+                    ? "h-3.5 w-3.5 bg-ocaso-vivo shadow-[0_0_0_4px_rgba(234,140,28,0.18)]"
+                    : "mt-1 h-2 w-2 bg-arena-punteada",
               )}
             />
             <span
               className={cn(
                 "text-center text-[0.66rem] font-semibold",
-                hecho ? "text-gold-300" : activo ? "text-cyan-50" : "text-white/38",
+                hecho ? "text-ocaso" : activo ? "text-ocaso-hondo" : "text-arena-tinta",
               )}
             >
               {b.titulo}
@@ -410,14 +425,14 @@ function Abierto({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-cyan-bright/30 bg-gradient-to-b from-white/[0.075] to-white/[0.026] p-4 shadow-[0_22px_54px_-26px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.11)] sm:p-5">
+    <section className="rounded-2xl border border-arena-linea bg-paper p-4 shadow-[0_18px_40px_-32px_rgba(120,60,20,0.45)] sm:p-5">
       <div className="flex items-center gap-3">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-cyan-bright/55 bg-cyan-bright/[0.18] font-display text-xs font-bold text-cyan-50">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-ocaso-vivo to-ocaso font-display text-xs font-bold text-white">
           {n}
         </span>
         <span className="flex-1">
-          <h2 className="font-display text-[1.05rem] font-bold leading-tight text-white">{titulo}</h2>
-          <p className="mt-0.5 text-xs text-white/45">{nota}</p>
+          <h2 className="font-display text-[1.05rem] font-bold leading-tight text-navy">{titulo}</h2>
+          <p className="mt-0.5 text-xs text-arena-tinta">{nota}</p>
         </span>
       </div>
       <div className="mt-5 space-y-4">{children}</div>
@@ -439,34 +454,28 @@ function Plegado({
   onEditar: () => void;
 }) {
   return (
-    <section className="rounded-2xl border border-gold/30 bg-gold/[0.055] p-4">
+    <section className="rounded-2xl border border-ocaso-borde bg-ocaso-suave p-4">
       <div className="flex items-center gap-3">
-        <span className="relative flex h-6 w-6 shrink-0 items-center justify-center">
-          <span
-            className="absolute -inset-1 rounded-full bg-[radial-gradient(closest-side,rgba(251,191,36,0.4),transparent_72%)]"
-            aria-hidden
-          />
-          <EstrellaMarca className="relative h-[18px] w-[18px] text-gold" />
-        </span>
+        <EstrellaMarca className="h-[18px] w-[18px] shrink-0 text-ocaso" />
         <span className="min-w-0 flex-1">
-          <span className="block font-display text-[0.92rem] font-bold text-white">{titulo}</span>
-          <span className="mt-0.5 block truncate text-xs text-white/55">{resumen}</span>
+          <span className="block font-display text-[0.92rem] font-bold text-navy">{titulo}</span>
+          <span className="mt-0.5 block truncate text-xs text-arena-texto">{resumen}</span>
         </span>
         <button
           type="button"
           onClick={onEditar}
-          className="-mr-1.5 min-h-[44px] shrink-0 px-2.5 text-[0.82rem] font-semibold text-gold-300 transition-colors hover:text-gold"
+          className="-mr-1.5 min-h-[44px] shrink-0 px-2.5 text-[0.82rem] font-semibold text-ocaso transition-colors hover:text-ocaso-hondo"
         >
           Editar
         </button>
       </div>
 
       {fichas && fichas.length > 0 && (
-        <div className="ml-9 mt-2.5 flex flex-wrap gap-1.5">
+        <div className="ml-[30px] mt-2.5 flex flex-wrap gap-1.5">
           {fichas.map((f) => (
             <span
               key={f}
-              className="rounded-full border border-white/11 bg-white/[0.07] px-2.5 py-1 text-[0.7rem] text-white/72"
+              className="rounded-full border border-ocaso-borde bg-paper px-2.5 py-1 text-[0.7rem] text-ink"
             >
               {f}
             </span>
@@ -475,7 +484,7 @@ function Plegado({
       )}
 
       {aviso && (
-        <p className="mt-3 rounded-xl border border-gold/22 bg-gold/10 px-3 py-2.5 text-xs leading-snug text-gold-300">
+        <p className="mt-3 rounded-xl border border-ocaso-borde bg-white/70 px-3 py-2.5 text-xs leading-snug text-ocaso-hondo">
           {aviso}
         </p>
       )}
@@ -485,16 +494,16 @@ function Plegado({
 
 function Pendiente({ n, titulo, nota }: { n: number; titulo: string; nota: string }) {
   return (
-    <section className="rounded-2xl border border-dashed border-white/14 p-4 opacity-60">
+    <section className="rounded-2xl border border-dashed border-arena-punteada p-4">
       <div className="flex items-center gap-3">
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/20 font-display text-[0.72rem] font-bold text-white/45">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-arena-punteada font-display text-[0.72rem] font-bold text-arena-tinta">
           {n}
         </span>
         <span className="flex-1">
-          <span className="block font-display text-[0.92rem] font-bold text-white/72">{titulo}</span>
-          <span className="mt-0.5 block text-xs text-white/38">{nota}</span>
+          <span className="block font-display text-[0.92rem] font-bold text-arena-texto">{titulo}</span>
+          <span className="mt-0.5 block text-xs text-arena-tinta">{nota}</span>
         </span>
-        <Icon name="arrowRight" size={14} className="shrink-0 rotate-90 text-white/35" />
+        <Icon name="arrowRight" size={14} className="shrink-0 rotate-90 text-arena-tinta" />
       </div>
     </section>
   );
@@ -517,17 +526,17 @@ function Campo({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-[0.78rem] font-medium text-white/75">
+      <label htmlFor={id} className="mb-1.5 block text-[0.78rem] font-medium text-navy">
         {etiqueta}
       </label>
       {children}
       {error ? (
-        <p id={`${id}-error`} className="mt-2 flex items-start gap-1.5 text-xs leading-snug text-rose-400">
+        <p id={`${id}-error`} className="mt-2 flex items-start gap-1.5 text-xs leading-snug text-rose-600">
           <Icon name="clock" size={12} className="mt-px shrink-0" />
           {error}
         </p>
       ) : ayuda ? (
-        <p id={`${id}-ayuda`} className="mt-1.5 text-xs leading-snug text-white/40">
+        <p id={`${id}-ayuda`} className="mt-1.5 text-xs leading-snug text-arena-tinta">
           {ayuda}
         </p>
       ) : null}
@@ -538,13 +547,9 @@ function Campo({
 /** 16px de tipo: por debajo de eso iOS hace zoom solo al enfocar y descoloca
     la pantalla entera. */
 const CAMPO =
-  "min-h-[50px] w-full rounded-xl border bg-navy/40 px-3.5 py-3 text-base text-white placeholder:text-white/26 focus:outline-none";
+  "min-h-[50px] w-full rounded-xl border bg-paper px-3.5 py-3 text-base text-navy placeholder:text-arena-tinta/75 focus:outline-none";
 
-function Entrada({
-  id,
-  error,
-  ...props
-}: React.ComponentProps<"input"> & { error?: string }) {
+function Entrada({ id, error, ...props }: React.ComponentProps<"input"> & { error?: string }) {
   return (
     <input
       id={id}
@@ -553,8 +558,8 @@ function Entrada({
       className={cn(
         CAMPO,
         error
-          ? "border-rose-400/60 bg-rose-500/10"
-          : "border-white/15 focus:border-cyan-bright/75 focus:ring-[3px] focus:ring-cyan-bright/15",
+          ? "border-rose-400 bg-rose-50"
+          : "border-arena-linea focus:border-ocaso-vivo focus:ring-[3px] focus:ring-ocaso-vivo/20",
       )}
       {...props}
     />
@@ -597,14 +602,19 @@ function Bloque1({ datos, errores, set }: { datos: Datos; errores: Errores; set:
         {/* La edad se enseña calculada, no se pide: así se confirma de un
             vistazo que no se erró el año al teclear. */}
         {!errores.participantBirthdate && edad !== null && edad >= 10 && edad <= 19 && (
-          <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-cyan-bright">
+          <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-ocaso">
             <EstrellaMarca className="h-2.5 w-2.5" />
             Tendría {edad} años
           </p>
         )}
       </Campo>
 
-      <Campo id="documentId" etiqueta="Pasaporte o DNI" error={errores.documentId} ayuda="Del participante. Va impreso en la carta.">
+      <Campo
+        id="documentId"
+        etiqueta="Pasaporte o DNI"
+        error={errores.documentId}
+        ayuda="Del participante. Va impreso en la carta."
+      >
         <Entrada
           id="documentId"
           error={errores.documentId}
@@ -614,7 +624,7 @@ function Bloque1({ datos, errores, set }: { datos: Datos; errores: Errores; set:
       </Campo>
 
       <div>
-        <span className="mb-2 block text-[0.78rem] font-medium text-white/75">Nivel académico</span>
+        <span className="mb-2 block text-[0.78rem] font-medium text-navy">Nivel académico</span>
         <div className="flex gap-2.5">
           {(["PRIMARIA", "SECUNDARIA"] as const).map((n) => (
             <button
@@ -625,8 +635,8 @@ function Bloque1({ datos, errores, set }: { datos: Datos; errores: Errores; set:
               className={cn(
                 "flex min-h-[48px] flex-1 items-center justify-center rounded-xl border text-[0.9rem] transition-colors",
                 datos.academicLevel === n
-                  ? "border-cyan-bright/65 bg-cyan-bright/[0.13] font-semibold text-cyan-50"
-                  : "border-white/14 bg-navy/40 text-white/70 hover:border-white/25",
+                  ? "border-ocaso bg-ocaso-suave font-semibold text-ocaso-hondo"
+                  : "border-arena-linea bg-paper text-arena-texto hover:border-arena-punteada",
               )}
             >
               {n === "PRIMARIA" ? "Primaria" : "Secundaria"}
@@ -634,7 +644,7 @@ function Bloque1({ datos, errores, set }: { datos: Datos; errores: Errores; set:
           ))}
         </div>
         {errores.academicLevel && (
-          <p className="mt-2 text-xs text-rose-400">{errores.academicLevel}</p>
+          <p className="mt-2 text-xs text-rose-600">{errores.academicLevel}</p>
         )}
       </div>
     </>
@@ -645,13 +655,13 @@ function Bloque2({ datos, errores, set }: { datos: Datos; errores: Errores; set:
   return (
     <>
       <div>
-        <span className="mb-1.5 block text-[0.78rem] font-medium text-white/75">Nacionalidad</span>
+        <span className="mb-1.5 block text-[0.78rem] font-medium text-navy">Nacionalidad</span>
         <SelectorPais
           value={datos.nationality || null}
           onChange={(p: Pais) => set("nationality", p.gentilicio)}
           error={Boolean(errores.nationality)}
         />
-        {errores.nationality && <p className="mt-2 text-xs text-rose-400">{errores.nationality}</p>}
+        {errores.nationality && <p className="mt-2 text-xs text-rose-600">{errores.nationality}</p>}
       </div>
 
       <Campo
@@ -732,7 +742,7 @@ function Bloque3({
         <div className="flex gap-2.5">
           {/* El prefijo sale del país del paso 2: un dato menos que teclear. */}
           {prefijo && (
-            <span className="flex min-h-[50px] shrink-0 items-center rounded-xl border border-white/15 bg-navy/40 px-3.5 text-base text-white/85">
+            <span className="flex min-h-[50px] shrink-0 items-center rounded-xl border border-arena-linea bg-paper px-3.5 text-base text-navy">
               {prefijo}
             </span>
           )}
@@ -751,14 +761,14 @@ function Bloque3({
       {/* EL ACOMPAÑANTE. Hoy este campo llega vacío una y otra vez y bloquea la
           segunda carta, porque se presentaba como un campo suelto y opcional
           sin decir qué se pierde al dejarlo. */}
-      <div className="rounded-2xl border border-gold/28 bg-gold/[0.05] p-4">
+      <div className="rounded-2xl border border-ocaso-borde bg-ocaso-suave p-4">
         <div className="flex items-start gap-2.5">
-          <EstrellaMarca className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+          <EstrellaMarca className="mt-0.5 h-4 w-4 shrink-0 text-ocaso" />
           <span>
-            <span className="block font-display text-[0.9rem] font-bold text-white">
+            <span className="block font-display text-[0.9rem] font-bold text-navy">
               Tu carta también está incluida
             </span>
-            <span className="mt-1 block text-xs leading-relaxed text-white/62">
+            <span className="mt-1 block text-xs leading-relaxed text-arena-texto">
               Un adulto viaja con el participante y recibe su propia carta de invitación. Sin coste
               extra.
             </span>
@@ -767,7 +777,10 @@ function Bloque3({
 
         {!datos.sinAcompanante && (
           <div className="mt-3.5">
-            <label htmlFor="companionName" className="mb-1.5 block text-[0.78rem] font-medium text-white/75">
+            <label
+              htmlFor="companionName"
+              className="mb-1.5 block text-[0.78rem] font-medium text-navy"
+            >
               Nombre del acompañante, como en su pasaporte
             </label>
             <Entrada
@@ -778,7 +791,7 @@ function Bloque3({
               onChange={(e) => set("companionName", e.target.value)}
             />
             {errores.companionName && (
-              <p className="mt-2 text-xs text-rose-400">{errores.companionName}</p>
+              <p className="mt-2 text-xs text-rose-600">{errores.companionName}</p>
             )}
           </div>
         )}
@@ -791,12 +804,14 @@ function Bloque3({
             if (!datos.sinAcompanante) set("companionName", "");
           }}
           aria-pressed={datos.sinAcompanante}
-          className="mt-2.5 flex min-h-[44px] w-full items-center gap-2.5 text-left text-[0.82rem] text-white/68 transition-colors hover:text-white"
+          className="mt-2.5 flex min-h-[44px] w-full items-center gap-2.5 text-left text-[0.82rem] text-arena-texto transition-colors hover:text-navy"
         >
           <span
             className={cn(
               "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-[1.5px] transition-colors",
-              datos.sinAcompanante ? "border-gold bg-gold text-navy" : "border-white/28",
+              datos.sinAcompanante
+                ? "border-ocaso bg-ocaso text-white"
+                : "border-arena-punteada bg-paper",
             )}
           >
             {datos.sinAcompanante && <Icon name="check" size={11} />}
@@ -844,9 +859,11 @@ function Repaso({
 }) {
   const edad = calcularEdad(datos.participantBirthdate);
   const tel = datos.phone.trim() ? `${pais?.prefijo ?? ""} ${datos.phone.trim()}`.trim() : "—";
+  const nombreCorto = datos.participantName.trim().split(" ")[0] || "el participante";
 
   // "En la carta" sólo en los cuatro datos que el consulado coteja. Marcarlo
-  // todo sería no marcar nada.
+  // todo sería no marcar nada. El correo NO lleva marca: no se imprime, es a
+  // donde se envía.
   type Fila = { k: string; v: string; sello?: boolean; flojo?: boolean };
   const grupos: Array<{ n: number; titulo: string; filas: Fila[] }> = [
     {
@@ -854,7 +871,10 @@ function Repaso({
       titulo: "Quién viaja",
       filas: [
         { k: "Nombre", v: datos.participantName, sello: true },
-        { k: "Nacimiento", v: `${datos.participantBirthdate}${edad !== null ? ` · ${edad} años` : ""}` },
+        {
+          k: "Nacimiento",
+          v: `${datos.participantBirthdate}${edad !== null ? ` · ${edad} años` : ""}`,
+        },
         { k: "Documento", v: datos.documentId, sello: true },
         { k: "Nivel", v: datos.academicLevel === "PRIMARIA" ? "Primaria" : "Secundaria" },
       ],
@@ -873,8 +893,6 @@ function Repaso({
       titulo: "Tus datos",
       filas: [
         { k: "Responsable", v: datos.payerName },
-        // El correo NO lleva sello: no se imprime en la carta, es a donde se
-        // envía. Marcarlo sería mentir sobre lo que revisa el consulado.
         { k: "Correo", v: datos.email },
         { k: "Teléfono", v: tel },
         {
@@ -889,28 +907,28 @@ function Repaso({
 
   return (
     <div className="mt-5">
-      <h2 className="font-display text-[1.4rem] font-extrabold leading-tight tracking-tight text-white sm:text-2xl">
+      <h2 className="font-display text-[1.4rem] font-extrabold leading-tight tracking-tight text-navy sm:text-2xl">
         Repasa antes de pagar
       </h2>
-      <p className="mt-2 text-sm leading-relaxed text-white/55">
+      <p className="mt-2 text-sm leading-relaxed text-arena-texto">
         Esto es exactamente lo que irá impreso en las dos cartas. Un nombre que no coincida con el
         pasaporte hace que el consulado la rechace.
       </p>
 
-      <div className="mt-5 overflow-hidden rounded-2xl border border-white/14 bg-gradient-to-b from-white/[0.075] to-white/[0.026] shadow-[0_22px_54px_-26px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.11)]">
+      <div className="mt-5 overflow-hidden rounded-2xl border border-arena-linea bg-paper shadow-[0_18px_40px_-32px_rgba(120,60,20,0.45)]">
         {grupos.map((g, i) => (
-          <div key={g.n} className={i > 0 ? "border-t border-white/9" : undefined}>
+          <div key={g.n} className={i > 0 ? "border-t border-arena-linea" : undefined}>
             <div className="flex items-center justify-between gap-3 px-4 pb-2 pt-3.5">
               <span className="flex items-center gap-2.5">
-                <EstrellaMarca className="h-3.5 w-3.5 text-gold" />
-                <span className="font-display text-[0.66rem] font-semibold uppercase tracking-[0.18em] text-white/55">
+                <EstrellaMarca className="h-3.5 w-3.5 text-ocaso" />
+                <span className="font-display text-[0.66rem] font-semibold uppercase tracking-[0.18em] text-arena-tinta">
                   {g.titulo}
                 </span>
               </span>
               <button
                 type="button"
                 onClick={() => onEditar(g.n)}
-                className="-mr-1.5 min-h-[44px] px-2 text-[0.82rem] font-semibold text-gold-300 transition-colors hover:text-gold"
+                className="-mr-1.5 min-h-[44px] px-2 text-[0.82rem] font-semibold text-ocaso transition-colors hover:text-ocaso-hondo"
               >
                 Editar
               </button>
@@ -921,24 +939,24 @@ function Repaso({
                   key={f.k}
                   className={cn(
                     "flex items-baseline gap-3 py-1.5",
-                    j < g.filas.length - 1 && "border-b border-white/7",
+                    j < g.filas.length - 1 && "border-b border-arena-linea/60",
                   )}
                 >
-                  <dt className="w-[86px] shrink-0 text-xs text-white/42">{f.k}</dt>
+                  <dt className="w-[82px] shrink-0 text-xs text-arena-tinta">{f.k}</dt>
                   <dd
                     className={cn(
                       "min-w-0 flex-1 break-words text-sm",
                       f.flojo
-                        ? "italic text-gold-300"
+                        ? "italic text-ocaso"
                         : f.sello
-                          ? "font-semibold text-white"
-                          : "text-white/80",
+                          ? "font-semibold text-navy"
+                          : "text-ink",
                     )}
                   >
                     {f.v || "—"}
                   </dd>
                   {f.sello && (
-                    <span className="shrink-0 text-[0.55rem] font-bold uppercase tracking-[0.12em] text-gold/75">
+                    <span className="shrink-0 text-[0.55rem] font-bold uppercase tracking-[0.12em] text-ocaso-vivo">
                       en la carta
                     </span>
                   )}
@@ -952,37 +970,40 @@ function Repaso({
       {/* Qué se lleva por sus $250. Sólo en móvil: en escritorio ya lo enseña
           la columna lateral, y repetirlo allí sería decirlo dos veces en la
           misma pantalla. */}
-      <div className="mt-4 overflow-hidden rounded-2xl border border-cyan-bright/22 bg-[rgba(11,20,42,0.75)] lg:hidden">
-        <span className="block h-0.5 bg-gradient-to-r from-cyan-bright via-cyan to-gold" aria-hidden />
+      <div className="mt-4 overflow-hidden rounded-2xl border border-arena-linea bg-paper lg:hidden">
+        <span
+          className="block h-0.5 bg-gradient-to-r from-ocaso via-ocaso-vivo to-gold"
+          aria-hidden
+        />
         <div className="p-4">
           <div className="flex items-baseline justify-between gap-3">
-            <span className="font-display text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-white/42">
+            <span className="font-display text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-arena-tinta">
               Qué se emite
             </span>
             <span className="flex items-baseline gap-1.5">
-              <span className="font-display text-[1.65rem] font-extrabold tracking-tight text-white">
+              <span className="font-display text-[1.65rem] font-extrabold tracking-tight text-navy">
                 ${BOOTCAMP.priceUSD}
               </span>
-              <span className="text-xs text-white/45">USD</span>
+              <span className="text-xs text-arena-tinta">USD</span>
             </span>
           </div>
 
-          <div className="mt-3.5 space-y-2.5 border-t border-white/9 pt-3.5">
+          <div className="mt-3.5 space-y-2.5 border-t border-arena-linea pt-3.5">
             {[
               "Tu cupo en el Bootcamp Utah 2027",
-              `Carta de invitación para ${datos.participantName.split(" ")[0] || "el participante"}`,
+              `Carta de invitación para ${nombreCorto}`,
               "Carta de invitación para su acompañante",
               "El programa completo de los 4 días y el acompañamiento del equipo",
             ].map((i) => (
-              <p key={i} className="flex gap-2.5 text-[0.8rem] leading-snug text-white/82">
-                <EstrellaMarca className="mt-0.5 h-3 w-3 shrink-0 text-gold" />
+              <p key={i} className="flex gap-2.5 text-[0.8rem] leading-snug text-ink">
+                <EstrellaMarca className="mt-0.5 h-3 w-3 shrink-0 text-ocaso-vivo" />
                 {i}
               </p>
             ))}
           </div>
 
           {/* Decirlo ahora evita la discusión de después. */}
-          <p className="mt-3.5 border-t border-white/9 pt-3 text-xs leading-relaxed text-white/42">
+          <p className="mt-3.5 border-t border-arena-linea pt-3 text-xs leading-relaxed text-arena-tinta">
             No incluye vuelos, hospedaje, comidas, transporte local ni tasas consulares.
           </p>
         </div>
@@ -993,8 +1014,8 @@ function Repaso({
           className={cn(
             "mt-4 flex items-start gap-2.5 rounded-2xl border p-3.5 text-sm leading-relaxed",
             fallo.guardada
-              ? "border-gold/24 bg-gold/[0.09] text-gold-300"
-              : "border-rose-400/28 bg-rose-500/[0.09] text-rose-400",
+              ? "border-ocaso-borde bg-ocaso-suave text-ocaso-hondo"
+              : "border-rose-200 bg-rose-50 text-rose-700",
           )}
         >
           <Icon name={fallo.guardada ? "clock" : "close"} size={14} className="mt-0.5 shrink-0" />
@@ -1006,13 +1027,13 @@ function Repaso({
         type="button"
         onClick={onPagar}
         disabled={enviando}
-        className="mt-5 flex min-h-[58px] w-full items-center justify-center gap-2.5 rounded-full bg-gold font-display text-base font-bold text-navy shadow-[0_14px_38px_-8px_rgba(251,191,36,0.7)] transition-all duration-200 hover:bg-gold-300 disabled:cursor-wait disabled:opacity-70"
+        className="mt-5 flex min-h-[58px] w-full items-center justify-center gap-2.5 rounded-full bg-gradient-to-br from-ocaso-vivo to-ocaso font-display text-base font-bold text-white shadow-[0_14px_34px_-10px_rgba(194,65,12,0.6)] transition-all duration-200 hover:brightness-110 disabled:cursor-wait disabled:opacity-70"
       >
-        {enviando ? <Spinner className="text-navy" /> : <Icon name="lock" size={15} />}
+        {enviando ? <Spinner className="text-white" /> : <Icon name="lock" size={15} />}
         {enviando ? "Guardando y abriendo Stripe…" : `Pagar $${BOOTCAMP.priceUSD} y reservar`}
       </button>
 
-      <p className="mt-3.5 flex items-center justify-center gap-1.5 text-center text-xs text-white/40">
+      <p className="mt-3.5 flex items-center justify-center gap-1.5 text-center text-xs text-arena-tinta">
         <Icon name="lock" size={11} />
         Te llevamos a Stripe · tu tarjeta nunca pasa por nuestros servidores
       </p>
