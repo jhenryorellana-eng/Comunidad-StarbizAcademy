@@ -8,25 +8,25 @@ import {
   BOOTCAMP_CURRENCY,
 } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth";
-import { ROLES } from "@/lib/constants";
 import { BOOTCAMP } from "@/lib/bootcamp";
 
 /**
- * Abre la sesión de pago del bootcamp.
+ * Abre el pago de una reserva que YA está guardada.
  *
- * PAGA EL PADRE, Y PAGA POR UN HIJO CONCRETO. Antes cualquiera podía pagar sin
- * cuenta y los nombres para las cartas se pedían DESPUÉS, en un formulario que
- * mucha gente no vuelve a abrir — de ahí el estado "faltan datos de la carta"
- * del panel. Ahora el nombre y la fecha de nacimiento del participante ya están
- * en el sistema cuando se cobra: salen de su cuenta de CEO Junior, sin erratas
- * y sin depender de que alguien rellene nada.
+ * NO PIDE CUENTA. El bootcamp es un producto que se vende solo: alguien llega
+ * desde un anuncio, rellena el formulario y compra. Exigir registro en la
+ * comunidad sólo ponía un muro entre el anuncio y la venta.
  *
- * Checkout ALOJADO a propósito: los datos de la tarjeta nunca tocan este
- * servidor, así que no hay carga de cumplimiento PCI, y Stripe resuelve 3D
- * Secure y los métodos de pago locales de cada país.
+ * Lo único que llega del navegador es el ID de la reserva. Todo lo demás
+ * —nombre, correo y sobre todo el PRECIO— sale de la base o de las constantes
+ * del servidor. Si el importe viniera del cliente, cualquiera pagaría un
+ * céntimo cambiando un número antes de enviar la petición.
+ *
+ * Checkout ALOJADO: los datos de la tarjeta nunca tocan este servidor, así que
+ * no hay carga de cumplimiento PCI, y Stripe resuelve 3D Secure y los métodos
+ * de pago locales de cada país.
  */
-const Cuerpo = z.object({ childId: z.string().min(1) });
+const Cuerpo = z.object({ registrationId: z.string().min(1) });
 
 export async function POST(req: Request) {
   if (!stripeEnabled || !stripe) {
@@ -36,57 +36,28 @@ export async function POST(req: Request) {
     );
   }
 
-  // 1 · Sólo un padre/tutor (o admin) puede pagar. Un menor no compra su
-  //     propio viaje: ese acto es también el consentimiento del adulto.
-  const session = await getSession();
-  if (!session) {
-    return NextResponse.json({ error: "Necesitas una cuenta." }, { status: 401 });
-  }
-  if (session.role !== ROLES.PARENT && session.role !== ROLES.ADMIN) {
-    return NextResponse.json(
-      { error: "El cupo lo reserva la cuenta de mamá, papá o tutor." },
-      { status: 403 },
-    );
-  }
-
   const parsed = Cuerpo.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Falta indicar a quién le reservas." }, { status: 400 });
+    return NextResponse.json({ error: "Falta la reserva." }, { status: 400 });
   }
 
-  // 2 · Ese hijo tiene que ser SUYO. Sin esta comprobación, cualquiera con una
-  //     cuenta podría reservar a nombre del hijo de otro cambiando un id.
-  const hijo = await prisma.user.findFirst({
-    where: {
-      id: parsed.data.childId,
-      ...(session.role === ROLES.ADMIN ? {} : { parentId: session.sub }),
-    },
-    select: { id: true, name: true, birthdate: true },
+  const reserva = await prisma.bootcampRegistration.findUnique({
+    where: { id: parsed.data.registrationId },
+    select: { id: true, status: true, participantName: true, email: true },
   });
-  if (!hijo) {
-    return NextResponse.json({ error: "Ese participante no es tuyo." }, { status: 403 });
+  if (!reserva) {
+    return NextResponse.json({ error: "Esa reserva no existe." }, { status: 404 });
   }
-
-  // 3 · Y no puede tener ya un cupo pagado. Cobrar dos veces por el mismo
-  //     chico es el error que peor se explica después.
-  const yaTiene = await prisma.bootcampRegistration.findFirst({
-    where: { childId: hijo.id, status: "PAID" },
-    select: { id: true },
-  });
-  if (yaTiene) {
+  // Cobrar dos veces por el mismo cupo es el error que peor se explica después.
+  if (reserva.status === "PAID") {
     return NextResponse.json(
-      { error: `${hijo.name} ya tiene su cupo reservado.` },
+      { error: `El cupo de ${reserva.participantName} ya está pagado.` },
       { status: 409 },
     );
   }
 
   try {
     const base = siteUrl();
-    const pagador = await prisma.user.findUnique({
-      where: { id: session.sub },
-      select: { email: true, name: true },
-    });
-
     const checkout = await stripe.checkout.sessions.create({
       mode: "payment",
       automatic_tax: { enabled: false },
@@ -97,25 +68,19 @@ export async function POST(req: Request) {
             currency: BOOTCAMP_CURRENCY,
             unit_amount: BOOTCAMP_PRICE_CENTS,
             product_data: {
-              name: `${BOOTCAMP.name} — ${hijo.name}`,
+              name: `${BOOTCAMP.name} — ${reserva.participantName}`,
               description:
                 "Inscripción: cupo en el bootcamp + carta de invitación oficial para el participante y un acompañante.",
             },
           },
         },
       ],
-      // El correo ya lo conocemos: un campo menos entre el clic y el pago.
-      customer_email: pagador?.email,
+      // El correo ya se pidió en el formulario: un campo menos antes de pagar.
+      customer_email: reserva.email,
       billing_address_collection: "auto",
-      // El webhook es quien escribe la inscripción, y sólo recibe la sesión de
-      // Stripe. Estos dos ids son el único hilo que le dice de quién es el pago.
-      metadata: {
-        producto: "bootcamp-utah-2027",
-        parentId: session.sub,
-        childId: hijo.id,
-        childName: hijo.name,
-        childBirthdate: hijo.birthdate ? hijo.birthdate.toISOString().slice(0, 10) : "",
-      },
+      // El webhook sólo recibe la sesión de Stripe. Este id es el hilo que le
+      // dice qué reserva marcar como pagada.
+      metadata: { producto: "bootcamp-utah-2027", registrationId: reserva.id },
       success_url: `${base}/bootcamp/confirmacion?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${base}/bootcamp?pago=cancelado`,
     });
@@ -123,6 +88,14 @@ export async function POST(req: Request) {
     if (!checkout.url) {
       return NextResponse.json({ error: "Stripe no devolvió URL." }, { status: 502 });
     }
+
+    // Se guarda AHORA, no al volver: si el navegador se cierra entre este punto
+    // y el pago, el webhook sigue sabiendo a qué reserva pertenece la sesión.
+    await prisma.bootcampRegistration.update({
+      where: { id: reserva.id },
+      data: { stripeSessionId: checkout.id },
+    });
+
     return NextResponse.json({ url: checkout.url });
   } catch (e) {
     console.error("[bootcamp/checkout]", e);

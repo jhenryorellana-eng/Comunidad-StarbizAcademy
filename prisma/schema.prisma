@@ -305,43 +305,71 @@ model ChapterUpdate {
 model BootcampRegistration {
   id String @id @default(cuid())
 
-  // --- Pago (lo escribe el webhook) ---
-  stripeSessionId String  @unique
+  /// PENDING · PAID · REFUNDED
+  ///
+  /// Arranca en PENDING y no en PAID: el formulario se guarda ANTES de mandar
+  /// a pagar. Quien lo rellena y abandona sigue siendo un contacto —nombre del
+  /// chico, correo del padre, país— y ésos son justo los que hay que llamar.
+  /// Si sólo se guardara al cobrar, se perderían todos.
+  status String @default("PENDING")
+
+  // ─── QUIÉN VIAJA ────────────────────────────────────────────────────────
+  // Lo rellena el padre en el formulario, sin necesidad de tener cuenta: al
+  // bootcamp se puede llegar desde un anuncio y comprar directamente.
+
+  /// Como aparece en el pasaporte. El consulado rechaza una carta cuyo nombre
+  /// no coincida exactamente.
+  participantName String
+
+  /// Fecha de nacimiento, NO edad. La carta y el consulado usan la del
+  /// pasaporte, y una edad guardada caduca sola en unos meses.
+  participantBirthdate DateTime?
+
+  /// Pasaporte o DNI. Va en la carta de invitación y es lo que el consulado
+  /// coteja: sin este número la carta no sirve para pedir la cita.
+  documentId String?
+
+  nationality   String?
+  /// Dirección completa, para la carta de invitación.
+  address       String?
+  /// Ciudad y país donde vive ahora — determina qué consulado le toca.
+  residence     String?
+  /// PRIMARIA · SECUNDARIA
+  academicLevel String?
+
+  // ─── CONTACTO DEL PADRE ─────────────────────────────────────────────────
+  /// Correo del padre o tutor. Es el contacto para las cartas y el recibo.
+  email     String
+  payerName String?
+  phone     String?
+
+  /// El adulto que viaja con el participante: el precio incluye SU carta
+  /// también, así que sin este nombre no se puede emitir la segunda.
+  companionName String?
+
+  // ─── PAGO ───────────────────────────────────────────────────────────────
+  // Opcionales porque la fila existe antes de que haya pago. Postgres admite
+  // varios NULL en un índice único, así que las pendientes no chocan.
+  stripeSessionId String?   @unique
   paymentIntentId String?
-  email           String
-  payerName       String?
-  amountTotal     Int // en la unidad mínima: 25000 = $250.00
-  currency        String  @default("usd")
-  status          String  @default("PAID") // PAID · REFUNDED
-  livemode        Boolean @default(false)
+  amountTotal     Int       @default(0)
+  currency        String    @default("usd")
+  livemode        Boolean   @default(false)
+  paidAt          DateTime?
 
-  // --- Quién paga y quién viaja ---
-  // Ambos opcionales: una inscripción hecha antes de este flujo, o un pago
-  // llegado por otra vía, sigue siendo válida aunque no tenga cuentas detrás.
-  // `SetNull` en vez de `Cascade` a propósito: borrar un usuario NO puede
-  // borrar el registro de un pago — eso es contabilidad.
-
-  /// La cuenta de padre/tutor que pagó.
+  // ─── VÍNCULO OPCIONAL CON CUENTAS ───────────────────────────────────────
+  // Si quien reserva resulta estar dentro de la plataforma, se ata. Pero NO
+  // se exige: el bootcamp se vende por su cuenta.
+  // `SetNull` y no `Cascade`: borrar un usuario no puede borrar un pago.
   parentId String?
   parent   User?   @relation("BootcampPayer", fields: [parentId], references: [id], onDelete: SetNull)
-
-  /// El CEO Junior que ocupa el cupo. De aquí salen su nombre y su fecha de
-  /// nacimiento para la carta, así que ya no hay que pedirlos ni hay erratas.
-  childId String?
-  child   User?   @relation("BootcampParticipant", fields: [childId], references: [id], onDelete: SetNull)
-
-  // --- Datos para las DOS cartas de invitación (formulario posterior) ---
-  participantName      String?
-  participantBirthdate DateTime?
-  companionName        String?
-  phone                String?
-  country              String?
-  /// true cuando la familia ya completó el formulario
-  profileComplete      Boolean   @default(false)
+  childId  String?
+  child    User?   @relation("BootcampParticipant", fields: [childId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([status])
   @@index([email])
   @@index([createdAt])
   @@index([parentId])

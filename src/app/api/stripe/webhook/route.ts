@@ -49,36 +49,48 @@ export async function POST(req: Request) {
         // (transferencias, OXXO…): sólo se da por pagada si está confirmado.
         if (s.payment_status !== "paid") break;
 
-        // Los ids viajan en la metadata de la sesión: es el único hilo que
-        // conecta este aviso con la familia que pagó. Sin ellos la inscripción
-        // sigue guardándose —nunca se pierde un pago— pero queda suelta.
-        const parentId = s.metadata?.parentId || null;
-        const childId = s.metadata?.childId || null;
-        const childName = s.metadata?.childName || null;
-        const childBirthdate = s.metadata?.childBirthdate || "";
+        // La reserva ya existe: la creó el formulario ANTES de mandar a
+        // pagar. Aquí sólo se marca como pagada. Ese orden es lo que permite
+        // conservar a quien rellenó y abandonó, que es un contacto y no un
+        // pago perdido.
+        const registrationId = s.metadata?.registrationId;
 
-        await prisma.bootcampRegistration.upsert({
-          where: { stripeSessionId: s.id },
-          create: {
-            stripeSessionId: s.id,
-            paymentIntentId:
-              typeof s.payment_intent === "string" ? s.payment_intent : null,
-            email: s.customer_details?.email ?? s.customer_email ?? "",
-            payerName: s.customer_details?.name ?? null,
-            amountTotal: s.amount_total ?? 0,
-            currency: s.currency ?? "usd",
-            status: "PAID",
-            livemode: evento.livemode,
-            parentId,
-            childId,
-            // El nombre y la fecha del participante se copian del hijo en el
-            // momento del pago. Antes se pedían por formulario después, y quien
-            // no volvía dejaba una inscripción sin datos para la carta.
-            participantName: childName,
-            participantBirthdate: childBirthdate ? new Date(`${childBirthdate}T00:00:00Z`) : null,
-          },
-          update: { status: "PAID", parentId, childId },
-        });
+        if (registrationId) {
+          await prisma.bootcampRegistration.updateMany({
+            where: { id: registrationId },
+            data: {
+              status: "PAID",
+              paidAt: new Date(),
+              stripeSessionId: s.id,
+              paymentIntentId:
+                typeof s.payment_intent === "string" ? s.payment_intent : null,
+              amountTotal: s.amount_total ?? 0,
+              currency: s.currency ?? "usd",
+              livemode: evento.livemode,
+            },
+          });
+        } else {
+          // Sin metadata: un pago llegado por otra vía (un enlace de cobro
+          // creado a mano en Stripe, por ejemplo). Se guarda igual — nunca se
+          // pierde un cobro — y el panel lo marcará como incompleto.
+          await prisma.bootcampRegistration.upsert({
+            where: { stripeSessionId: s.id },
+            create: {
+              stripeSessionId: s.id,
+              paymentIntentId:
+                typeof s.payment_intent === "string" ? s.payment_intent : null,
+              email: s.customer_details?.email ?? s.customer_email ?? "",
+              payerName: s.customer_details?.name ?? null,
+              participantName: s.customer_details?.name ?? "(sin nombre)",
+              amountTotal: s.amount_total ?? 0,
+              currency: s.currency ?? "usd",
+              status: "PAID",
+              paidAt: new Date(),
+              livemode: evento.livemode,
+            },
+            update: { status: "PAID", paidAt: new Date() },
+          });
+        }
         break;
       }
 

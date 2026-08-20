@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Icon } from "@/components/icons";
-import { LetterForm } from "@/components/bootcamp/LetterForm";
 import { stripe, stripeEnabled } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { BOOTCAMP } from "@/lib/bootcamp";
@@ -33,29 +32,36 @@ export default async function ConfirmacionPage({
   const sesion = await stripe.checkout.sessions.retrieve(sessionId).catch(() => null);
   if (!sesion || sesion.payment_status !== "paid") notFound();
 
-  // Red de seguridad: si el webhook aún no ha llegado, la inscripción se crea
-  // aquí igualmente. El webhook sigue siendo la fuente de verdad.
-  const registro = await prisma.bootcampRegistration.upsert({
+  // La reserva YA existe: la creó el formulario antes de mandar a pagar, y el
+  // webhook la marca como pagada. Aquí sólo se busca y, si el webhook aún no ha
+  // llegado —tarda segundos—, se marca desde aquí como red de seguridad. Nunca
+  // se crea de cero: si no aparece, es que este pago no salió de nuestro
+  // formulario y hay que mirarlo a mano.
+  const registro = await prisma.bootcampRegistration.findUnique({
     where: { stripeSessionId: sesion.id },
-    create: {
-      stripeSessionId: sesion.id,
-      paymentIntentId:
-        typeof sesion.payment_intent === "string" ? sesion.payment_intent : null,
-      email: sesion.customer_details?.email ?? sesion.customer_email ?? "",
-      payerName: sesion.customer_details?.name ?? null,
-      amountTotal: sesion.amount_total ?? 0,
-      currency: sesion.currency ?? "usd",
-      status: "PAID",
-      livemode: sesion.livemode,
-    },
-    update: {},
   });
+  if (!registro) notFound();
+
+  if (registro.status !== "PAID") {
+    await prisma.bootcampRegistration.update({
+      where: { id: registro.id },
+      data: {
+        status: "PAID",
+        paidAt: new Date(),
+        amountTotal: sesion.amount_total ?? 0,
+        currency: sesion.currency ?? "usd",
+        livemode: sesion.livemode,
+        paymentIntentId:
+          typeof sesion.payment_intent === "string" ? sesion.payment_intent : null,
+      },
+    });
+  }
 
   const pasos = [
     {
       icon: "check" as const,
-      titulo: "Tu cupo está reservado",
-      texto: `Pago confirmado. Recibirás el recibo en ${registro.email}.`,
+      titulo: `El cupo de ${registro.participantName} está reservado`,
+      texto: `Pago confirmado. El recibo llega a ${registro.email}.`,
       hecho: true,
     },
     {
@@ -131,20 +137,31 @@ export default async function ConfirmacionPage({
             ))}
           </ol>
 
-          {/* El formulario de las cartas */}
-          <div>
-            {registro.profileComplete ? (
-              <div className="rounded-2xl border border-surface-line bg-paper p-6">
-                <p className="font-display text-lg font-bold text-navy">
-                  Ya tenemos tus datos
-                </p>
-                <p className="mt-1.5 text-sm text-muted">
-                  Estamos preparando las dos cartas de invitación.
-                </p>
-              </div>
-            ) : (
-              <LetterForm sessionId={sesion.id} />
-            )}
+          {/* Ya no hay formulario aquí: todos los datos se piden ANTES de
+              pagar. Lo que queda es un resumen de lo que se guardó, para que la
+              familia confirme de un vistazo que no hay erratas en lo que irá
+              impreso en la carta. */}
+          <div className="rounded-2xl border border-surface-line bg-paper p-6">
+            <p className="text-[0.62rem] font-bold uppercase tracking-[0.16em] text-cyan-700">
+              Lo que irá en la carta
+            </p>
+            <dl className="mt-3 space-y-1.5 text-sm">
+              <Fila k="Participante" v={registro.participantName} />
+              <Fila
+                k="Documento"
+                v={registro.documentId}
+              />
+              <Fila
+                k="Nacimiento"
+                v={registro.participantBirthdate?.toISOString().slice(0, 10)}
+              />
+              <Fila k="Nacionalidad" v={registro.nationality} />
+              <Fila k="Acompañante" v={registro.companionName} />
+            </dl>
+            <p className="mt-4 text-xs text-muted">
+              ¿Algo mal escrito? Escríbenos y lo corregimos antes de emitirlas —
+              el consulado rechaza una carta cuyo nombre no coincida con el pasaporte.
+            </p>
           </div>
         </div>
 
@@ -171,6 +188,20 @@ export default async function ConfirmacionPage({
       </section>
 
       <SiteFooter />
+    </div>
+  );
+}
+
+/** Una línea del resumen. Lo que falta se marca en vez de esconderse: si el
+    acompañante está vacío, la familia tiene que verlo ahora y no el día del
+    viaje. */
+function Fila({ k, v }: { k: string; v: string | null | undefined }) {
+  return (
+    <div className="flex gap-2">
+      <dt className="shrink-0 text-muted">{k}:</dt>
+      <dd className={v ? "min-w-0 font-semibold text-navy" : "text-gold-700"}>
+        {v || "falta — escríbenos"}
+      </dd>
     </div>
   );
 }

@@ -4,9 +4,8 @@ import Image from "next/image";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Icon } from "@/components/icons";
-import { estadoBootcamp } from "@/lib/bootcampAccess";
 import { BOOTCAMP, BOOTCAMP_MEDIA, BOOTCAMP_INCLUDES } from "@/lib/bootcamp";
-import { SelectorHijo } from "@/components/bootcamp/SelectorHijo";
+import { FormularioReserva } from "@/components/bootcamp/FormularioReserva";
 
 export const metadata: Metadata = {
   title: "Reservar cupo — Bootcamp Utah 2027",
@@ -14,19 +13,19 @@ export const metadata: Metadata = {
 };
 
 /**
- * ELEGIR → CONFIRMAR → PAGAR.
+ * RELLENAR → PAGAR. Sin cuenta de por medio.
  *
- * Antes el pago salía de un botón en la portada del bootcamp. Con un solo hijo
- * funcionaba, pero con dos el padre tenía que elegir entre dos botones metidos
- * en medio de una página de venta, sin ver qué estaba comprando ni por cuánto.
- * Eso no es una compra: es un clic con los dedos cruzados.
+ * El bootcamp es un producto que se vende solo, no una función de la comunidad:
+ * alguien llega desde un anuncio a /bootcamp, pulsa reservar y compra. Exigir
+ * registro antes ponía un muro justo donde peor sienta, entre el anuncio y la
+ * venta.
  *
- * Esta pantalla hace UNA cosa. Enseña a quién le reservas, qué incluye y cuánto
- * cuesta, y sólo entonces manda a pagar. Es el paso que separa "me interesa" de
- * "lo compro", y merece su propio sitio.
+ * Los datos se guardan ANTES de mandar a Stripe. Quien rellena y abandona en la
+ * pasarela queda igualmente en el panel como pendiente — con el nombre del
+ * chico, el correo del padre y dónde vive. Ése es el contacto más caliente que
+ * existe, y con el orden inverso se perdería entero.
  */
 export default async function ReservarPage() {
-  const acceso = await estadoBootcamp();
   const incluye = BOOTCAMP_INCLUDES.es.included;
 
   return (
@@ -77,7 +76,7 @@ export default async function ReservarPage() {
         <div className="grid gap-6 lg:grid-cols-[1fr_340px] lg:gap-10">
           {/* La decisión */}
           <div>
-            <SelectorHijo estado={acceso} />
+            <FormularioReserva />
           </div>
 
           {/* Qué se lleva por sus $250. A la vista mientras decide, no en otra
