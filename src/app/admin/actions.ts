@@ -239,3 +239,145 @@ export async function createAnnouncement(fd: FormData) {
   revalidatePath("/admin/posts");
   revalidatePath("/comunidad/posts");
 }
+
+/* ---------------- Bootcamp: alta y cobro a mano ---------------- */
+
+/**
+ * No todo el mundo puede pagar con tarjeta.
+ *
+ * Hay clientes que pagan por transferencia, en efectivo o por Yape, y esa
+ * plata ocupa un cupo igual que la de Stripe. Sin esto, esas ventas viven en
+ * un cuaderno aparte: no cuentan en el contador de cupos de la página, no
+ * salen en el CSV y nadie se acuerda de emitirles las cartas.
+ *
+ * Se guarda CÓMO se pagó y con qué referencia, porque el dinero de Stripe se
+ * concilia solo y el de mano hay que poder encontrarlo en el extracto.
+ */
+
+/** Edad cumplida. Se repite la regla del servidor público a propósito: aquí
+    también entra un nombre que acabará impreso en una carta. */
+function edadDe(f: Date): number {
+  const hoy = new Date();
+  let a = hoy.getUTCFullYear() - f.getUTCFullYear();
+  const m = hoy.getUTCMonth() - f.getUTCMonth();
+  if (m < 0 || (m === 0 && hoy.getUTCDate() < f.getUTCDate())) a--;
+  return a;
+}
+
+const METODOS_MANO = ["TRANSFERENCIA", "EFECTIVO", "OTRO"] as const;
+
+export async function crearReservaManual(fd: FormData) {
+  const admin = await requireAdmin();
+
+  const participantName = str(fd, "participantName");
+  const email = str(fd, "email").toLowerCase();
+  if (participantName.length < 3 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return;
+
+  const nacimientoRaw = str(fd, "participantBirthdate");
+  let participantBirthdate: Date | null = null;
+  if (nacimientoRaw) {
+    const d = new Date(`${nacimientoRaw}T00:00:00Z`);
+    if (Number.isNaN(d.getTime())) return;
+    const edad = edadDe(d);
+    if (edad < 10 || edad > 19) return;
+    participantBirthdate = d;
+  }
+
+  const metodo = str(fd, "paymentMethod");
+  const paymentMethod = (METODOS_MANO as readonly string[]).includes(metodo) ? metodo : "OTRO";
+
+  const pagada = str(fd, "status") === "PAID";
+  // El importe llega en dólares y se guarda en céntimos, igual que lo manda
+  // Stripe: así el total del panel suma sin tener que distinguir el origen.
+  const dolares = Number(str(fd, "amount") || "250");
+  const amountTotal = Number.isFinite(dolares) && dolares >= 0 ? Math.round(dolares * 100) : 25000;
+
+  await prisma.bootcampRegistration.create({
+    data: {
+      status: pagada ? "PAID" : "PENDING",
+      participantName,
+      participantBirthdate,
+      documentId: str(fd, "documentId") || null,
+      nationality: str(fd, "nationality") || null,
+      address: str(fd, "address") || null,
+      residence: str(fd, "residence") || null,
+      academicLevel: str(fd, "academicLevel") || null,
+      email,
+      payerName: str(fd, "payerName") || null,
+      phone: str(fd, "phone") || null,
+      companionName: str(fd, "companionName") || null,
+      paymentMethod,
+      paymentRef: str(fd, "paymentRef") || null,
+      notes: str(fd, "notes") || null,
+      registeredBy: admin.email,
+      amountTotal: pagada ? amountTotal : 0,
+      paidAt: pagada ? new Date() : null,
+    },
+  });
+
+  revalidatePath("/admin/bootcamp");
+  // El contador de cupos de la página pública cuenta las PAID.
+  revalidatePath("/bootcamp/reservar");
+}
+
+/**
+ * El caso más frecuente: alguien rellenó el formulario público, se echó atrás
+ * en la pasarela y luego pagó por transferencia. Los datos ya están; sólo
+ * falta darle el cobro por bueno.
+ */
+export async function marcarPagadaManual(fd: FormData) {
+  const admin = await requireAdmin();
+  const id = str(fd, "id");
+  if (!id) return;
+
+  const actual = await prisma.bootcampRegistration.findUnique({
+    where: { id },
+    select: { status: true },
+  });
+  // Cobrar dos veces el mismo cupo es el error que peor se explica después.
+  if (!actual || actual.status === "PAID") return;
+
+  const metodo = str(fd, "paymentMethod");
+  const paymentMethod = (METODOS_MANO as readonly string[]).includes(metodo) ? metodo : "OTRO";
+  const dolares = Number(str(fd, "amount") || "250");
+  const amountTotal = Number.isFinite(dolares) && dolares >= 0 ? Math.round(dolares * 100) : 25000;
+
+  await prisma.bootcampRegistration.update({
+    where: { id },
+    data: {
+      status: "PAID",
+      paidAt: new Date(),
+      paymentMethod,
+      paymentRef: str(fd, "paymentRef") || null,
+      amountTotal,
+      registeredBy: admin.email,
+    },
+  });
+
+  revalidatePath("/admin/bootcamp");
+  revalidatePath("/bootcamp/reservar");
+}
+
+/**
+ * Borrar una reserva. Dar de alta a mano significa que habrá erratas, y sin
+ * esto la única salida era entrar a la base por consola.
+ *
+ * NUNCA borra una pagada por Stripe: dejaría un cobro huérfano en la pasarela
+ * sin nada que lo explique en el panel. Ésas se reembolsan en Stripe primero.
+ */
+export async function borrarReserva(fd: FormData) {
+  await requireAdmin();
+  const id = str(fd, "id");
+  if (!id) return;
+
+  const r = await prisma.bootcampRegistration.findUnique({
+    where: { id },
+    select: { status: true, stripeSessionId: true, paymentMethod: true },
+  });
+  if (!r) return;
+  if (r.status === "PAID" && r.paymentMethod === "STRIPE" && r.stripeSessionId) return;
+
+  await prisma.bootcampRegistration.delete({ where: { id } });
+  revalidatePath("/admin/bootcamp");
+  revalidatePath("/bootcamp/reservar");
+}

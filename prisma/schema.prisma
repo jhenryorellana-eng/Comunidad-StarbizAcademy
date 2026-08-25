@@ -357,6 +357,27 @@ model BootcampRegistration {
   livemode        Boolean   @default(false)
   paidAt          DateTime?
 
+  /// STRIPE · TRANSFERENCIA · EFECTIVO · OTRO
+  ///
+  /// No todo el mundo puede pagar con tarjeta: hay clientes que pagan por
+  /// transferencia, en efectivo o por Yape, y esa plata también es un cupo.
+  /// Guardar CÓMO se pagó importa por dos motivos: para cuadrar la caja
+  /// —el dinero de Stripe se concilia solo, el de mano no— y porque el aviso
+  /// de "pago en modo prueba" sólo tiene sentido para Stripe.
+  paymentMethod String @default("STRIPE")
+
+  /// Número de operación, voucher o referencia del pago hecho fuera de Stripe.
+  /// Es lo que permite encontrar ese depósito en el extracto del banco.
+  paymentRef String?
+
+  /// Quién dio de alta la fila a mano. Vacío = entró sola por el formulario
+  /// público. Cuando hay dinero de por medio, conviene saber quién lo anotó.
+  registeredBy String?
+
+  /// Contexto que no cabe en ningún campo: pagó en dos partes, descuento
+  /// acordado, el padre pidió factura…
+  notes String?
+
   // ─── VÍNCULO OPCIONAL CON CUENTAS ───────────────────────────────────────
   // Si quien reserva resulta estar dentro de la plataforma, se ata. Pero NO
   // se exige: el bootcamp se vende por su cuenta.
