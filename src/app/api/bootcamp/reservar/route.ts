@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { BOOTCAMP } from "@/lib/bootcamp";
 import { getSession } from "@/lib/auth";
 
 /**
@@ -62,7 +63,7 @@ export async function POST(req: Request) {
   // El bootcamp es para adolescentes. El tope se valida en el servidor porque
   // una fecha mal tecleada aquí acaba en una carta que el consulado rechaza.
   const edad = edadDe(nacimiento);
-  if (edad < 10 || edad > 19) {
+  if (edad < BOOTCAMP.edadMin || edad > BOOTCAMP.edadMax) {
     return NextResponse.json(
       { error: `Según esa fecha tendría ${edad} años. El bootcamp es para adolescentes.` },
       { status: 400 },

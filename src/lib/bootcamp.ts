@@ -20,6 +20,17 @@ export const BOOTCAMP = {
   place: "Utah, EE.UU.",
   /** Cupos anunciados. Referencia de marketing acordada con el usuario. */
   seats: 50,
+  /**
+   * Franja de edad admitida.
+   *
+   * Estaba escrita a fuego —"10 a 19"— en cuatro sitios: la validación pública,
+   * la del panel, el mensaje de error y el texto de marketing. Al aceptar al
+   * primer participante de 8 años hubo que cambiarla en todos, y uno se escapa
+   * siempre. Aquí se cambia una vez.
+   */
+  edadMin: 8,
+  edadMax: 19,
+
   /** Cierre de inscripción — el plazo que de verdad urge. */
   deadlineISO: "2026-12-15",
   deadlineEs: "15 de diciembre",

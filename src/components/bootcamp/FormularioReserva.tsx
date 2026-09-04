@@ -131,8 +131,8 @@ function validar(paso: number, d: Datos): Errores {
     if (d.participantName.trim().length < 3) e.participantName = "Escribe el nombre completo.";
     const edad = calcularEdad(d.participantBirthdate);
     if (edad === null) e.participantBirthdate = "Indica la fecha de nacimiento.";
-    else if (edad < 10 || edad > 19)
-      e.participantBirthdate = `Según esa fecha tendría ${edad} años. El bootcamp es para adolescentes de 10 a 19.`;
+    else if (edad < BOOTCAMP.edadMin || edad > BOOTCAMP.edadMax)
+      e.participantBirthdate = `Según esa fecha tendría ${edad} años. El bootcamp admite de ${BOOTCAMP.edadMin} a ${BOOTCAMP.edadMax}.`;
     if (d.documentId.trim().length < 4) e.documentId = "Indica el pasaporte o DNI.";
     if (!d.academicLevel) e.academicLevel = "Elige un nivel.";
   }
@@ -604,7 +604,7 @@ function Bloque1({ datos, errores, set }: { datos: Datos; errores: Errores; set:
         />
         {/* La edad se enseña calculada, no se pide: así se confirma de un
             vistazo que no se erró el año al teclear. */}
-        {!errores.participantBirthdate && edad !== null && edad >= 10 && edad <= 19 && (
+        {!errores.participantBirthdate && edad !== null && edad >= BOOTCAMP.edadMin && edad <= BOOTCAMP.edadMax && (
           <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-ocaso">
             <EstrellaMarca className="h-2.5 w-2.5" />
             Tendría {edad} años

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { BOOTCAMP } from "@/lib/bootcamp";
 import { getSession } from "@/lib/auth";
 import { parseVideoUrl } from "@/lib/video";
 
@@ -279,7 +280,7 @@ export async function crearReservaManual(fd: FormData) {
     const d = new Date(`${nacimientoRaw}T00:00:00Z`);
     if (Number.isNaN(d.getTime())) return;
     const edad = edadDe(d);
-    if (edad < 10 || edad > 19) return;
+    if (edad < BOOTCAMP.edadMin || edad > BOOTCAMP.edadMax) return;
     participantBirthdate = d;
   }
 
