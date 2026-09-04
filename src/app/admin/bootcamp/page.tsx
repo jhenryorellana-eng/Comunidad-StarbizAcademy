@@ -5,7 +5,9 @@ import { Icon } from "@/components/icons";
 import { formatDateTime } from "@/lib/format";
 import { BOOTCAMP } from "@/lib/bootcamp";
 import { PAISES } from "@/lib/paises";
+import { OPCIONES_PARENTESCO, faltaParaCarta } from "@/lib/carta";
 import { ExportCsv } from "@/components/admin/ExportCsv";
+import Link from "next/link";
 import { crearReservaManual, marcarPagadaManual, borrarReserva } from "../actions";
 
 /**
@@ -72,6 +74,10 @@ export default async function AdminBootcamp() {
   // efectivo no tiene livemode, y marcarlo como prueba sería mentir.
   const enPruebas = pagadas.some((r) => r.paymentMethod === "STRIPE" && !r.livemode);
 
+  // Cincuenta cupos son cien cartas. Sin contarlas, la única forma de saber a
+  // quién le falta es acordarse.
+  const sinCartas = pagadas.filter((r) => !r.lettersIssuedAt).length;
+
   const fecha = (d: Date | null) => (d ? new Date(d).toISOString().slice(0, 10) : "");
 
   const filasCsv = todas.map((r) => ({
@@ -85,7 +91,12 @@ export default async function AdminBootcamp() {
     Direccion: r.address ?? "",
     Residencia: r.residence ?? "",
     Nivel: r.academicLevel ? NIVEL[r.academicLevel] ?? r.academicLevel : "",
+    Pasaporte: r.participantPassport ?? "",
     Acompanante: r.companionName ?? "",
+    AcompParentesco: r.companionRelation ?? "",
+    AcompPasaporte: r.companionPassport ?? "",
+    AcompDocumento: r.companionDocumentId ?? "",
+    CartasEmitidas: r.lettersIssuedAt ? formatDateTime(r.lettersIssuedAt, "es") : "",
     PadreNombre: r.payerName ?? "",
     PadreCorreo: r.email,
     Telefono: r.phone ?? "",
@@ -113,7 +124,12 @@ export default async function AdminBootcamp() {
           t="recaudado"
           pie={aMano > 0 ? `$${porStripe.toLocaleString("es")} Stripe · $${aMano.toLocaleString("es")} a mano` : undefined}
         />
-        <Tarjeta n={reembolsadas.length} t="reembolsadas" />
+        <Tarjeta
+          n={sinCartas}
+          t="cupos sin cartas emitidas"
+          alerta={sinCartas > 0}
+          pie={reembolsadas.length > 0 ? `${reembolsadas.length} reembolsada(s)` : undefined}
+        />
       </div>
 
       {enPruebas && (
@@ -146,7 +162,8 @@ export default async function AdminBootcamp() {
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Nombre completo del participante" name="participantName" required span />
             <Field label="Fecha de nacimiento" name="participantBirthdate" type="date" />
-            <Field label="Pasaporte o DNI" name="documentId" />
+            <Field label="DNI o documento nacional" name="documentId" />
+            <Field label="Número de pasaporte" name="participantPassport" placeholder="El que va en la carta" />
             <SelectField
               label="Nacionalidad"
               name="nationality"
@@ -176,6 +193,13 @@ export default async function AdminBootcamp() {
             <Field label="Correo electrónico" name="email" type="email" required />
             <Field label="Teléfono" name="phone" placeholder="+51 999 999 999" />
             <Field label="Nombre del acompañante" name="companionName" />
+            <SelectField
+              label="Parentesco"
+              name="companionRelation"
+              options={[{ value: "", label: "—" }, ...OPCIONES_PARENTESCO]}
+            />
+            <Field label="Pasaporte del acompañante" name="companionPassport" />
+            <Field label="DNI del acompañante" name="companionDocumentId" />
           </div>
 
           <p className="mb-3 mt-6 font-display text-[0.66rem] font-semibold uppercase tracking-[0.18em] text-muted">
@@ -310,6 +334,8 @@ function Ficha({ r }: { r: Reserva }) {
   // Una pagada por Stripe no se borra desde aquí: dejaría un cobro huérfano
   // en la pasarela. Ésas se reembolsan primero en Stripe.
   const sePuedeBorrar = !(r.status === "PAID" && r.paymentMethod === "STRIPE" && r.stripeSessionId);
+  // Lo que impide emitir las dos cartas, resumido en la propia ficha.
+  const faltanCartas = faltaParaCarta(r).acompanante;
 
   return (
     <div
@@ -320,7 +346,12 @@ function Ficha({ r }: { r: Reserva }) {
       }
     >
       <div className="flex flex-wrap items-center gap-2">
-        <p className="font-display font-bold text-navy">{r.participantName}</p>
+        <Link
+          href={`/admin/bootcamp/${r.id}`}
+          className="font-display font-bold text-navy underline-offset-4 hover:underline"
+        >
+          {r.participantName}
+        </Link>
         {edad !== null && <Badge tone="cyan">{edad} años</Badge>}
         {r.status === "PAID" && <Badge tone="green">Pagado</Badge>}
         {pendiente && <Badge tone="live">Sin pagar</Badge>}
@@ -331,6 +362,7 @@ function Ficha({ r }: { r: Reserva }) {
         {r.status === "PAID" && !fueraDeStripe && !r.livemode && (
           <Badge tone="neutral">prueba</Badge>
         )}
+        {r.lettersIssuedAt && <Badge tone="cyan">Cartas emitidas</Badge>}
         <span className="ml-auto text-xs tabular-nums text-muted">
           {formatDateTime(r.createdAt, "es")}
           {r.status === "PAID" && ` · $${(r.amountTotal / 100).toFixed(0)}`}
@@ -397,11 +429,22 @@ function Ficha({ r }: { r: Reserva }) {
         </details>
       )}
 
-      {sePuedeBorrar && (
-        <div className="mt-3 flex justify-end border-t border-surface-line pt-2">
-          <DeleteButton action={borrarReserva} id={r.id} />
-        </div>
-      )}
+      <div className="mt-3 flex items-center gap-3 border-t border-surface-line pt-2">
+        <Link
+          href={`/admin/bootcamp/${r.id}`}
+          className="text-xs font-semibold text-cyan-700 hover:text-cyan"
+        >
+          Abrir ficha y cartas →
+        </Link>
+        {r.status === "PAID" && faltanCartas.length > 0 && (
+          <span className="text-xs text-gold-700">Falta {faltanCartas.join(", ")}</span>
+        )}
+        {sePuedeBorrar && (
+          <span className="ml-auto">
+            <DeleteButton action={borrarReserva} id={r.id} />
+          </span>
+        )}
+      </div>
     </div>
   );
 }

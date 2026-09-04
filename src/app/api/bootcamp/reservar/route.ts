@@ -22,6 +22,9 @@ const Reserva = z.object({
   participantName: z.string().trim().min(3).max(120),
   participantBirthdate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   documentId: z.string().trim().min(4).max(40),
+  // El pasaporte es OTRO documento y llega tarde: muchas familias reservan
+  // antes de tramitarlo. Se acepta vacío y se completa desde el panel.
+  participantPassport: z.string().trim().max(40).optional().or(z.literal("")),
   nationality: z.string().trim().min(2).max(60),
   address: z.string().trim().min(5).max(200),
   residence: z.string().trim().min(2).max(120),
@@ -76,6 +79,7 @@ export async function POST(req: Request) {
       participantName: d.participantName,
       participantBirthdate: nacimiento,
       documentId: d.documentId,
+      participantPassport: d.participantPassport || null,
       nationality: d.nationality,
       address: d.address,
       residence: d.residence,

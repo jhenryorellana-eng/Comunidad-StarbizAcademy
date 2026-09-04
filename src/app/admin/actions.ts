@@ -298,6 +298,7 @@ export async function crearReservaManual(fd: FormData) {
       participantName,
       participantBirthdate,
       documentId: str(fd, "documentId") || null,
+      participantPassport: str(fd, "participantPassport") || null,
       nationality: str(fd, "nationality") || null,
       address: str(fd, "address") || null,
       residence: str(fd, "residence") || null,
@@ -306,6 +307,9 @@ export async function crearReservaManual(fd: FormData) {
       payerName: str(fd, "payerName") || null,
       phone: str(fd, "phone") || null,
       companionName: str(fd, "companionName") || null,
+      companionPassport: str(fd, "companionPassport") || null,
+      companionDocumentId: str(fd, "companionDocumentId") || null,
+      companionRelation: str(fd, "companionRelation") || null,
       paymentMethod,
       paymentRef: str(fd, "paymentRef") || null,
       notes: str(fd, "notes") || null,
@@ -380,4 +384,78 @@ export async function borrarReserva(fd: FormData) {
   await prisma.bootcampRegistration.delete({ where: { id } });
   revalidatePath("/admin/bootcamp");
   revalidatePath("/bootcamp/reservar");
+}
+
+/**
+ * Editar una reserva ya creada.
+ *
+ * Los datos que van en la carta casi nunca están completos el día que se paga:
+ * el pasaporte se tramita después, y del acompañante llega primero el nombre y
+ * semanas más tarde una foto del pasaporte por WhatsApp. Sin esta pantalla, la
+ * única forma de anotarlo era entrar a la base por consola.
+ *
+ * No toca estado ni pago: eso tiene sus propias acciones.
+ */
+export async function editarReserva(fd: FormData) {
+  await requireAdmin();
+  const id = str(fd, "id");
+  if (!id) return;
+
+  const fecha = (k: string): Date | null | undefined => {
+    const v = str(fd, k);
+    if (!v) return null;
+    const d = new Date(`${v}T00:00:00Z`);
+    return Number.isNaN(d.getTime()) ? undefined : d;
+  };
+
+  const nacimiento = fecha("participantBirthdate");
+  const nacimientoAcomp = fecha("companionBirthdate");
+  // `undefined` significa fecha ilegible: se deja como estaba en vez de borrarla.
+  if (nacimiento === undefined || nacimientoAcomp === undefined) return;
+
+  const nombre = str(fd, "participantName");
+  if (nombre.length < 3) return;
+
+  await prisma.bootcampRegistration.update({
+    where: { id },
+    data: {
+      participantName: nombre,
+      participantBirthdate: nacimiento,
+      documentId: str(fd, "documentId") || null,
+      participantPassport: str(fd, "participantPassport") || null,
+      nationality: str(fd, "nationality") || null,
+      address: str(fd, "address") || null,
+      residence: str(fd, "residence") || null,
+      academicLevel: str(fd, "academicLevel") || null,
+      email: str(fd, "email").toLowerCase() || undefined,
+      payerName: str(fd, "payerName") || null,
+      phone: str(fd, "phone") || null,
+      companionName: str(fd, "companionName") || null,
+      companionPassport: str(fd, "companionPassport") || null,
+      companionDocumentId: str(fd, "companionDocumentId") || null,
+      companionBirthdate: nacimientoAcomp,
+      companionRelation: str(fd, "companionRelation") || null,
+      notes: str(fd, "notes") || null,
+    },
+  });
+
+  revalidatePath("/admin/bootcamp");
+  revalidatePath(`/admin/bootcamp/${id}`);
+}
+
+/**
+ * Marca las cartas como emitidas. Cincuenta cupos son cien cartas: sin una
+ * marca, la única forma de saber a quién le falta es acordarse.
+ */
+export async function marcarCartasEmitidas(fd: FormData) {
+  await requireAdmin();
+  const id = str(fd, "id");
+  if (!id) return;
+  const yaEstaban = str(fd, "emitidas") === "si";
+  await prisma.bootcampRegistration.update({
+    where: { id },
+    data: { lettersIssuedAt: yaEstaban ? null : new Date() },
+  });
+  revalidatePath("/admin/bootcamp");
+  revalidatePath(`/admin/bootcamp/${id}`);
 }

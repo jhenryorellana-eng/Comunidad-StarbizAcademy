@@ -36,6 +36,7 @@ type Datos = {
   participantName: string;
   participantBirthdate: string;
   documentId: string;
+  participantPassport: string;
   academicLevel: "" | "PRIMARIA" | "SECUNDARIA";
   nationality: string;
   residence: string;
@@ -51,6 +52,7 @@ const VACIO: Datos = {
   participantName: "",
   participantBirthdate: "",
   documentId: "",
+  participantPassport: "",
   academicLevel: "",
   nationality: "",
   residence: "",
@@ -221,6 +223,7 @@ export function FormularioReserva({
       participantName: datos.participantName.trim(),
       participantBirthdate: datos.participantBirthdate,
       documentId: datos.documentId.trim(),
+      participantPassport: datos.participantPassport.trim(),
       nationality: datos.nationality,
       address: datos.address.trim(),
       residence: datos.residence.trim(),
@@ -611,15 +614,32 @@ function Bloque1({ datos, errores, set }: { datos: Datos; errores: Errores; set:
 
       <Campo
         id="documentId"
-        etiqueta="Pasaporte o DNI"
+        etiqueta="DNI o documento nacional"
         error={errores.documentId}
-        ayuda="Del participante. Va impreso en la carta."
+        ayuda="Del participante. Identifica al chico en su país."
       >
         <Entrada
           id="documentId"
           error={errores.documentId}
           value={datos.documentId}
           onChange={(e) => set("documentId", e.target.value)}
+        />
+      </Campo>
+
+      {/* EL PASAPORTE ES OTRA COSA. El DNI identifica en su país; lo que el
+          consulado coteja en la carta y en la cita es el pasaporte. Va aparte
+          y opcional: muchas familias reservan antes de tramitarlo, y exigirlo
+          aquí costaría ventas. Se completa después desde el panel. */}
+      <Campo
+        id="participantPassport"
+        etiqueta="Número de pasaporte"
+        ayuda="Si todavía no lo tiene, déjalo vacío — lo añadimos antes de emitir la carta."
+      >
+        <Entrada
+          id="participantPassport"
+          placeholder="Opcional por ahora"
+          value={datos.participantPassport}
+          onChange={(e) => set("participantPassport", e.target.value)}
         />
       </Campo>
 
@@ -876,6 +896,12 @@ function Repaso({
           v: `${datos.participantBirthdate}${edad !== null ? ` · ${edad} años` : ""}`,
         },
         { k: "Documento", v: datos.documentId, sello: true },
+        {
+          k: "Pasaporte",
+          v: datos.participantPassport || "Lo añadirás después",
+          sello: true,
+          flojo: !datos.participantPassport,
+        },
         { k: "Nivel", v: datos.academicLevel === "PRIMARIA" ? "Primaria" : "Secundaria" },
       ],
     },

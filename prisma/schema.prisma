@@ -325,9 +325,18 @@ model BootcampRegistration {
   /// pasaporte, y una edad guardada caduca sola en unos meses.
   participantBirthdate DateTime?
 
-  /// Pasaporte o DNI. Va en la carta de invitación y es lo que el consulado
-  /// coteja: sin este número la carta no sirve para pedir la cita.
+  /// Documento nacional (DNI, cédula). Identifica a la persona en su país.
   documentId String?
+
+  /// Pasaporte. NO es lo mismo que el DNI y hacen falta los dos: el DNI
+  /// identifica a la persona en su país, pero lo que el consulado coteja en la
+  /// carta y en la cita es el PASAPORTE. Al no existir este campo, la primera
+  /// carta hubo que pedir el número por WhatsApp.
+  ///
+  /// Opcional a propósito: muchas familias reservan antes de tramitarlo, y
+  /// exigirlo en el formulario público costaría ventas. Se completa después
+  /// desde el panel.
+  participantPassport String?
 
   nationality   String?
   /// Dirección completa, para la carta de invitación.
@@ -343,9 +352,26 @@ model BootcampRegistration {
   payerName String?
   phone     String?
 
-  /// El adulto que viaja con el participante: el precio incluye SU carta
-  /// también, así que sin este nombre no se puede emitir la segunda.
+  // ─── EL ACOMPAÑANTE ─────────────────────────────────────────────────────
+  // El precio incluye SU carta también, y una carta necesita bastante más que
+  // un nombre. Con sólo `companionName` la primera carta hubo que redactarla
+  // leyendo el pasaporte en una foto de WhatsApp.
+  //
+  // Todo opcional: estos datos casi nunca están el día que se paga. Llegan
+  // después, por mensaje, y se anotan desde el panel.
+
+  /// El adulto que viaja con el participante.
   companionName String?
+  companionPassport String?
+  companionDocumentId String?
+  companionBirthdate DateTime?
+  /// MADRE · PADRE · TUTOR · HERMANO · OTRO — va escrito en la carta
+  /// ("is the participant's mother"), así que no se puede deducir del nombre.
+  companionRelation String?
+
+  /// Cuándo se emitieron las cartas. Sirve para saber a quién le falta sin
+  /// tener que acordarse: cincuenta cupos son cien cartas.
+  lettersIssuedAt DateTime?
 
   // ─── PAGO ───────────────────────────────────────────────────────────────
   // Opcionales porque la fila existe antes de que haya pago. Postgres admite
