@@ -11,6 +11,7 @@ import {
   fechaLarga,
   referencia,
   faltaParaCarta,
+  ITINERARIO,
 } from "@/lib/carta";
 import { BotonImprimir } from "@/components/admin/BotonImprimir";
 
@@ -44,16 +45,19 @@ export default async function CartaPage({ params, searchParams }: Params) {
 
   const { id } = await params;
   const { para: paraRaw } = await searchParams;
-  const para = paraRaw === "acompanante" ? "acompanante" : "participante";
+  const para =
+    paraRaw === "acompanante" ? "acompanante" : paraRaw === "itinerario" ? "itinerario" : "participante";
 
   const r = await prisma.bootcampRegistration.findUnique({ where: { id } });
   if (!r) notFound();
 
-  const falta = faltaParaCarta(r)[para];
+  // El itinerario no depende de los datos de la familia: es el programa.
+  const falta = para === "itinerario" ? [] : faltaParaCarta(r)[para];
   const parentesco = r.companionRelation ? PARENTESCO[r.companionRelation] : null;
   const hoy = fechaLarga(new Date());
 
   const esAcompanante = para === "acompanante";
+  const esItinerario = para === "itinerario";
   const titular = esAcompanante ? r.companionName : r.participantName;
 
   return (
@@ -89,6 +93,16 @@ export default async function CartaPage({ params, searchParams }: Params) {
             >
               Acompañante
             </Link>
+            <Link
+              href={`/carta/${r.id}?para=itinerario`}
+              className={
+                esItinerario
+                  ? "rounded-full bg-navy px-3 py-1.5 text-xs font-semibold text-white"
+                  : "rounded-full border border-surface-line bg-paper px-3 py-1.5 text-xs font-semibold text-navy hover:border-cyan"
+              }
+            >
+              Itinerario
+            </Link>
             <BotonImprimir />
           </span>
         </div>
@@ -112,10 +126,10 @@ export default async function CartaPage({ params, searchParams }: Params) {
       </div>
 
       {/* ── LA CARTA ─────────────────────────────────────────────────────── */}
-      <article className="carta mx-auto my-8 max-w-[8.5in] bg-white px-[0.9in] py-[0.85in] text-[10.6pt] leading-[1.5] text-navy shadow-[0_2px_20px_rgba(26,39,68,0.12)] print:my-0 print:max-w-none print:p-0 print:shadow-none">
+      <article className="carta mx-auto my-8 max-w-[8.5in] bg-white px-[0.9in] py-[0.85in] text-[9.9pt] leading-[1.38] text-navy shadow-[0_2px_20px_rgba(26,39,68,0.12)] print:my-0 print:max-w-none print:p-0 print:shadow-none">
         <header className="flex items-start justify-between gap-6 border-b-2 border-navy pb-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="Starbiz Academy" className="h-[54px] w-auto" />
+          <img src="/logo.png" alt="Starbiz Academy" className="h-[46px] w-auto" />
           <div className="text-right text-[9pt] leading-[1.45] text-ink">
             <b className="mb-0.5 block font-display text-[11pt] tracking-[0.06em] text-navy">
               {EMISOR.razonSocial}
@@ -126,7 +140,7 @@ export default async function CartaPage({ params, searchParams }: Params) {
           </div>
         </header>
 
-        <div className="mt-5 flex justify-between text-[9.5pt] text-ink">
+        <div className="mt-4 flex justify-between text-[9.5pt] text-ink">
           <span>
             {EMISOR.ciudad.split(",")[0]}, Utah — {hoy}
           </span>
@@ -138,9 +152,75 @@ export default async function CartaPage({ params, searchParams }: Params) {
           <p className="m-0">Consular Section, U.S. Embassy</p>
         </div>
 
-        <p className="mt-4 border-l-[3px] border-gold-700 bg-cream px-3 py-2 font-display text-[11pt] font-bold">
-          RE: Letter of Invitation — {PROGRAMA.nombre}
+        <p className="mt-3 border-l-[3px] border-gold-700 bg-cream px-3 py-1.5 font-display text-[10.6pt] font-bold">
+          {esItinerario
+            ? `PROGRAM ITINERARY — ${PROGRAMA.nombre}`
+            : `RE: Letter of Invitation — ${PROGRAMA.nombre}`}
         </p>
+
+        {esItinerario ? (
+          <>
+            <p className="mt-4 text-justify">
+              This is the day-by-day itinerary of {PROGRAMA.nombre}, in which{" "}
+              <Dato v={r.participantName} falta="NOMBRE PENDIENTE" fuerte /> is enrolled
+              {r.companionName ? (
+                <>
+                  , accompanied by <b>{r.companionName}</b>
+                </>
+              ) : null}
+              . All activities are organised and supervised by {EMISOR.razonSocial}.
+            </p>
+
+            <div className="my-2 rounded-md border-[1.5px] border-gold-700 bg-[#fdf8f0] px-3 py-1.5">
+              <table className="border-collapse text-[10pt]">
+                <tbody>
+                  <Fila k="Program" v={PROGRAMA.nombre} fuerte />
+                  <Fila k="Dates" v={PROGRAMA.fechas} fuerte />
+                  <Fila k="Base venue" v={`${SEDE.nombre} — ${SEDE.direccion}`} />
+                  <Fila k="Organiser" v={`${EMISOR.razonSocial} · Tel. ${EMISOR.telefono}`} />
+                </tbody>
+              </table>
+            </div>
+
+            {ITINERARIO.map((d) => (
+              <section key={d.fecha} className="mt-2 break-inside-avoid">
+                <div className="flex items-baseline gap-2 border-b border-line pb-1">
+                  <span className="font-display text-[10pt] font-bold">{d.fecha}</span>
+                  <span className="text-[9.5pt] text-muted">{d.dia}</span>
+                  <span className="ml-auto font-display text-[9.5pt] font-semibold uppercase tracking-[0.08em] text-gold-700">
+                    {d.titulo}
+                  </span>
+                </div>
+                {d.paradas ? (
+                  <ul className="mt-1 list-none space-y-0.5 pl-0">
+                    {d.paradas.map((x) => (
+                      <li key={x.lugar} className="flex gap-2 text-[9.3pt] leading-snug">
+                        <span className="mt-[5px] h-1 w-1 shrink-0 rounded-full bg-gold-700" />
+                        <span>
+                          <b>{x.lugar}</b> — <span className="text-ink">{x.nota}</span>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-0.5 text-[9.3pt] italic text-muted">
+                    Travel day. No scheduled program activities.
+                  </p>
+                )}
+              </section>
+            ))}
+
+            {/* Lo que NO cubre el precio, dicho aquí para que nadie lo descubra
+                en el aeropuerto. Y es justo lo que un cónsul quiere saber: quién
+                paga el viaje. */}
+            <p className="mt-3 text-justify text-[9.3pt] leading-snug text-ink">
+              <b>Not included:</b> international flights, lodging, meals, local transport and
+              consular fees. These are arranged and paid for by the family.{" "}
+              {EMISOR.razonSocial} organises and supervises the program activities listed above.
+            </p>
+          </>
+        ) : (
+          <>
 
         <p className="mt-4">Dear Consular Officer,</p>
         <p className="mt-2.5 text-justify">
@@ -151,7 +231,7 @@ export default async function CartaPage({ params, searchParams }: Params) {
         </p>
 
         {/* 1 · Quién está inscrito */}
-        <h3 className="mt-4 font-display text-[10.6pt] font-bold">1. Enrollment</h3>
+        <h3 className="mt-3 font-display text-[10.2pt] font-bold">1. Enrollment</h3>
         <p className="mt-1 text-justify">
           <Dato v={r.participantName} falta="NOMBRE PENDIENTE" fuerte mayus />, a{" "}
           <Dato v={gentilicioEn(r.nationality)} falta="NACIONALIDAD PENDIENTE" /> national born on{" "}
@@ -167,7 +247,7 @@ export default async function CartaPage({ params, searchParams }: Params) {
           ) : null}
         </p>
 
-        <div className="my-2.5 rounded-md border-[1.5px] border-gold-700 bg-[#fdf8f0] px-3.5 py-2.5">
+        <div className="my-2 rounded-md border-[1.5px] border-gold-700 bg-[#fdf8f0] px-3 py-1.5">
           <table className="border-collapse text-[10pt]">
             <tbody>
               <Fila k="Program" v={PROGRAMA.nombre} fuerte />
@@ -188,7 +268,7 @@ export default async function CartaPage({ params, searchParams }: Params) {
         </p>
 
         {/* 2 · El acompañante */}
-        <h3 className="mt-4 font-display text-[10.6pt] font-bold">
+        <h3 className="mt-3 font-display text-[10.2pt] font-bold">
           2. {esAcompanante ? "The invited visitor" : "Accompanying adult"}
         </h3>
         <p className="mt-1 text-justify">
@@ -205,7 +285,7 @@ export default async function CartaPage({ params, searchParams }: Params) {
         </p>
 
         {/* 3 · Gastos y regreso — lo que hace que la carta sume */}
-        <h3 className="mt-4 font-display text-[10.6pt] font-bold">3. Expenses and return</h3>
+        <h3 className="mt-3 font-display text-[10.2pt] font-bold">3. Expenses and return</h3>
         <p className="mt-1 text-justify">
           {EMISOR.razonSocial} does not sponsor or finance the travel, lodging, meals or any other
           expense of the persons named herein; all costs are borne by the family. They reside in{" "}
@@ -214,26 +294,29 @@ export default async function CartaPage({ params, searchParams }: Params) {
           <b>January 31, 2027</b>.
         </p>
 
+          </>
+        )}
+
         <p className="mt-2.5 text-justify">
-          We remain available to verify the information contained in this letter at the contact
+          We remain available to verify the information contained in this document at the contact
           details above.
         </p>
         <p className="mt-2.5">Sincerely,</p>
 
-        <div className="mt-8">
-          <div className="h-[42px] w-[250px] border-b border-navy" />
+        <div className="mt-6 break-inside-avoid">
+          <div className="h-[30px] w-[240px] border-b border-navy" />
           <b className="mt-1.5 block">{EMISOR.firmante}</b>
           <span className="block text-[9.5pt] text-ink">{EMISOR.cargo}</span>
         </div>
 
-        <footer className="mt-10 border-t border-line pt-1.5 text-[8pt] text-muted">
+        <footer className="mt-5 border-t border-line pt-1.5 text-[7.6pt] leading-snug text-muted">
           {EMISOR.razonSocial} · Utah limited liability company · This letter is issued at the
           request of the family named herein and may be verified by contacting the company directly.
         </footer>
       </article>
 
       <style>{`
-        @page { size: Letter; margin: 0.85in 0.9in 0.8in 0.9in; }
+        @page { size: Letter; margin: 0.55in 0.8in 0.45in 0.8in; }
         @media print {
           html, body { background: #fff !important; }
           .no-print { display: none !important; }
@@ -270,8 +353,8 @@ function Dato({
 function Fila({ k, v, fuerte }: { k: string; v: string; fuerte?: boolean }) {
   return (
     <tr>
-      <td className="whitespace-nowrap py-0.5 pr-3 align-top text-muted">{k}</td>
-      <td className={fuerte ? "py-0.5 align-top font-bold" : "py-0.5 align-top"}>{v}</td>
+      <td className="whitespace-nowrap py-px pr-3 align-top text-muted">{k}</td>
+      <td className={fuerte ? "py-px align-top font-bold" : "py-px align-top"}>{v}</td>
     </tr>
   );
 }

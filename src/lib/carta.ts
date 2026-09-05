@@ -76,8 +76,11 @@ export function fechaLarga(d: Date | null | undefined): string | null {
  * va dirigida, para que dos cartas de la misma familia no compartan número.
  * Sirve si alguien llama a verificar: con esto se encuentra la reserva.
  */
-export function referencia(id: string, para: "participante" | "acompanante"): string {
-  return `SBA-2027-${id.slice(-6).toUpperCase()}-${para === "participante" ? "P" : "A"}`;
+export type Destinatario = "participante" | "acompanante" | "itinerario";
+
+export function referencia(id: string, para: Destinatario): string {
+  const sufijo = para === "participante" ? "P" : para === "acompanante" ? "A" : "IT";
+  return `SBA-2027-${id.slice(-6).toUpperCase()}-${sufijo}`;
 }
 
 /**
@@ -109,3 +112,82 @@ export function faltaParaCarta(r: {
 
   return { participante, acompanante };
 }
+
+/**
+ * El itinerario, en el inglés que lee el cónsul.
+ *
+ * POR QUÉ SIN HORAS. Un cónsul no busca un minuto a minuto: busca señales de
+ * que el viaje es real. Instituciones con nombre y apellido —BYU, Adobe, la
+ * mina de Kennecott, el Utah Olympic Park— pesan mucho más que un horario
+ * inventado, y una hora falsa en un documento consular es peor que ninguna.
+ *
+ * Cuando Henry confirme los horarios reales del día, se añaden aquí y salen
+ * en todos los itinerarios a la vez.
+ *
+ * TODO ESTO SALE DE `BOOTCAMP_DAYS`, que es el programa que ya se publica en
+ * la web. Si algún día cambia allí, tiene que cambiar aquí: son el mismo viaje
+ * contado dos veces, y contradecirse entre la web y el consulado es lo peor
+ * que puede pasar.
+ */
+export type DiaItinerario = {
+  fecha: string;
+  dia: string;
+  titulo: string;
+  /** null en los días de vuelo: no hay programa, y fingirlo sería mentir. */
+  paradas: { lugar: string; nota: string }[] | null;
+};
+
+export const ITINERARIO: DiaItinerario[] = [
+  {
+    fecha: "January 26, 2027",
+    dia: "Tuesday",
+    titulo: "Arrival in Utah",
+    paradas: null,
+  },
+  {
+    fecha: "January 27, 2027",
+    dia: "Wednesday",
+    titulo: "University campuses",
+    paradas: [
+      { lugar: "Brigham Young University (BYU)", nota: "Provo — one of the largest private campuses in the United States" },
+      { lugar: "University of Utah", nota: "Salt Lake City — public research university" },
+      { lugar: "American Fork High School", nota: "A regular school day in Utah, from the inside" },
+    ],
+  },
+  {
+    fecha: "January 28, 2027",
+    dia: "Thursday",
+    titulo: "Industry and government",
+    paradas: [
+      { lugar: "Utah State Capitol", nota: "Salt Lake City — how the state's decisions are made" },
+      { lugar: "Kennecott Copper Mine · Bingham Canyon", nota: "The largest man-made excavation in the world" },
+      { lugar: "Adobe", nota: "Lehi — the tools half the internet is designed with" },
+      { lugar: "Silicon Slopes", nota: "Utah's technology corridor: Qualtrics, Domo, Podium, Lucid, Ancestry" },
+    ],
+  },
+  {
+    fecha: "January 29, 2027",
+    dia: "Friday",
+    titulo: "Workshop day and closing ceremony",
+    paradas: [
+      { lugar: "Kiln Lehi — 2701 N Thanksgiving Way, Suite 100", nota: "Seven professional mentors, one per discipline, in working sessions with the participants" },
+      { lugar: "Star App ceremony", nota: "The cohort's best project is recognised" },
+    ],
+  },
+  {
+    fecha: "January 30, 2027",
+    dia: "Saturday",
+    titulo: "Utah in winter",
+    paradas: [
+      { lugar: "Park City", nota: "Historic Main Street and the surrounding mountains" },
+      { lugar: "Utah Olympic Park", nota: "Facilities of the Salt Lake 2002 Winter Olympics" },
+      { lugar: "Temple Square", nota: "Salt Lake City — the historic centre" },
+    ],
+  },
+  {
+    fecha: "January 31, 2027",
+    dia: "Sunday",
+    titulo: "Departure — return to country of residence",
+    paradas: null,
+  },
+];
