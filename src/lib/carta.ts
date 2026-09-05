@@ -78,9 +78,18 @@ export function fechaLarga(d: Date | null | undefined): string | null {
  */
 export type Destinatario = "participante" | "acompanante" | "itinerario";
 
+/** La raíz de la referencia, común a los tres documentos de una misma reserva. */
+export function referenciaBase(id: string): string {
+  return `SBA-2027-${id.slice(-6).toUpperCase()}`;
+}
+
+/**
+ * El itinerario NO lleva sufijo de destinatario: es un anexo que acompaña a
+ * las dos cartas de la familia, así que no puede pertenecer sólo a una.
+ */
 export function referencia(id: string, para: Destinatario): string {
-  const sufijo = para === "participante" ? "P" : para === "acompanante" ? "A" : "IT";
-  return `SBA-2027-${id.slice(-6).toUpperCase()}-${sufijo}`;
+  if (para === "itinerario") return `${referenciaBase(id)}-ANNEX`;
+  return `${referenciaBase(id)}-${para === "participante" ? "P" : "A"}`;
 }
 
 /**

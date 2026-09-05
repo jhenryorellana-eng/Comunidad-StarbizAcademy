@@ -10,6 +10,7 @@ import {
   PARENTESCO,
   fechaLarga,
   referencia,
+  referenciaBase,
   faltaParaCarta,
   ITINERARIO,
 } from "@/lib/carta";
@@ -147,14 +148,16 @@ export default async function CartaPage({ params, searchParams }: Params) {
           <span>Ref. {referencia(r.id, para)}</span>
         </div>
 
-        <div className="mt-4">
-          <p className="m-0 font-bold">To Whom It May Concern</p>
-          <p className="m-0">Consular Section, U.S. Embassy</p>
-        </div>
+        {!esItinerario && (
+          <div className="mt-4">
+            <p className="m-0 font-bold">To Whom It May Concern</p>
+            <p className="m-0">Consular Section, U.S. Embassy</p>
+          </div>
+        )}
 
         <p className="mt-3 border-l-[3px] border-gold-700 bg-cream px-3 py-1.5 font-display text-[10.6pt] font-bold">
           {esItinerario
-            ? `PROGRAM ITINERARY — ${PROGRAMA.nombre}`
+            ? `ANNEX — PROGRAM ITINERARY · ${PROGRAMA.nombre}`
             : `RE: Letter of Invitation — ${PROGRAMA.nombre}`}
         </p>
 
@@ -297,26 +300,47 @@ export default async function CartaPage({ params, searchParams }: Params) {
           </>
         )}
 
-        <p className="mt-2.5 text-justify">
-          We remain available to verify the information contained in this document at the contact
-          details above.
-        </p>
-        <p className="mt-2.5">Sincerely,</p>
+        {!esItinerario && (
+          <p className="mt-2.5 text-justify">
+            A day-by-day itinerary is attached as an annex (Ref. {referenciaBase(r.id)}-ANNEX).
+            We remain available to verify this information at the contact details above.
+          </p>
+        )}
+        {esItinerario ? (
+          /* Sin firma a propósito. Esto es un anexo, no un documento aparte:
+             la firma vive en la carta que va delante, y dos firmas en un mismo
+             envío se leen como dos documentos grapados por error. */
+          <p className="mt-2 border-t border-line pt-1.5 text-[8.4pt] leading-snug text-ink">
+            This itinerary is an annex to the letter of invitation issued by {EMISOR.razonSocial} on
+            the same date for <b>{r.participantName}</b>
+            {r.companionName ? (
+              <>
+                {" "}
+                and <b>{r.companionName}</b>
+              </>
+            ) : null}
+            , signed by {EMISOR.firmante}, {EMISOR.cargo}. It carries no separate signature.
+          </p>
+        ) : (
+          <>
+            <p className="mt-2.5">Sincerely,</p>
 
-        <div className="mt-6 break-inside-avoid">
-          <div className="h-[30px] w-[240px] border-b border-navy" />
-          <b className="mt-1.5 block">{EMISOR.firmante}</b>
-          <span className="block text-[9.5pt] text-ink">{EMISOR.cargo}</span>
-        </div>
+            <div className="mt-5 break-inside-avoid">
+              <div className="h-[28px] w-[240px] border-b border-navy" />
+              <b className="mt-1.5 block">{EMISOR.firmante}</b>
+              <span className="block text-[9.5pt] text-ink">{EMISOR.cargo}</span>
+            </div>
+          </>
+        )}
 
-        <footer className="mt-5 border-t border-line pt-1.5 text-[7.6pt] leading-snug text-muted">
-          {EMISOR.razonSocial} · Utah limited liability company · This letter is issued at the
-          request of the family named herein and may be verified by contacting the company directly.
+        <footer className="mt-3 border-t border-line pt-1 text-[7.4pt] leading-snug text-muted">
+          {EMISOR.razonSocial} · Utah limited liability company · Issued at the family&rsquo;s request
+          · Verifiable at the contact details above
         </footer>
       </article>
 
       <style>{`
-        @page { size: Letter; margin: 0.55in 0.8in 0.45in 0.8in; }
+        @page { size: Letter; margin: 0.5in 0.8in 0.35in 0.8in; }
         @media print {
           html, body { background: #fff !important; }
           .no-print { display: none !important; }
