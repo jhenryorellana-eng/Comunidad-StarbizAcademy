@@ -23,11 +23,11 @@ import {
 export const metadata: Metadata = {
   title: "Bootcamp Utah 2027 — StarbizAcademy",
   description:
-    "4 días y 5 noches en Utah, del 26 al 31 de enero de 2027. Universidades, Silicon Slopes, los siete profesionales de GÉNESIS i7™ y la ceremonia Star App.",
+    "4 días y 5 noches en Utah, del 27 de julio al 1 de agosto de 2027. Universidades, Silicon Slopes, los siete profesionales de GÉNESIS i7™, la ceremonia Star App y las puertas abiertas del Templo de Salt Lake.",
   openGraph: {
     title: "Bootcamp Utah 2027 — StarbizAcademy",
     description:
-      "4 días y 5 noches en Utah. Universidades, Silicon Slopes, GÉNESIS i7™ y la ceremonia Star App. Inscripción $250 con carta de invitación incluida.",
+      "4 días y 5 noches en Utah. Universidades, Silicon Slopes, GÉNESIS i7™, la ceremonia Star App y el Templo de Salt Lake. Inscripción $250 con carta de invitación incluida.",
     images: [{ url: "/og-image.jpg", width: 1024, height: 1024, alt: "Bootcamp Utah 2027" }],
   },
 };
@@ -447,6 +447,10 @@ export default async function BootcampPage({
                           </li>
                         ))}
                       </ul>
+
+                      {copy.aviso && (
+                        <p className="mt-3 text-xs leading-snug text-muted">{copy.aviso}</p>
+                      )}
                     </div>
                   </article>
                 </div>

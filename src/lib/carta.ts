@@ -35,7 +35,8 @@ export const SEDE = {
 /** Fechas del programa, en el inglés que lee el cónsul. */
 export const PROGRAMA = {
   nombre: BOOTCAMP.name,
-  fechas: "January 26 – 31, 2027",
+  fechas: "July 27 – August 1, 2027",
+  regreso: "August 1, 2027",
   descripcion:
     "a four-day program of entrepreneurship workshops, university campus visits and technology-sector visits for teenagers",
 } as const;
@@ -127,7 +128,7 @@ export function faltaParaCarta(r: {
  *
  * POR QUÉ SIN HORAS. Un cónsul no busca un minuto a minuto: busca señales de
  * que el viaje es real. Instituciones con nombre y apellido —BYU, Adobe, la
- * mina de Kennecott, el Utah Olympic Park— pesan mucho más que un horario
+ * mina de Kennecott, el Templo de Salt Lake— pesan mucho más que un horario
  * inventado, y una hora falsa en un documento consular es peor que ninguna.
  *
  * Cuando Henry confirme los horarios reales del día, se añaden aquí y salen
@@ -148,23 +149,22 @@ export type DiaItinerario = {
 
 export const ITINERARIO: DiaItinerario[] = [
   {
-    fecha: "January 26, 2027",
+    fecha: "July 27, 2027",
     dia: "Tuesday",
     titulo: "Arrival in Utah",
     paradas: null,
   },
   {
-    fecha: "January 27, 2027",
+    fecha: "July 28, 2027",
     dia: "Wednesday",
     titulo: "University campuses",
     paradas: [
       { lugar: "Brigham Young University (BYU)", nota: "Provo — one of the largest private campuses in the United States" },
       { lugar: "University of Utah", nota: "Salt Lake City — public research university" },
-      { lugar: "American Fork High School", nota: "A regular school day in Utah, from the inside" },
     ],
   },
   {
-    fecha: "January 28, 2027",
+    fecha: "July 29, 2027",
     dia: "Thursday",
     titulo: "Industry and government",
     paradas: [
@@ -175,7 +175,7 @@ export const ITINERARIO: DiaItinerario[] = [
     ],
   },
   {
-    fecha: "January 29, 2027",
+    fecha: "July 30, 2027",
     dia: "Friday",
     titulo: "Workshop day and closing ceremony",
     paradas: [
@@ -184,17 +184,17 @@ export const ITINERARIO: DiaItinerario[] = [
     ],
   },
   {
-    fecha: "January 30, 2027",
+    fecha: "July 31, 2027",
     dia: "Saturday",
-    titulo: "Utah in winter",
+    titulo: "Salt Lake Temple open house",
     paradas: [
-      { lugar: "Park City", nota: "Historic Main Street and the surrounding mountains" },
-      { lugar: "Utah Olympic Park", nota: "Facilities of the Salt Lake 2002 Winter Olympics" },
-      { lugar: "Temple Square", nota: "Salt Lake City — the historic centre" },
+      { lugar: "Salt Lake Temple", nota: "Public open house tour, about one hour" },
+      { lugar: "Temple Square Visitors' Center", nota: "Salt Lake City — “Inside a Temple” exhibit" },
+      { lugar: "Temple Square gardens", nota: "19th-century architecture and gardens" },
     ],
   },
   {
-    fecha: "January 31, 2027",
+    fecha: "August 1, 2027",
     dia: "Sunday",
     titulo: "Departure — return to country of residence",
     paradas: null,

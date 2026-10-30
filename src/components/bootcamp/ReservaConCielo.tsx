@@ -82,7 +82,7 @@ export function ReservaConCielo({
       <div className="container-ac py-7 sm:py-9">
         {inicio && (
           <p className="mb-6 max-w-[46ch] text-sm leading-relaxed text-arena-texto sm:text-[0.95rem]">
-            Del 26 al 31 de enero de 2027. Tres pasos cortos y nosotros redactamos las dos cartas de
+            Del 27 de julio al 1 de agosto de 2027. Tres pasos cortos y nosotros redactamos las dos cartas de
             invitación.
           </p>
         )}

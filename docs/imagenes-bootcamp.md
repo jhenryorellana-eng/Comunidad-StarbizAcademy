@@ -76,7 +76,7 @@ espontáneo — huye de lo que parezca catálogo corporativo.
 | **1 · Universidades** | Grupo de adolescentes recorriendo un campus con un guía | `campus tour students`, `high school students university visit`, `college campus tour group winter` |
 | **2 · Silicon Slopes** | Chicos en una oficina tecnológica, viendo pantallas o escuchando | `students tech company tour`, `teens visiting office`, `student group technology workshop` |
 | **3 · Ceremonia** | Joven recibiendo un premio o presentando en escenario | `student award ceremony`, `teen pitching on stage`, `young entrepreneur presentation` |
-| **4 · Invierno** | Grupo de adolescentes en la nieve, ambiente de montaña | `teenagers snow mountain town`, `students winter trip`, `group snowy main street` |
+| **4 · Templo** | Grupo de adolescentes en los jardines de Temple Square en verano | `Temple Square Salt Lake summer`, `students visiting Temple Square` |
 
 **Dónde**: Unsplash y Pexels (gratis, revisa licencia); Adobe Stock y Getty (de
 pago, más variedad con menores y con derechos de imagen ya resueltos).
@@ -89,7 +89,7 @@ Una foto de banco **evoca la experiencia**; no documenta la vuestra.
 - ❌ Foto de banco con el pie *"nuestros estudiantes en BYU"*
 - ❌ Cualquier montaje que dé a entender que ese grupo es una edición pasada
 
-En cuanto tengas fotos de enero de 2027, **sustitúyelas todas**. A partir de ahí
+En cuanto tengas fotos de julio de 2027, **sustitúyelas todas**. A partir de ahí
 lo real siempre gana.
 
 ---
@@ -120,7 +120,8 @@ responsivos solo — sube el original grande, no versiones pequeñas.
 | Día 1 · ilustración | `dia-1-campus.jpg` | 1920 × 1080 | 16:9 | 400 KB | Atmósfera ✅ |
 | Día 2 · ilustración | `dia-2-silicon-slopes.jpg` | 1920 × 1080 | 16:9 | 400 KB | Atmósfera ✅ |
 | Día 3 · ilustración | `dia-3-ceremonia.jpg` | 1920 × 1080 | 16:9 | 400 KB | Atmósfera ✅ |
-| Día 4 · ilustración | `dia-4-invierno.jpg` | 1920 × 1080 | 16:9 | 400 KB | Atmósfera ✅ |
+| Día 4 · ilustración | `dia-4-templo.jpg` | 1920 × 1080 | 16:9 | 400 KB | Atmósfera ✅ |
+| Día 4 · foto | `dia-4-templo-foto.jpg` | 1920 × 1080 | 16:9 | 400 KB | Generada con IA — sustituir por foto real o autorizada |
 | Día 1..4 · **foto** | `dia-N-foto.jpg` | 1920 × 1080 | 16:9 | 400 KB | **Personas** — pendiente |
 | Banda de cierre | `cierre-grupo.jpg` | 2400 × 800 | 3:1 | 300 KB | Atmósfera ✅ |
 

@@ -294,7 +294,7 @@ export default async function CartaPage({ params, searchParams }: Params) {
           expense of the persons named herein; all costs are borne by the family. They reside in{" "}
           <Dato v={r.residence} falta="RESIDENCIA PENDIENTE" />, where they maintain their home and
           family ties, and are expected to return at the end of the program on{" "}
-          <b>January 31, 2027</b>.
+          <b>{PROGRAMA.regreso}</b>.
         </p>
 
           </>

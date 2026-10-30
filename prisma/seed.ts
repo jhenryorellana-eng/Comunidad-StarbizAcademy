@@ -362,7 +362,7 @@ async function main() {
       title: "🚀 Abrimos inscripciones: Bootcamp Utah 2027",
       // Fijado: abre el feed y lleva dentro el cuadro de acceso al bootcamp.
       pinned: true,
-      body: "Del 26 al 31 de enero de 2027: 4 días y 5 noches en Utah. Universidades por dentro (BYU, University of Utah, American Fork High School), las empresas de Silicon Slopes, el día GÉNESIS i7™ con un profesional por cada inteligencia y la ceremonia donde se premia el mejor proyecto Star App.\n\nInscripción $250: reserva tu cupo y emitimos la carta de invitación oficial para tu hijo Y para un acompañante. Hay 50 cupos y el cierre es el 15 de diciembre. El programa completo está en la sección Bootcamp 2027.",
+      body: "Del 27 de julio al 1 de agosto de 2027: 4 días y 5 noches en Utah. Universidades por dentro (BYU, University of Utah), las empresas de Silicon Slopes, el día GÉNESIS i7™ con un profesional por cada inteligencia y la ceremonia donde se premia el mejor proyecto Star App.\n\nInscripción $250: reserva tu cupo y emitimos la carta de invitación oficial para tu hijo Y para un acompañante. Hay 50 cupos y el cierre es el 31 de marzo. El programa completo está en la sección Bootcamp 2027.",
       category: "BOOTCAMP",
       createdAt: at(-1, 9),
     },

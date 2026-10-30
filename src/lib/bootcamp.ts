@@ -3,15 +3,17 @@
 // El texto largo vive aquí en ES/EN (mismo patrón que INTELLIGENCES en
 // constants.ts); las cadenas cortas de chrome viven en el diccionario.
 //
-// FECHAS DEL VIAJE: confirmadas por el usuario (llegada 26 ene, regreso 31 ene).
+// FECHAS DEL VIAJE: confirmadas por el usuario (llegada 27 jul, regreso 1 ago).
+// Se movieron desde enero para que el día 4 caiga dentro de las puertas abiertas
+// del Templo de Salt Lake, que van del 5 de abril al 1 de octubre de 2027.
 // FECHAS DEL TRÁMITE: orientativas, PENDIENTES DE APROBACIÓN antes de publicar.
 
 export const BOOTCAMP = {
   name: "Bootcamp Utah 2027",
   shortName: "Bootcamp 2027",
-  /** Llegada. Utah está en MST (UTC-7) en enero. Objetivo de la cuenta regresiva. */
-  arrivalISO: "2027-01-26T00:00:00-07:00",
-  returnISO: "2027-01-31T00:00:00-07:00",
+  /** Llegada. Utah está en MDT (UTC-6) en julio. Objetivo de la cuenta regresiva. */
+  arrivalISO: "2027-07-27T00:00:00-06:00",
+  returnISO: "2027-08-01T00:00:00-06:00",
   days: 4,
   nights: 5,
   /** Inscripción. Cubre la carta de invitación del participante Y de UN
@@ -32,9 +34,9 @@ export const BOOTCAMP = {
   edadMax: 19,
 
   /** Cierre de inscripción — el plazo que de verdad urge. */
-  deadlineISO: "2026-12-15",
-  deadlineEs: "15 de diciembre",
-  deadlineEn: "December 15",
+  deadlineISO: "2027-03-31",
+  deadlineEs: "31 de marzo",
+  deadlineEn: "March 31",
 } as const;
 
 /**
@@ -83,6 +85,8 @@ type DayCopy = {
   lead: string;
   /** Paradas concretas del día. */
   stops: { name: string; note: string }[];
+  /** Letra pequeña del día: lo que un padre debe saber antes de contar con él. */
+  aviso?: string;
 };
 
 export type BootcampDay = {
@@ -118,14 +122,14 @@ export type BootcampDay = {
 export const BOOTCAMP_DAYS: BootcampDay[] = [
   {
     n: 1,
-    dateISO: "2027-01-27",
+    dateISO: "2027-07-28",
     art: { src: "/bootcamp/dia-1-campus.jpg", alt: "Campus universitario nevado al atardecer" },
     photo: {
       src: "/bootcamp/dia-1-foto.jpg",
       alt: "Grupo de adolescentes recorriendo una avenida de campus nevada con las montañas Wasatch al fondo",
     },
-    dayEs: "Miércoles 27 de enero",
-    dayEn: "Wednesday, January 27",
+    dayEs: "Miércoles 28 de julio",
+    dayEn: "Wednesday, July 28",
     icon: "chapters",
     hero: false,
     es: {
@@ -139,10 +143,6 @@ export const BOOTCAMP_DAYS: BootcampDay[] = [
         {
           name: "University of Utah",
           note: "Salt Lake City. Universidad pública de investigación, cuna de startups.",
-        },
-        {
-          name: "American Fork High School",
-          note: "Cómo es de verdad un día de secundaria en Utah, por dentro.",
         },
       ],
     },
@@ -158,16 +158,12 @@ export const BOOTCAMP_DAYS: BootcampDay[] = [
           name: "University of Utah",
           note: "Salt Lake City. Public research university, a startup breeding ground.",
         },
-        {
-          name: "American Fork High School",
-          note: "What a real Utah high school day looks like, from the inside.",
-        },
       ],
     },
   },
   {
     n: 2,
-    dateISO: "2027-01-28",
+    dateISO: "2027-07-29",
     art: {
       src: "/bootcamp/dia-2-silicon-slopes.jpg",
       alt: "Corredor tecnológico al pie de montañas nevadas",
@@ -176,8 +172,8 @@ export const BOOTCAMP_DAYS: BootcampDay[] = [
       src: "/bootcamp/dia-2-foto.jpg",
       alt: "Adolescentes atendiendo una explicación en una oficina tecnológica con las montañas nevadas tras el ventanal",
     },
-    dayEs: "Jueves 28 de enero",
-    dayEn: "Thursday, January 28",
+    dayEs: "Jueves 29 de julio",
+    dayEn: "Thursday, July 29",
     icon: "store",
     hero: false,
     es: {
@@ -227,7 +223,7 @@ export const BOOTCAMP_DAYS: BootcampDay[] = [
   },
   {
     n: 3,
-    dateISO: "2027-01-29",
+    dateISO: "2027-07-30",
     // 16:9 de origen. Se muestra completa en móvil y recortada a 21:9 en
     // escritorio: un 21:9 real en un teléfono son ~167 px, una rendija.
     art: {
@@ -238,8 +234,8 @@ export const BOOTCAMP_DAYS: BootcampDay[] = [
       src: "/bootcamp/dia-3-foto.jpg",
       alt: "Entrega de premio a contraluz sobre el escenario, con las montañas de Utah al atardecer tras el ventanal",
     },
-    dayEs: "Viernes 29 de enero",
-    dayEn: "Friday, January 29",
+    dayEs: "Viernes 30 de julio",
+    dayEn: "Friday, July 30",
     icon: "star",
     hero: true,
     es: {
@@ -273,54 +269,58 @@ export const BOOTCAMP_DAYS: BootcampDay[] = [
   },
   {
     n: 4,
-    dateISO: "2027-01-30",
+    dateISO: "2027-07-31",
     art: {
-      src: "/bootcamp/dia-4-invierno.jpg",
-      alt: "Calle nevada de pueblo de montaña con guirnaldas de luces",
+      src: "/bootcamp/dia-4-templo.jpg",
+      alt: "Ilustración de un sendero entre jardines que lleva a un templo de granito iluminado al anochecer",
     },
     photo: {
-      src: "/bootcamp/dia-4-foto.jpg",
-      alt: "Adolescentes caminando por la calle principal nevada de un pueblo de montaña de Utah",
+      src: "/bootcamp/dia-4-templo-foto.jpg",
+      alt: "Recreación de un grupo de adolescentes de espaldas caminando entre jardines hacia el Templo de Salt Lake en una mañana de verano",
     },
-    dayEs: "Sábado 30 de enero",
-    dayEn: "Saturday, January 30",
+    dayEs: "Sábado 31 de julio",
+    dayEn: "Saturday, July 31",
     icon: "events",
     hero: false,
     es: {
-      title: "Utah en pleno invierno",
-      lead: "El cierre. Enero en Utah es nieve de verdad, así que el día se diseñó para el invierno: montaña, historia olímpica y las postales que se quedan para siempre.",
+      title: "El Templo de Salt Lake, por dentro",
+      lead: "El cierre. Un edificio de 1893 cuyo interior normalmente no está abierto al público abre sus puertas por unos meses, y los chicos lo recorren antes de volver a casa.",
       stops: [
         {
-          name: "Park City",
-          note: "Main Street nevada y las montañas que hicieron famoso al estado.",
+          name: "Recorrido por el Templo de Salt Lake",
+          note: "Primero, el programa de puertas abiertas: cerca de una hora, con opción en español.",
         },
         {
-          name: "Utah Olympic Park",
-          note: "Las instalaciones de los Juegos Olímpicos de Salt Lake 2002.",
+          name: "Centro de Visitantes",
+          note: "Después, sus 3.700 m² y la exhibición «Inside a Temple».",
         },
         {
-          name: "Temple Square",
-          note: "Salt Lake City. El centro histórico, bajo la nieve.",
+          name: "Jardines de la Manzana del Templo",
+          note: "Para cerrar, la arquitectura del siglo XIX y los jardines al aire libre.",
         },
       ],
+      aviso:
+        "Actividad sujeta a la disponibilidad de boletos. StarbizAcademy no está afiliada a La Iglesia de Jesucristo de los Santos de los Últimos Días, organizadora de las puertas abiertas.",
     },
     en: {
-      title: "Utah in deep winter",
-      lead: "The finale. January in Utah means real snow, so the day is built for winter: mountains, Olympic history and the postcards that stay with you.",
+      title: "Inside the Salt Lake Temple",
+      lead: "The finale. An 1893 building whose interior is normally closed to the public opens its doors for a few months, and the kids walk through it before heading home.",
       stops: [
         {
-          name: "Park City",
-          note: "Snow-covered Main Street and the mountains that made the state famous.",
+          name: "Salt Lake Temple tour",
+          note: "First, the open house: about an hour, with a Spanish option.",
         },
         {
-          name: "Utah Olympic Park",
-          note: "The venues of the Salt Lake 2002 Winter Olympics.",
+          name: "Visitors' Center",
+          note: "Next, its 39,800 sq ft and the “Inside a Temple” exhibit.",
         },
         {
-          name: "Temple Square",
-          note: "Salt Lake City. The historic centre, under the snow.",
+          name: "Temple Square gardens",
+          note: "To close, the 19th-century architecture and the gardens outdoors.",
         },
       ],
+      aviso:
+        "Subject to ticket availability. StarbizAcademy is not affiliated with The Church of Jesus Christ of Latter-day Saints, which organises the open house.",
     },
   },
 ];
@@ -371,12 +371,12 @@ export const BOOTCAMP_TIMELINE = [
     step: 1,
     critical: false,
     es: {
-      when: "Antes del 15 de diciembre",
+      when: "Antes del 31 de marzo",
       title: "Inscripción",
       body: "Reservas tu cupo con los $250 — hay 50. Es el paso que activa todo lo demás.",
     },
     en: {
-      when: "Before December 15",
+      when: "Before March 31",
       title: "Registration",
       body: "You reserve your seat with the $250 — there are 50. This unlocks everything else.",
     },
@@ -399,12 +399,12 @@ export const BOOTCAMP_TIMELINE = [
     step: 3,
     critical: true,
     es: {
-      when: "Agosto – septiembre 2026",
+      when: "En cuanto tengas las cartas",
       title: "DS-160 y cita consular",
       body: "Aquí está el cuello de botella: en varios países la cita se agenda con meses de espera. Cuanto antes, mejor.",
     },
     en: {
-      when: "August – September 2026",
+      when: "As soon as you have the letters",
       title: "DS-160 and consular appointment",
       body: "This is the bottleneck: in several countries appointments are booked months out. The sooner the better.",
     },
@@ -413,12 +413,12 @@ export const BOOTCAMP_TIMELINE = [
     step: 4,
     critical: false,
     es: {
-      when: "Octubre – diciembre 2026",
+      when: "Abril – junio 2027",
       title: "Entrevista y visa",
       body: "Vas a tu entrevista con la carta de invitación y el programa del bootcamp en mano.",
     },
     en: {
-      when: "October – December 2026",
+      when: "April – June 2027",
       title: "Interview and visa",
       body: "You attend your interview with the invitation letter and the bootcamp programme in hand.",
     },
@@ -427,12 +427,12 @@ export const BOOTCAMP_TIMELINE = [
     step: 5,
     critical: false,
     es: {
-      when: "Diciembre 2026",
+      when: "Junio 2027",
       title: "Vuelos y hospedaje",
       body: "Con la visa aprobada, cierras pasajes y alojamiento. Te orientamos sobre la zona.",
     },
     en: {
-      when: "December 2026",
+      when: "June 2027",
       title: "Flights and lodging",
       body: "With the visa approved, you book tickets and accommodation. We guide you on the area.",
     },
@@ -441,12 +441,12 @@ export const BOOTCAMP_TIMELINE = [
     step: 6,
     critical: false,
     es: {
-      when: "26 de enero de 2027",
+      when: "27 de julio de 2027",
       title: "Aterrizas en Utah",
       body: "Empiezan 4 días que tu hijo no va a olvidar.",
     },
     en: {
-      when: "January 26, 2027",
+      when: "July 27, 2027",
       title: "You land in Utah",
       body: "Four days your child will never forget begin.",
     },

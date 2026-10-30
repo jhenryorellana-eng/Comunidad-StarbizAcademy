@@ -6,7 +6,7 @@ import { useI18n } from "@/lib/i18n/client";
 import { cn } from "@/components/ui";
 
 /**
- * Cuenta regresiva "T-menos" al 26 de enero de 2027.
+ * Cuenta regresiva "T-menos" al 27 de julio de 2027.
  *
  * El valor depende del reloj del visitante, así que el servidor NO lo puede
  * renderizar: arranca en null y se llena en el primer efecto. Así no hay

@@ -80,7 +80,7 @@ export default async function ConfirmacionPage({
     {
       icon: "events" as const,
       titulo: `Nos vemos en Utah`,
-      texto: "Del 26 al 31 de enero de 2027.",
+      texto: "Del 27 de julio al 1 de agosto de 2027.",
     },
   ];
 
