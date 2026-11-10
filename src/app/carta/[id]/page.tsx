@@ -12,7 +12,7 @@ import {
   referencia,
   referenciaBase,
   faltaParaCarta,
-  ITINERARIO,
+  edicionDe,
 } from "@/lib/carta";
 import { BotonImprimir } from "@/components/admin/BotonImprimir";
 
@@ -54,6 +54,8 @@ export default async function CartaPage({ params, searchParams }: Params) {
 
   // El itinerario no depende de los datos de la familia: es el programa.
   const falta = para === "itinerario" ? [] : faltaParaCarta(r)[para];
+  // Enero o julio según cuándo se inscribió: cada familia, su viaje.
+  const edicion = edicionDe(r);
   const parentesco = r.companionRelation ? PARENTESCO[r.companionRelation] : null;
   const hoy = fechaLarga(new Date());
 
@@ -178,14 +180,14 @@ export default async function CartaPage({ params, searchParams }: Params) {
               <table className="border-collapse text-[10pt]">
                 <tbody>
                   <Fila k="Program" v={PROGRAMA.nombre} fuerte />
-                  <Fila k="Dates" v={PROGRAMA.fechas} fuerte />
+                  <Fila k="Dates" v={edicion.fechas} fuerte />
                   <Fila k="Base venue" v={`${SEDE.nombre} — ${SEDE.direccion}`} />
                   <Fila k="Organiser" v={`${EMISOR.razonSocial} · Tel. ${EMISOR.telefono}`} />
                 </tbody>
               </table>
             </div>
 
-            {ITINERARIO.map((d) => (
+            {edicion.itinerario.map((d) => (
               <section key={d.fecha} className="mt-2 break-inside-avoid">
                 <div className="flex items-baseline gap-2 border-b border-line pb-1">
                   <span className="font-display text-[10pt] font-bold">{d.fecha}</span>
@@ -254,7 +256,7 @@ export default async function CartaPage({ params, searchParams }: Params) {
           <table className="border-collapse text-[10pt]">
             <tbody>
               <Fila k="Program" v={PROGRAMA.nombre} fuerte />
-              <Fila k="Dates" v={PROGRAMA.fechas} fuerte />
+              <Fila k="Dates" v={edicion.fechas} fuerte />
               <Fila
                 k="Venue"
                 v={`${SEDE.nombre} — ${SEDE.direccion} · Tel. ${SEDE.telefono}`}
@@ -294,7 +296,7 @@ export default async function CartaPage({ params, searchParams }: Params) {
           expense of the persons named herein; all costs are borne by the family. They reside in{" "}
           <Dato v={r.residence} falta="RESIDENCIA PENDIENTE" />, where they maintain their home and
           family ties, and are expected to return at the end of the program on{" "}
-          <b>{PROGRAMA.regreso}</b>.
+          <b>{edicion.regreso}</b>.
         </p>
 
           </>

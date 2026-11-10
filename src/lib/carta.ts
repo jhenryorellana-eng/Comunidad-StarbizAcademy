@@ -32,11 +32,9 @@ export const SEDE = {
   telefono: "+1 (385) 707-5662",
 } as const;
 
-/** Fechas del programa, en el inglés que lee el cónsul. */
+/** El programa, en el inglés que lee el cónsul. Las fechas van por edición: ver `edicionDe`. */
 export const PROGRAMA = {
   nombre: BOOTCAMP.name,
-  fechas: "July 27 – August 1, 2027",
-  regreso: "August 1, 2027",
   descripcion:
     "a four-day program of entrepreneurship workshops, university campus visits and technology-sector visits for teenagers",
 } as const;
@@ -147,7 +145,7 @@ export type DiaItinerario = {
   paradas: { lugar: string; nota: string }[] | null;
 };
 
-export const ITINERARIO: DiaItinerario[] = [
+const ITINERARIO_JULIO: DiaItinerario[] = [
   {
     fecha: "July 27, 2027",
     dia: "Tuesday",
@@ -200,3 +198,109 @@ export const ITINERARIO: DiaItinerario[] = [
     paradas: null,
   },
 ];
+
+/** El programa de enero tal como se vendió. No se toca: esas familias ya pagaron por él. */
+const ITINERARIO_ENERO: DiaItinerario[] = [
+  {
+    fecha: "January 26, 2027",
+    dia: "Tuesday",
+    titulo: "Arrival in Utah",
+    paradas: null,
+  },
+  {
+    fecha: "January 27, 2027",
+    dia: "Wednesday",
+    titulo: "University campuses",
+    paradas: [
+      { lugar: "Brigham Young University (BYU)", nota: "Provo — one of the largest private campuses in the United States" },
+      { lugar: "University of Utah", nota: "Salt Lake City — public research university" },
+      { lugar: "American Fork High School", nota: "A regular school day in Utah, from the inside" },
+    ],
+  },
+  {
+    fecha: "January 28, 2027",
+    dia: "Thursday",
+    titulo: "Industry and government",
+    paradas: [
+      { lugar: "Utah State Capitol", nota: "Salt Lake City — how the state's decisions are made" },
+      { lugar: "Kennecott Copper Mine · Bingham Canyon", nota: "The largest man-made excavation in the world" },
+      { lugar: "Adobe", nota: "Lehi — the tools half the internet is designed with" },
+      { lugar: "Silicon Slopes", nota: "Utah's technology corridor: Qualtrics, Domo, Podium, Lucid, Ancestry" },
+    ],
+  },
+  {
+    fecha: "January 29, 2027",
+    dia: "Friday",
+    titulo: "Workshop day and closing ceremony",
+    paradas: [
+      { lugar: "Kiln Lehi — 2701 N Thanksgiving Way, Suite 100", nota: "Seven professional mentors, one per discipline, in working sessions with the participants" },
+      { lugar: "Star App ceremony", nota: "The cohort's best project is recognised" },
+    ],
+  },
+  {
+    fecha: "January 30, 2027",
+    dia: "Saturday",
+    titulo: "Utah in winter",
+    paradas: [
+      { lugar: "Park City", nota: "Historic Main Street and the surrounding mountains" },
+      { lugar: "Utah Olympic Park", nota: "Facilities of the Salt Lake 2002 Winter Olympics" },
+      { lugar: "Temple Square", nota: "Salt Lake City — the historic centre" },
+    ],
+  },
+  {
+    fecha: "January 31, 2027",
+    dia: "Sunday",
+    titulo: "Departure — return to country of residence",
+    paradas: null,
+  },
+];
+
+/**
+ * HAY DOS EDICIONES, y cada carta lleva la suya.
+ *
+ * El viaje pasó de enero a julio cuando ya había familias inscritas en enero, y
+ * esas familias siguen yendo en enero. Si la carta leyera una sola fecha, a
+ * quien pagó por enero le saldría una carta de julio: el consulado vería un
+ * viaje que no es el suyo.
+ */
+export type Edicion = {
+  clave: "enero" | "julio";
+  /** Cómo se nombra en el panel. */
+  etiqueta: string;
+  fechas: string;
+  regreso: string;
+  itinerario: DiaItinerario[];
+};
+
+export const EDICION_ENERO: Edicion = {
+  clave: "enero",
+  etiqueta: "Edición enero 2027",
+  fechas: "January 26 – 31, 2027",
+  regreso: "January 31, 2027",
+  itinerario: ITINERARIO_ENERO,
+};
+
+export const EDICION_JULIO: Edicion = {
+  clave: "julio",
+  etiqueta: "Edición julio 2027",
+  fechas: "July 27 – August 1, 2027",
+  regreso: "August 1, 2027",
+  itinerario: ITINERARIO_JULIO,
+};
+
+/**
+ * Cuándo dejó la web de vender enero: el push del commit 57d9625. Toda reserva
+ * creada antes se hizo con la página de enero delante.
+ *
+ * Se decide por `createdAt` y no por `paidAt` a propósito: quien rellenó el
+ * formulario de enero y pagó días después sigue apuntado a enero.
+ *
+ * Límite conocido: un alta manual hecha HOY para alguien que pagó enero por
+ * transferencia caería en julio. Si pasa, hace falta un campo de edición en la
+ * tabla en vez de esta fecha.
+ */
+const CAMBIO_A_JULIO = new Date("2026-10-30T21:39:54Z");
+
+export function edicionDe(r: { createdAt: Date }): Edicion {
+  return r.createdAt < CAMBIO_A_JULIO ? EDICION_ENERO : EDICION_JULIO;
+}

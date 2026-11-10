@@ -7,7 +7,7 @@ import { Badge, Button } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { formatDateTime } from "@/lib/format";
 import { PAISES } from "@/lib/paises";
-import { OPCIONES_PARENTESCO, faltaParaCarta } from "@/lib/carta";
+import { OPCIONES_PARENTESCO, edicionDe, faltaParaCarta } from "@/lib/carta";
 import { editarReserva, marcarCartasEmitidas } from "../../actions";
 
 export const metadata: Metadata = { title: "Reserva — Bootcamp Utah 2027" };
@@ -48,6 +48,8 @@ export default async function ReservaDetalle({ params }: Params) {
         {r.status === "REFUNDED" && <Badge tone="neutral">Reembolsada</Badge>}
         {r.paymentMethod !== "STRIPE" && <Badge tone="navy">{r.paymentMethod}</Badge>}
         {r.lettersIssuedAt && <Badge tone="cyan">Cartas emitidas</Badge>}
+        {/* Las cartas salen con las fechas de esta edición. */}
+        <Badge tone="navy">{edicionDe(r).etiqueta}</Badge>
         <span className="text-xs text-muted">
           Alta {formatDateTime(r.createdAt, "es")}
           {r.paidAt && ` · pagado ${formatDateTime(r.paidAt, "es")}`}
